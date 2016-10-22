@@ -1,0 +1,54 @@
+package com.notcomingsoon.getfics;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
+
+public class GFLogger extends java.util.logging.Logger {
+
+	private static Logger logger = null;
+	
+	protected GFLogger(String arg0, String arg1) {
+		super(arg0, arg1);
+		// TODO Auto-generated constructor stub
+	}
+	
+	public static Logger getLogger(){
+		if (logger == null){
+			logger = (Logger) getLogger("GetFics");
+			
+			String logDir = GFProperties.getPropertyValue(GFProperties.OUTPUT_DIRECTORY_KEY) ;
+			String logFile 
+				= logDir
+				+ File.separator 
+				+ GFProperties.getPropertyValue(GFProperties.LOG_FILE_KEY);
+			FileHandler fh;
+			try {
+				File f = new File(logDir);
+				f.mkdir();
+				
+				f = new File(logFile);
+				f.createNewFile();
+				
+				fh = new FileHandler(logFile);
+				fh.setLevel(Level.ALL);
+				fh.setFormatter(new SimpleFormatter());
+				logger.addHandler(fh);
+				logger.setLevel(Level.ALL);
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+		return logger;
+	}
+
+}
