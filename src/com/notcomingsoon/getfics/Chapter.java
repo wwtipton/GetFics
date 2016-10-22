@@ -25,7 +25,6 @@ public class Chapter {
 	
 	private static Logger logger = GFLogger.getLogger();
 	
-//	private static final String HTML_EXTENSION = ".html";
 	public static final String CONTENTS = "contents" + HTMLConstants.HTML_EXTENSION;	
 	
 	public static final String CHAPTER = "Chapter";
@@ -65,6 +64,14 @@ public class Chapter {
 	}
 
 
+	/**
+	 * If multi chapter story need a contents file.
+	 * 
+	 * @param story
+	 * @param chapterList
+	 * @param charset
+	 * @throws IOException
+	 */
 	public static void writeContents(Story story, ArrayList<Chapter> chapterList, Charset charset) throws IOException {
 		logger.entering("com.notcomingsoon.getfics.Chapter", "writeContents(File dir, ArrayList<Chapter> chapterList)");
 		
@@ -74,7 +81,6 @@ public class Chapter {
 	
 			logger.info("f: " + f.toString());	
 			
-			//boolean isCreated = f.createNewFile();
 			FileOutputStream fos = new FileOutputStream(f);
 			
 			Document outDoc = new Document(story.getFileTitle());
@@ -92,7 +98,7 @@ public class Chapter {
 				Element dd = new Element(Tag.valueOf(HTMLConstants.DD_TAG), dir.getName());
 				
 				Element a = new Element(Tag.valueOf(HTMLConstants.A_TAG), dir.getName());
-				String href = story.toString() + HTMLConstants.HTML_EXTENSION + "#" + c.fileTitle;
+				String href = story.toString() + HTMLConstants.HTML_EXTENSION + HTMLConstants.TARGET + c.fileTitle;
 				a.attr(HTMLConstants.HREF_ATTR, href);
 				a.text(c.origTitle);
 				dd.appendChild(a);			
