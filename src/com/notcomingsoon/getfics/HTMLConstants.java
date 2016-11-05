@@ -69,6 +69,10 @@ public class HTMLConstants {
 	public static final CharSequence HTTP = "http://";
 
 	public static final String UL_TAG = "ul";
+	
+	public static final String SEPARATOR = "/";
+	
+	public static final String TARGET = "#";
 
 
 }

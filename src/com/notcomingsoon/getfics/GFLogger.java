@@ -12,9 +12,8 @@ public class GFLogger extends java.util.logging.Logger {
 
 	private static Logger logger = null;
 	
-	protected GFLogger(String arg0, String arg1) {
-		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
+	protected GFLogger(String name, String resourceBundleName) {
+		super(name, resourceBundleName);
 	}
 	
 	public static Logger getLogger(){
@@ -40,10 +39,8 @@ public class GFLogger extends java.util.logging.Logger {
 				logger.addHandler(fh);
 				logger.setLevel(Level.ALL);
 			} catch (SecurityException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 

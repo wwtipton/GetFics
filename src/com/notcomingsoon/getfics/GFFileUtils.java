@@ -16,8 +16,6 @@ public class GFFileUtils {
 
 	private static final char[] INVALID_CHARS = new char[]{'\\', '/', '?', ':', '*', '"', '>', '<', '|', '#'};
 	
-	private static final char BLANK = ' ';
-	
 	private static final char PERIOD = '.'; 
 
 	private static final char LAST_ASCII = 126;
@@ -50,7 +48,7 @@ public class GFFileUtils {
 			char c = sbS.charAt(j);
 			if (c == PERIOD && j > 0){
 				char prev = sbS.charAt(j - 1);
-				if (!Character.isDigit(prev)){
+				if (!Character.isDigit(prev)){//TODO What is this for? Skip . unless in middle of number?
 					continue;
 				}
 			}

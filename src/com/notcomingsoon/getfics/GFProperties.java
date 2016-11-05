@@ -14,8 +14,7 @@ import java.util.Properties;
  *
  */
 public class GFProperties extends Properties {
-	//static String propFilePath = "Z:\\WD.Share\\WWT\\GetFics\\getfics.properties";
-	//static String propFilePath = "F:\\ioSafe\\WD.Share\\WWT\\GetFics\\getfics.properties";
+	//TODO Put in root of project so we don't need to define
     static String propFilePath = "c:\\GetFics\\getfics.properties";
 	public static final String FIC_LIST_FILE_KEY = "fic.list";
 	public static final String LOG_FILE_KEY = "log.file";
@@ -37,10 +36,8 @@ public class GFProperties extends Properties {
 		gfp.load(fr);
 		fr.close();
 	} catch (FileNotFoundException e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	} catch (IOException e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
 	
