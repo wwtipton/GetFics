@@ -22,10 +22,6 @@ public class AdultFanFiction extends Site {
 	
 	private static final int AUTHOR_ANCHOR = 1;
 
-	private static final int AUTHOR_CELL = 1;
-
-	private static final int CHAPTER_BODY = 0;
-
 	private static final int MAIN_TABLE = 3;
 
 	private static final String MEMBERS_ATTR = "members";
@@ -121,16 +117,6 @@ public class AdultFanFiction extends Site {
 		return options;
 	}
 
-	/**
-	 * @param doc
-	 * @return
-	 */
-	private Elements getTableCells(Document doc) {
-		Element table = getMainTable(doc);
-		Elements tds = table.getElementsByTag(HTMLConstants.TD_TAG);
-		return tds;
-	}
-	
 	/**
 	 * @param doc
 	 * @return

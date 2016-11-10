@@ -80,8 +80,6 @@ public abstract class Site {
 	
 	protected Charset siteCharset;
 	
-	private Charset targetCharset = HTMLConstants.WIN_1252;
-	
 	protected Cookie[] cookies;
 
 	private String siteName;
@@ -250,7 +248,7 @@ public abstract class Site {
 		Element head = html.appendElement(HTMLConstants.HEAD_TAG);
 		Comment title = new Comment(startUrl, dir.getName());
 		head.appendChild(title);
-		Element body = html.appendElement(HTMLConstants.BODY_TAG);
+		html.appendElement(HTMLConstants.BODY_TAG);
 		
 		logger.exiting(this.getClass().getCanonicalName(), "initStory()");
 		return outDoc;
@@ -264,7 +262,7 @@ public abstract class Site {
 	
 		logger.info("f: " + dir.getParent());	
 		
-		boolean isCreated = f.createNewFile();
+		f.createNewFile();
 		FileOutputStream fos = new FileOutputStream(f);
 		logger.log(Level.ALL, this.getClass().getCanonicalName() + "gwriteStory(Document story, Story loc) \tcharset:" + story.charset().displayName());
 		
@@ -305,7 +303,6 @@ public abstract class Site {
 		Story story = null;
 		Site site = null;
 		
-		ListIterator<String> iter = sites.listIterator();
 		for (String s : sites){
 			if (s.equals(AFF) && AdultFanFiction.isAFF(url)){
 				site = new AdultFanFiction(url);

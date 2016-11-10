@@ -16,8 +16,6 @@ public class GFFileUtils {
 
 	private static final char[] INVALID_CHARS = new char[]{'\\', '/', '?', ':', '*', '"', '>', '<', '|', '#'};
 	
-	private static final char BLANK = ' ';
-	
 	private static final char PERIOD = '.'; 
 
 	private static final char LAST_ASCII = 126;

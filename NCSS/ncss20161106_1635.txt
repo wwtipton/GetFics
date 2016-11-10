@@ -1,0 +1,208 @@
+Nr.   Classes Functions      NCSS  Javadocs Package
+  1         7        38       359         8 com.notcomingsoon.getfics
+  2         1        10       188         7 com.notcomingsoon.getfics.mobi
+  3        13       113      1262        21 com.notcomingsoon.getfics.sites
+    --------- --------- --------- ---------
+           21       161      1809        36 Total
+
+ Packages   Classes Functions      NCSS  Javadocs | per
+-------------------------------------------------------------
+     3.00     21.00    161.00   1809.00     36.00 | Project
+               7.00     53.67    603.00     12.00 | Package
+                         7.67     86.14      1.71 | Class
+                                  11.24      0.22 | Function
+
+Nr. NCSS Functions Classes Javadocs Class
+  1   55         8       0        2 com.notcomingsoon.getfics.Chapter
+  2   40         3       0        1 com.notcomingsoon.getfics.GFFileUtils
+  3   24         2       0        0 com.notcomingsoon.getfics.GFLogger
+  4   23         2       0        1 com.notcomingsoon.getfics.GFProperties
+  5   36         0       0        0 com.notcomingsoon.getfics.HTMLConstants
+  6   76         6       0        2 com.notcomingsoon.getfics.Main
+  7  163        10       0        7 com.notcomingsoon.getfics.mobi.ProjectFile
+  8   82        10       0        5 com.notcomingsoon.getfics.sites.AdultFanFiction
+  9  106         9       0        0 com.notcomingsoon.getfics.sites.ArchiveOfOurOwn
+ 10   14         5       0        1 com.notcomingsoon.getfics.sites.Cookie
+ 11   80         8       0        3 com.notcomingsoon.getfics.sites.DigitalQuill
+ 12   82         8       0        3 com.notcomingsoon.getfics.sites.FanFictionNet
+ 13  130        12       0        0 com.notcomingsoon.getfics.sites.GrangerEnchanted
+ 14   69         8       0        1 com.notcomingsoon.getfics.sites.MediaMiner
+ 15   82         8       0        2 com.notcomingsoon.getfics.sites.PetulantPoetess
+ 16  208        16       0        2 com.notcomingsoon.getfics.sites.Site
+ 17   13         1       0        1 com.notcomingsoon.getfics.sites.SiteNameComparator
+ 18   65         8       0        2 com.notcomingsoon.getfics.sites.Sycophantex
+ 19  126        12       0        0 com.notcomingsoon.getfics.sites.TheMasqueNet
+ 20   73         8       0        1 com.notcomingsoon.getfics.sites.TwistingTheHellmouth
+ 21   55        17       0        2 com.notcomingsoon.getfics.Story
+Average Object NCSS:                 76.29
+Average Object Functions:             7.67
+Average Object Inner Classes:         0.00
+Average Object Javadoc Comments:      1.71
+Program NCSS:                     1,809.00
+
+Nr. NCSS CCN JVDC Function
+  1    5   1    1 com.notcomingsoon.getfics.Chapter.Chapter(String,String)
+  2    2   1    0 com.notcomingsoon.getfics.Chapter.getOrigTitle()
+  3    2   1    0 com.notcomingsoon.getfics.Chapter.setOrigTitle(String)
+  4    2   1    0 com.notcomingsoon.getfics.Chapter.getUrl()
+  5    2   1    0 com.notcomingsoon.getfics.Chapter.setUrl(String)
+  6    2   1    0 com.notcomingsoon.getfics.Chapter.getFileTitle()
+  7    2   1    0 com.notcomingsoon.getfics.Chapter.setFileTitle(String)
+  8   29   3    0 com.notcomingsoon.getfics.Chapter.writeContents(Story,Chapter,Charset)
+  9   10   1    0 com.notcomingsoon.getfics.GFFileUtils.createDirectory(String,String,String)
+ 10   17   7    0 com.notcomingsoon.getfics.GFFileUtils.stripInvalidChars(String)
+ 11    7   3    0 com.notcomingsoon.getfics.GFFileUtils.isValidChar(char)
+ 12    2   1    0 com.notcomingsoon.getfics.GFLogger.GFLogger(String,String)
+ 13   20   4    0 com.notcomingsoon.getfics.GFLogger.getLogger()
+ 14   10   3    0 com.notcomingsoon.getfics.GFProperties.readProperties(GFProperties)
+ 15    4   2    0 com.notcomingsoon.getfics.GFProperties.getPropertyValue(String)
+ 16    6   2    1 com.notcomingsoon.getfics.Main.main(String[])
+ 17   11   2    0 com.notcomingsoon.getfics.Main.doAll()
+ 18   13   5    0 com.notcomingsoon.getfics.Main.getFics()
+ 19   18   4    0 com.notcomingsoon.getfics.Main.buildMobi(ProjectFile,Story)
+ 20   13   4    0 com.notcomingsoon.getfics.Main.moveMobi(String,Story)
+ 21    8   2    0 com.notcomingsoon.getfics.Main.readFicList()
+ 22    7   1    1 com.notcomingsoon.getfics.mobi.ProjectFile.ProjectFile(Story)
+ 23   13   3    0 com.notcomingsoon.getfics.mobi.ProjectFile.writeProjectFile()
+ 24    2   1    0 com.notcomingsoon.getfics.mobi.ProjectFile.getProjectFile()
+ 25   15   1    0 com.notcomingsoon.getfics.mobi.ProjectFile.buildProjectDom()
+ 26   11   2    1 com.notcomingsoon.getfics.mobi.ProjectFile.buildGuide()
+ 27   31   2    1 com.notcomingsoon.getfics.mobi.ProjectFile.buildManifestAndSpine()
+ 28   14   3    0 com.notcomingsoon.getfics.mobi.ProjectFile.encodeFilename(String)
+ 29    7   1    1 com.notcomingsoon.getfics.mobi.ProjectFile.buildMetadata()
+ 30    8   1    1 com.notcomingsoon.getfics.mobi.ProjectFile.buildXMetadata(Element)
+ 31   16   1    1 com.notcomingsoon.getfics.mobi.ProjectFile.buildDCMetadata(Element)
+ 32    4   1    1 com.notcomingsoon.getfics.sites.AdultFanFiction.AdultFanFiction(String)
+ 33   12   1    0 com.notcomingsoon.getfics.sites.AdultFanFiction.extractChapter(Document,Document,Chapter)
+ 34    7   1    0 com.notcomingsoon.getfics.sites.AdultFanFiction.getAuthor(Document)
+ 35   16   2    0 com.notcomingsoon.getfics.sites.AdultFanFiction.getChapterList(Document)
+ 36    5   1    1 com.notcomingsoon.getfics.sites.AdultFanFiction.getChapterOptions(Document)
+ 37    4   1    1 com.notcomingsoon.getfics.sites.AdultFanFiction.getTableCells(Document)
+ 38    4   1    1 com.notcomingsoon.getfics.sites.AdultFanFiction.getMainTable(Document)
+ 39    8   1    0 com.notcomingsoon.getfics.sites.AdultFanFiction.getTitle(Document)
+ 40    6   2    0 com.notcomingsoon.getfics.sites.AdultFanFiction.isOneShot(Document)
+ 41    5   2    0 com.notcomingsoon.getfics.sites.AdultFanFiction.isAFF(String)
+ 42   10   2    0 com.notcomingsoon.getfics.sites.ArchiveOfOurOwn.ArchiveOfOurOwn(String)
+ 43   19   3    0 com.notcomingsoon.getfics.sites.ArchiveOfOurOwn.getChapterList(Document)
+ 44    7   2    0 com.notcomingsoon.getfics.sites.ArchiveOfOurOwn.getChapterOptions(Document)
+ 45    7   1    0 com.notcomingsoon.getfics.sites.ArchiveOfOurOwn.getAuthor(Document)
+ 46    7   1    0 com.notcomingsoon.getfics.sites.ArchiveOfOurOwn.getTitle(Document)
+ 47   20   4    0 com.notcomingsoon.getfics.sites.ArchiveOfOurOwn.extractChapter(Document,Document,Chapter)
+ 48    6   3    0 com.notcomingsoon.getfics.sites.ArchiveOfOurOwn.isOneShot(Document)
+ 49    5   2    0 com.notcomingsoon.getfics.sites.ArchiveOfOurOwn.isAO3(String)
+ 50    9   1    0 com.notcomingsoon.getfics.sites.ArchiveOfOurOwn.getPage(String)
+ 51    2   1    0 com.notcomingsoon.getfics.sites.Cookie.getName()
+ 52    2   1    0 com.notcomingsoon.getfics.sites.Cookie.setName(String)
+ 53    2   1    0 com.notcomingsoon.getfics.sites.Cookie.getValue()
+ 54    2   1    0 com.notcomingsoon.getfics.sites.Cookie.setValue(String)
+ 55    3   1    0 com.notcomingsoon.getfics.sites.Cookie.Cookie(String,String)
+ 56    3   1    1 com.notcomingsoon.getfics.sites.DigitalQuill.DigitalQuill(String)
+ 57   18   2    0 com.notcomingsoon.getfics.sites.DigitalQuill.getChapterList(Document)
+ 58    4   1    1 com.notcomingsoon.getfics.sites.DigitalQuill.getFirstForm(Document)
+ 59    7   1    0 com.notcomingsoon.getfics.sites.DigitalQuill.getAuthor(Document)
+ 60    9   2    0 com.notcomingsoon.getfics.sites.DigitalQuill.getTitle(Document)
+ 61   22   3    0 com.notcomingsoon.getfics.sites.DigitalQuill.extractChapter(Document,Document,Chapter)
+ 62    2   1    0 com.notcomingsoon.getfics.sites.DigitalQuill.isOneShot(Document)
+ 63    5   2    0 com.notcomingsoon.getfics.sites.DigitalQuill.isDigitalQuill(String)
+ 64    3   1    1 com.notcomingsoon.getfics.sites.FanFictionNet.FanFictionNet(String)
+ 65   23   3    0 com.notcomingsoon.getfics.sites.FanFictionNet.getChapterList(Document)
+ 66    7   2    1 com.notcomingsoon.getfics.sites.FanFictionNet.getChapterOptions(Document)
+ 67    7   1    0 com.notcomingsoon.getfics.sites.FanFictionNet.getAuthor(Document)
+ 68    7   1    0 com.notcomingsoon.getfics.sites.FanFictionNet.getTitle(Document)
+ 69   14   2    0 com.notcomingsoon.getfics.sites.FanFictionNet.extractChapter(Document,Document,Chapter)
+ 70    6   2    0 com.notcomingsoon.getfics.sites.FanFictionNet.isOneShot(Document)
+ 71    5   2    0 com.notcomingsoon.getfics.sites.FanFictionNet.isFFN(String)
+ 72    5   1    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.GrangerEnchanted(String)
+ 73   14   1    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.login()
+ 74   16   2    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.getChapterList(Document)
+ 75    7   2    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.getChapterOptions(Document)
+ 76    7   1    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.getAuthor(Document)
+ 77    7   1    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.getTitle(Document)
+ 78   14   2    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.extractChapter(Document,Document,Chapter)
+ 79    6   3    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.isOneShot(Document)
+ 80    5   2    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.isGrangerEnchanted(String)
+ 81   13   2    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.getPage(String)
+ 82    8   1    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.ageConsent(Document)
+ 83    7   3    0 com.notcomingsoon.getfics.sites.GrangerEnchanted.ageConsentRequired(Document)
+ 84    3   1    0 com.notcomingsoon.getfics.sites.MediaMiner.MediaMiner(String)
+ 85   16   2    0 com.notcomingsoon.getfics.sites.MediaMiner.getChapterList(Document)
+ 86    7   1    0 com.notcomingsoon.getfics.sites.MediaMiner.getAuthor(Document)
+ 87   10   1    0 com.notcomingsoon.getfics.sites.MediaMiner.getTitle(Document)
+ 88    8   1    0 com.notcomingsoon.getfics.sites.MediaMiner.extractChapter(Document,Document,Chapter)
+ 89    6   2    0 com.notcomingsoon.getfics.sites.MediaMiner.isOneShot(Document)
+ 90    5   2    0 com.notcomingsoon.getfics.sites.MediaMiner.isMediaMiner(String)
+ 91    7   2    1 com.notcomingsoon.getfics.sites.MediaMiner.getChapterOptions(Document)
+ 92    4   1    1 com.notcomingsoon.getfics.sites.PetulantPoetess.PetulantPoetess(String)
+ 93   18   2    0 com.notcomingsoon.getfics.sites.PetulantPoetess.getChapterList(Document)
+ 94    7   1    0 com.notcomingsoon.getfics.sites.PetulantPoetess.getAuthor(Document)
+ 95    9   1    0 com.notcomingsoon.getfics.sites.PetulantPoetess.getTitle(Document)
+ 96   15   2    0 com.notcomingsoon.getfics.sites.PetulantPoetess.extractChapter(Document,Document,Chapter)
+ 97    6   3    0 com.notcomingsoon.getfics.sites.PetulantPoetess.isOneShot(Document)
+ 98    7   2    0 com.notcomingsoon.getfics.sites.PetulantPoetess.getChapterOptions(Document)
+ 99    5   2    0 com.notcomingsoon.getfics.sites.PetulantPoetess.isTPP(String)
+100   12   2    0 com.notcomingsoon.getfics.sites.Site.recode(Document,String)
+101    1   1    0 com.notcomingsoon.getfics.sites.Site.getChapterList(Document)
+102    1   1    0 com.notcomingsoon.getfics.sites.Site.getAuthor(Document)
+103    1   1    0 com.notcomingsoon.getfics.sites.Site.getTitle(Document)
+104    1   1    0 com.notcomingsoon.getfics.sites.Site.extractChapter(Document,Document,Chapter)
+105   10   1    0 com.notcomingsoon.getfics.sites.Site.getPage(String)
+106    6   3    0 com.notcomingsoon.getfics.sites.Site.addCookies(Connection)
+107    1   1    0 com.notcomingsoon.getfics.sites.Site.isOneShot(Document)
+108    3   1    0 com.notcomingsoon.getfics.sites.Site.Site(String)
+109   27   4    0 com.notcomingsoon.getfics.sites.Site.download()
+110   29   7    0 com.notcomingsoon.getfics.sites.Site.getImages(Document,Story)
+111   11   1    0 com.notcomingsoon.getfics.sites.Site.initStory(File)
+112   13   1    0 com.notcomingsoon.getfics.sites.Site.writeStory(Document,Story)
+113    3   1    1 com.notcomingsoon.getfics.sites.Site.addChapterFooter(Element)
+114    7   1    1 com.notcomingsoon.getfics.sites.Site.addChapterHeader(Document,Chapter)
+115   48  23    0 com.notcomingsoon.getfics.sites.Site.getStory(String)
+116   12   3    0 com.notcomingsoon.getfics.sites.SiteNameComparator.compare(Object,Object)
+117    4   1    0 com.notcomingsoon.getfics.sites.Sycophantex.Sycophantex(String)
+118    8   1    0 com.notcomingsoon.getfics.sites.Sycophantex.extractChapter(Document,Document,Chapter)
+119    7   1    0 com.notcomingsoon.getfics.sites.Sycophantex.getAuthor(Document)
+120   18   2    0 com.notcomingsoon.getfics.sites.Sycophantex.getChapterList(Document)
+121    4   1    1 com.notcomingsoon.getfics.sites.Sycophantex.getFirstForm(Document)
+122    7   1    0 com.notcomingsoon.getfics.sites.Sycophantex.getTitle(Document)
+123    2   1    0 com.notcomingsoon.getfics.sites.Sycophantex.isOneShot(Document)
+124    5   2    0 com.notcomingsoon.getfics.sites.Sycophantex.isSycophantex(String)
+125    5   1    0 com.notcomingsoon.getfics.sites.TheMasqueNet.TheMasqueNet(String)
+126   14   1    0 com.notcomingsoon.getfics.sites.TheMasqueNet.login()
+127   16   2    0 com.notcomingsoon.getfics.sites.TheMasqueNet.getChapterList(Document)
+128    7   2    0 com.notcomingsoon.getfics.sites.TheMasqueNet.getChapterOptions(Document)
+129    7   1    0 com.notcomingsoon.getfics.sites.TheMasqueNet.getAuthor(Document)
+130    7   1    0 com.notcomingsoon.getfics.sites.TheMasqueNet.getTitle(Document)
+131   10   1    0 com.notcomingsoon.getfics.sites.TheMasqueNet.extractChapter(Document,Document,Chapter)
+132    6   3    0 com.notcomingsoon.getfics.sites.TheMasqueNet.isOneShot(Document)
+133    5   2    0 com.notcomingsoon.getfics.sites.TheMasqueNet.isMasque(String)
+134   13   2    0 com.notcomingsoon.getfics.sites.TheMasqueNet.getPage(String)
+135    8   1    0 com.notcomingsoon.getfics.sites.TheMasqueNet.ageConsent(Document)
+136    7   4    0 com.notcomingsoon.getfics.sites.TheMasqueNet.ageConsentRequired(Document)
+137    4   1    0 com.notcomingsoon.getfics.sites.TwistingTheHellmouth.TwistingTheHellmouth(String)
+138   17   3    0 com.notcomingsoon.getfics.sites.TwistingTheHellmouth.getChapterList(Document)
+139    9   1    0 com.notcomingsoon.getfics.sites.TwistingTheHellmouth.getAuthor(Document)
+140    7   1    0 com.notcomingsoon.getfics.sites.TwistingTheHellmouth.getTitle(Document)
+141   10   1    0 com.notcomingsoon.getfics.sites.TwistingTheHellmouth.extractChapter(Document,Document,Chapter)
+142    6   3    0 com.notcomingsoon.getfics.sites.TwistingTheHellmouth.isOneShot(Document)
+143    5   2    0 com.notcomingsoon.getfics.sites.TwistingTheHellmouth.isTTH(String)
+144    7   2    1 com.notcomingsoon.getfics.sites.TwistingTheHellmouth.getChapterOptions(Document)
+145    2   1    0 com.notcomingsoon.getfics.Story.getFileAuthor()
+146    2   1    0 com.notcomingsoon.getfics.Story.isOneShot()
+147    2   1    0 com.notcomingsoon.getfics.Story.setOneShot(boolean)
+148    2   1    0 com.notcomingsoon.getfics.Story.setFileAuthor(String)
+149    2   1    0 com.notcomingsoon.getfics.Story.getFileTitle()
+150    2   1    0 com.notcomingsoon.getfics.Story.setFileTitle(String)
+151    2   1    0 com.notcomingsoon.getfics.Story.getOrigAuthor()
+152    2   1    0 com.notcomingsoon.getfics.Story.setOrigAuthor(String)
+153    2   1    0 com.notcomingsoon.getfics.Story.getOrigTitle()
+154    2   1    0 com.notcomingsoon.getfics.Story.setOrigTitle(String)
+155    2   1    0 com.notcomingsoon.getfics.Story.getOutputDir()
+156    2   1    0 com.notcomingsoon.getfics.Story.setOutputDir(File)
+157   10   1    1 com.notcomingsoon.getfics.Story.Story(String,String)
+158    2   1    0 com.notcomingsoon.getfics.Story.toString()
+159    5   1    0 com.notcomingsoon.getfics.Story.createStory(String,String)
+160    2   1    0 com.notcomingsoon.getfics.Story.setCharset(Charset)
+161    2   1    0 com.notcomingsoon.getfics.Story.getCharset()
+Average Function NCSS:       8.20
+Average Function CCN:        1.81
+Average Function JVDC:       0.14
+Program NCSS:            1,809.00
