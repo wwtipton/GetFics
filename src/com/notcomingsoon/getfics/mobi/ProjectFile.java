@@ -17,6 +17,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -88,9 +89,11 @@ public class ProjectFile {
 	 * @throws ParserConfigurationException 
 	 * @throws DOMException 
 	 * @throws IOException 
+	 * @throws TransformerException 
+	 * @throws TransformerFactoryConfigurationError 
 	 * 
 	 */
-	public ProjectFile(Story story) throws ParserConfigurationException, DOMException, IOException {
+	public ProjectFile(Story story) throws ParserConfigurationException, DOMException, IOException, TransformerFactoryConfigurationError, TransformerException {
 		super();
 		logger.entering("com.notcomingsoon.getfics.mobi.ProjectFile", "ProjectFile(Story story)");
 		this.story = story;
@@ -99,7 +102,7 @@ public class ProjectFile {
 		logger.exiting("com.notcomingsoon.getfics.mobi.ProjectFile", "ProjectFile(Story story)");
 	}
 
-	private void writeProjectFile() {
+	private void writeProjectFile() throws TransformerFactoryConfigurationError, TransformerException {
 		logger.entering("com.notcomingsoon.getfics.mobi.ProjectFile", "writeProjectFile()");
 
 		File dir = story.getOutputDir();
@@ -119,11 +122,9 @@ public class ProjectFile {
 	        // Write the DOM document to the file
 	        Transformer xformer = TransformerFactory.newInstance().newTransformer();
 	        xformer.transform(source, result);
-	    } catch (TransformerConfigurationException e) {
-	    } catch (TransformerException e) {
+	    } finally{
+	    	logger.exiting("com.notcomingsoon.getfics.mobi.ProjectFile", "writeProjectFile()");
 	    }
-		
-		logger.exiting("com.notcomingsoon.getfics.mobi.ProjectFile", "writeProjectFile()");
 	}
 
 	public String getProjectFile() {
@@ -136,9 +137,7 @@ public class ProjectFile {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		DOMImplementation impl = builder.getDOMImplementation();
-		Element e = null;
-		Node n = null;
-		// Document.
+
 		project = impl.createDocument(null, PACKAGE_TAG, null);
 		project.setXmlStandalone(true);
 

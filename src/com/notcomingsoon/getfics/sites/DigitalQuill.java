@@ -25,7 +25,6 @@ public class DigitalQuill extends Site {
 	private static final String VIEWSTORY = "viewstory";
 
 	private static final int FIRST_FORM = 0;
-	private static final int TITLE_TABLE = 1;
 	private static final String JAVASCRIPT = "javascript";
 	private static final int MAIN_TABLE = 0;
 	private static final int MAIN_TD = 0;

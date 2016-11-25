@@ -22,8 +22,6 @@ public class FanFictionNet extends Site {
 	
 	private static final String A2A_KIT_A2A_DEFAULT_STYLE = "a2a_kit a2a_default_style";
 	private static final Charset FFN_CHARSET = HTMLConstants.UTF_8;
-	private static final int AUTHOR_TABLE = 1;
-	private static final int AUTHOR_CELL = 0;
 	private static final int AUTHOR_ANCHOR = 0;
 	private static final int CHAPTER_SELECT = 1;
 	private static final String URL_DIVIDER = "/";

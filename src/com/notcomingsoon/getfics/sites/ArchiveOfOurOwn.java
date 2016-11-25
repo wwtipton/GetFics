@@ -23,12 +23,6 @@ public class ArchiveOfOurOwn extends Site {
 	//private static final String USERS = "/users";
 	private static final String AUTHOR = "byline heading";
 	
-	private static final String ERRORTEXT = "errortext";
-	
-	private static final String AGE_CONSENT_REQUIRED = "Age Consent Required";
-
-	private static final String MILD = "This story may contain mild sexual situations or violence.";
-
 	private static final int CHAPTER_SELECT = 0;
 
 	private static final String URL_DIVIDER = "/";
