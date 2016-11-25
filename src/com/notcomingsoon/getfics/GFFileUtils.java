@@ -48,7 +48,7 @@ public class GFFileUtils {
 			char c = sbS.charAt(j);
 			if (c == PERIOD && j > 0){
 				char prev = sbS.charAt(j - 1);
-				if (!Character.isDigit(prev)){
+				if (!Character.isDigit(prev)){//TODO What is this for? Skip . unless in middle of number?
 					continue;
 				}
 			}
