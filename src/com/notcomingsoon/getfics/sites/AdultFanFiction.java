@@ -20,9 +20,9 @@ import com.notcomingsoon.getfics.HTMLConstants;
  */
 public class AdultFanFiction extends Site {
 	
-	private static final int AUTHOR_ANCHOR = 1;
+	private static final int AUTHOR_ANCHOR = 5;
 
-	private static final int MAIN_TABLE = 3;
+	private static final int MAIN_TABLE = 2;
 
 	private static final String MEMBERS_ATTR = "members";
 	
@@ -111,9 +111,9 @@ public class AdultFanFiction extends Site {
 	 * @return
 	 */
 	private Elements getChapterOptions(Document doc) {
-		Elements uls = doc.getElementsByTag(HTMLConstants.UL_TAG);	
-		Element ul = uls.get(8);
-		Elements options = ul.getElementsByTag(HTMLConstants.A_TAG);
+		Elements divs = doc.getElementsByClass("dropdown-content");
+		Element div = divs.first();
+		Elements options = div.getElementsByTag(HTMLConstants.A_TAG);
 		return options;
 	}
 

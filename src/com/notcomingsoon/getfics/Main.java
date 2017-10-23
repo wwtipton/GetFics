@@ -102,7 +102,8 @@ public class Main {
 		
 		String mobiName = story.toString() + this.mobiExtension;
 		
-		ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", mobigenPath, projectFile.getProjectFile(),"-verbose", "-o", mobiName);
+	//	ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", mobigenPath, projectFile.getProjectFile(),"-verbose", "-o", mobiName);
+		ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", mobigenPath, projectFile.getProjectFile(),"-o", mobiName);
 		pb.redirectErrorStream(true);
 		logger.info("Command: " + pb.command());
 		Process process = pb.start();

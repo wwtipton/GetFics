@@ -65,7 +65,8 @@ public class ProjectFile {
 	static final String ID_ATTR = "id";
 	static final String ID_PREFIX = "item";
 	static final String MEDIA_TYPE_ATTR = "media-type";
-	static final String MEDIA_TYPE_ATTR_VALUE = "text/x-oeb1-document";	
+//	static final String MEDIA_TYPE_ATTR_VALUE = "text/x-oeb1-document";	
+	static final String MEDIA_TYPE_ATTR_VALUE = "application/xhtml+xml";	
 	static final String HREF_ATTR = "href";
 	static final String SPINE_TAG = "spine";
 	static final String ITEMREF_TAG = "itemref";
@@ -145,9 +146,6 @@ public class ProjectFile {
 		
 		buildManifestAndSpine();
 		
-		Element tours = project.createElement(TOURS_TAG);
-		project.getFirstChild().appendChild(tours);
-
 		buildGuide();
 
 		logger.exiting("com.notcomingsoon.getfics.mobi.ProjectFile", "buildProjectDom()");
@@ -196,6 +194,7 @@ public class ProjectFile {
 			item.setAttribute(MEDIA_TYPE_ATTR, MEDIA_TYPE_ATTR_VALUE);
 			String contents = encodeFilename(Chapter.CONTENTS);
 			item.setAttribute(HREF_ATTR, contents);
+			item.setAttribute("properties", "nav");
 			
 			manifest.appendChild(item);
 			spine.appendChild(itemref);
