@@ -86,24 +86,26 @@ public class Chapter {
 			Document outDoc = new Document(story.getFileTitle());
 			outDoc.outputSettings().charset(charset);
 			Element html = outDoc.appendElement(HTMLConstants.HTML_TAG);
-			Element body = html.appendElement(HTMLConstants.BODY_TAG);		
+			Element body = html.appendElement(HTMLConstants.BODY_TAG);	
+			Element nav = body.appendElement(HTMLConstants.NAV_TAG);
+			nav.attr("epub:type", "toc");
 			Element h2 = new Element(Tag.valueOf(HTMLConstants.H2_TAG), dir.getName());
 			h2.text(TOC);
-			body.appendChild(h2);
-			Element dl = new Element(Tag.valueOf(HTMLConstants.DL_TAG), dir.getName());
-			body.appendChild(dl);
+			nav.appendChild(h2);
+			Element ol = new Element(Tag.valueOf(HTMLConstants.OL_TAG), dir.getName());
+			nav.appendChild(ol);
 		
 			for (int i = 0; i < chapterList.size(); i++){
 				Chapter c = chapterList.get(i);
-				Element dd = new Element(Tag.valueOf(HTMLConstants.DD_TAG), dir.getName());
+				Element li = new Element(Tag.valueOf(HTMLConstants.LI_TAG), dir.getName());
 				
 				Element a = new Element(Tag.valueOf(HTMLConstants.A_TAG), dir.getName());
 				String href = story.toString() + HTMLConstants.HTML_EXTENSION + HTMLConstants.TARGET + c.fileTitle;
 				a.attr(HTMLConstants.HREF_ATTR, href);
 				a.text(c.origTitle);
-				dd.appendChild(a);			
+				li.appendChild(a);			
 				
-				dl.appendChild(dd);
+				ol.appendChild(li);
 			}
 
 

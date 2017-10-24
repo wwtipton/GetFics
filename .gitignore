@@ -50,5 +50,8 @@ Temporary Items
 *.class
 getficslist.txt
 GoogleDriveSync.xml
-*.txt
-reports/pmd-report.html
+Backup-getficslist.txt
+getfics.properties
+ncss20161226_0741.txt
+*.html
+reports/pmd-report.txt

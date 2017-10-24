@@ -74,5 +74,11 @@ public class HTMLConstants {
 	
 	public static final String TARGET = "#";
 
+	public static final String NAV_TAG = "nav";
 
+	public static final String OL_TAG = "ol";
+
+	public static final String LI_TAG = "li";
+
+	
 }
