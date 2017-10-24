@@ -84,6 +84,7 @@ public abstract class Site {
 
 	private String siteName;
 	
+	protected static final String SUMMARY_STRING = "Summary";
 
 	protected Document recode(Document doc, String url) {
 		logger.entering(this.getClass().getCanonicalName(), "recode(Document doc, String url)");
@@ -114,6 +115,10 @@ public abstract class Site {
 	protected abstract String getAuthor(Document doc);
 
 	protected abstract String getTitle(Document doc);
+	
+	protected Chapter extractSummary(Document story, Document chapter){
+		return null;
+	}
 
 	protected abstract Document extractChapter(Document story, Document chapter,
 			Chapter title);
@@ -165,23 +170,30 @@ public abstract class Site {
 		
 		Document story = initStory(loc.getOutputDir());
 		
+		
 		if (isOneShot(doc)){
 			loc.setOneShot(true);
 			Chapter title = new Chapter(this.startUrl, loc.getOrigTitle());
+			extractSummary(story, doc);
 			extractChapter(story, doc, title);
 		} else {
 			ArrayList<Chapter> chapterList = getChapterList(doc);
 			
 			Iterator<Chapter> cIter = chapterList.iterator();
+			Chapter summary = null;
 			while (cIter.hasNext()){
 				Chapter c = cIter.next();
 				Document nextDoc;
 				if (c.getUrl().equalsIgnoreCase(startUrl)){
 					nextDoc = doc;
+					summary = extractSummary(story, nextDoc);
 				} else {
 					nextDoc = getPage(c.getUrl());
 				}
 				extractChapter(story, nextDoc, c);
+			}
+			if (null != summary){
+				chapterList.add(0, summary);
 			}
 			Chapter.writeContents(loc, chapterList, doc.outputSettings().charset());
 		}

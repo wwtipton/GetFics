@@ -27,6 +27,7 @@ public class FanFictionNet extends Site {
 	private static final String URL_DIVIDER = "/";
 	private static final String STORYTEXT = "storytext";
 	private static final int CHAPTER_BODY = 0;
+	private static final int SUMMARY = 6;
 	
 
 	/**
@@ -152,6 +153,23 @@ public class FanFictionNet extends Site {
 		return story;
 	}
 
+	@Override
+	protected Chapter extractSummary(Document story, Document chapter) {
+		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		
+		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
+		Element body = addChapterHeader(story, title);
+		
+		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, "xcontrast_txt");
+		Element div = divs.get(SUMMARY);
+		
+		body.appendChild(div);
+		
+		addChapterFooter(body);
+		
+		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		return title;
+	}
 	/* (non-Javadoc)
 	 * @see com.notcomingsoon.getfics.sites.Site#isOneShot(org.jsoup.nodes.Document)
 	 */
