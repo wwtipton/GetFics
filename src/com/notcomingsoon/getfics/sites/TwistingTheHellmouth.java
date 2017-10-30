@@ -27,6 +27,9 @@ public class TwistingTheHellmouth extends Site {
 
 	private static final String STORYINNERBODY = "storyinnerbody";
 
+	private static final String STORY_SUMMARY = "storysummary formbody defaultcolors";
+
+	private static final String SUMMARY_COLON = SUMMARY_STRING + ": ";
 	
 	public TwistingTheHellmouth(String ficUrl) {
 		super(ficUrl);
@@ -107,6 +110,36 @@ public class TwistingTheHellmouth extends Site {
 		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
 		return story;
 
+	}
+
+	@Override
+	protected Chapter extractSummary(Document story, Document chapter) {
+		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		
+		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
+		Element body = addChapterHeader(story, title);
+		
+		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, STORY_SUMMARY);
+		Element div = divs.first();
+		Elements ps = div.getElementsByTag(HTMLConstants.P_TAG);
+		
+		String summary = null;
+		int idx = 0;
+		while (null == summary && idx < ps.size()){
+			Element p = ps.get(idx);
+			String text = p.text();
+			if (text.startsWith(SUMMARY_COLON)){
+				summary = text.substring(SUMMARY_COLON.length());
+				p.text(summary);
+				body.appendChild(p);
+			}
+			idx++;
+		}
+		
+		addChapterFooter(body);
+		
+		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		return title;
 	}
 
 	@Override
