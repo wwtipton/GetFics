@@ -108,7 +108,6 @@ public class Chapter {
 				ol.appendChild(li);
 			}
 
-
 			byte[] b = outDoc.html().getBytes();
 			
 			fos.write(b);

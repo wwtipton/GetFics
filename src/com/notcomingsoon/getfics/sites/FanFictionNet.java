@@ -170,6 +170,7 @@ public class FanFictionNet extends Site {
 		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
 		return title;
 	}
+
 	/* (non-Javadoc)
 	 * @see com.notcomingsoon.getfics.sites.Site#isOneShot(org.jsoup.nodes.Document)
 	 */

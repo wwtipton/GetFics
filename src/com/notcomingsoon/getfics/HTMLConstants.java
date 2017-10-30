@@ -80,5 +80,7 @@ public class HTMLConstants {
 
 	public static final String LI_TAG = "li";
 
+	public static final String P_TAG = "p";
+
 	
 }
