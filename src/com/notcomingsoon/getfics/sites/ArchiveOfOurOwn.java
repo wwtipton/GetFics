@@ -35,6 +35,8 @@ public class ArchiveOfOurOwn extends Site {
 
 	private static final String USERSTUFF_MODULE = "userstuff module";
 
+	private static final String SUMMARY_MODULE = "summary module";
+
 	private static final String WORK = "work";
 	
 	private static final String ADULT = "?view_adult=true";
@@ -149,6 +151,25 @@ public class ArchiveOfOurOwn extends Site {
 		
 		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
 		return story;
+	}
+
+	@Override
+	protected Chapter extractSummary(Document story, Document chapter) {
+		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		
+		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
+		Element body = addChapterHeader(story, title);
+		
+		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, SUMMARY_MODULE);
+		Element div = divs.first();
+		Element p = div.getElementsByTag(HTMLConstants.P_TAG).first();
+		
+		body.appendChild(p);
+		
+		addChapterFooter(body);
+		
+		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		return title;
 	}
 
 	@Override
