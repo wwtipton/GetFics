@@ -2,10 +2,12 @@ package com.notcomingsoon.getfics.sites;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import com.notcomingsoon.getfics.Chapter;
@@ -13,6 +15,7 @@ import com.notcomingsoon.getfics.HTMLConstants;
 
 public class MediaMiner extends Site {
 
+	private static final int SUMMARY_TEXT_NODE = 2;
 	private static final String VIEW_CHAPTER = "view_ch";
 	private static final String USER_INFO = "user_info.php"; 
 	private static final int AUTHOR_ANCHOR = 0;
@@ -21,6 +24,7 @@ public class MediaMiner extends Site {
 	private static final Charset MM_CHARSET = HTMLConstants.UTF_8;
 	private static final int MULTI_CHAPTER = 2; 
 	private static final int STORY_FORM = 0;
+	private static final String SUMMARY_CLASS = "post-meta clearfix ";
 
 	
 	public MediaMiner(String ficUrl) {
@@ -94,6 +98,26 @@ public class MediaMiner extends Site {
 		
 		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
 		return story;
+	}
+
+	@Override
+	protected Chapter extractSummary(Document story, Document chapter) {
+		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		
+		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
+		Element body = addChapterHeader(story, title);
+		
+		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, SUMMARY_CLASS);
+		Element div = divs.first();
+		List<TextNode> textNodes = div.textNodes();
+		String t = textNodes.get(SUMMARY_TEXT_NODE).text();
+		
+		body.appendText(t);
+		
+		addChapterFooter(body);
+		
+		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		return title;
 	}
 
 	@Override
