@@ -33,6 +33,8 @@ public abstract class Site {
 
 	static final String FFN = "fanfiction.net";
 
+	static final String FICTION_HUNT = "fictionhunt.com";
+
 	static final String AFF = "adult-fanfiction.org";
 
 	static final String TPP = "thepetulantpoetess.com";
@@ -71,6 +73,7 @@ public abstract class Site {
 		sites.add(AO3);
 		sites.add(GRANGER_ENCHANTED);
 		sites.add(MEDIA_MINER);
+		sites.add(FICTION_HUNT);
 		Collections.sort(sites, new SiteNameComparator());
 	}
 
@@ -120,6 +123,14 @@ public abstract class Site {
 		return null;
 	}
 
+	String ageConsent(Document doc) {
+		return null;
+	}
+
+	boolean ageConsentRequired(Document doc) {
+		return false;
+	}
+
 	protected abstract Document extractChapter(Document story, Document chapter,
 			Chapter title);
 
@@ -129,7 +140,7 @@ public abstract class Site {
 	Document getPage(String url) throws IOException {
 		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
 		Connection conn = Jsoup.connect(url);
-		conn.timeout(10000);
+		conn.timeout(60000);
 		
 		conn = addCookies(conn);
 		conn.method(Connection.Method.GET);
@@ -184,7 +195,7 @@ public abstract class Site {
 			while (cIter.hasNext()){
 				Chapter c = cIter.next();
 				Document nextDoc;
-				if (c.getUrl().equalsIgnoreCase(startUrl)){
+				if (c.getUrl().contains(startUrl)){
 					nextDoc = doc;
 					summary = extractSummary(story, nextDoc);
 				} else {
@@ -214,7 +225,7 @@ public abstract class Site {
 		for (int i = 0; i < images.size(); i++){
 			Element image = images.get(i);
 			String src = image.attr(HTMLConstants.SRC_ATTR);
-			if (!src.contains(HTMLConstants.HTTP)){
+			if (!(src.contains(HTMLConstants.HTTP) || src.contains(HTMLConstants.HTTPS))){
 				src= HTMLConstants.HTTP + this.siteName + SLASH + src;
 			}
 			int lastPeriod = src.lastIndexOf(PERIOD);
@@ -366,11 +377,22 @@ public abstract class Site {
 				site.siteName = MEDIA_MINER;
 				break;
 			}		
+			if (s.equals(FICTION_HUNT) && FictionHunt.isFictionHunt(url)){
+				site = new FictionHunt(url);
+				site.siteName = FICTION_HUNT;
+				break;
+			}		
 		}
 		if (site != null){
 			story = site.download();
 		}
 		return story;
 	}
-	
+
+	void login() throws IOException {
+		logger.entering(this.getClass().getCanonicalName(), "login()");
+		logger.exiting(this.getClass().getCanonicalName(), "login()");
+	}
+
+
 }

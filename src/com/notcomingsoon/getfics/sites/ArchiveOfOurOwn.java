@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -15,13 +17,17 @@ import com.notcomingsoon.getfics.Chapter;
 import com.notcomingsoon.getfics.HTMLConstants;
 public class ArchiveOfOurOwn extends Site {
 
+	private static final String REMEMBER_ME_KEY = "user_session[remember_me]";
+
+	private static final String USER_SESSIONS = "https://archiveofourown.org/user_sessions";
+
+	private static final String AUTHENTICITY_TOKEN = "authenticity_token";
+
 	private static final Charset AO3_CHARSET = HTMLConstants.UTF_8;
 	
-	private  Cookie[] AO3_COOKIES =  new Cookie[]  {
-		new Cookie("_otwarchive_session", "BAh7CUkiD3Nlc3Npb25faWQGOgZFRkkiJTY0YWVlZDdjZDdkNWQwZTM3YzZlOTA5MjBjNzRkMmI1BjsAVEkiDnJldHVybl90bwY7AEYiEi93b3Jrcy83NTQ5MDhJIhBfY3NyZl90b2tlbgY7AEZJIjFuV0w4OEVUQjVNRCtTK2pQVVg3bFdkbk9lUXNJZkJwWGl1bnV4SnlQWkFnPQY7AEZJIgphZHVsdAY7AEZU--16146c087112e40ee8c6b8546930624441753bbe")
-	};
+	private  Cookie[] AO3_COOKIES =  new Cookie[3];
 	//private static final String USERS = "/users";
-	private static final String AUTHOR = "byline heading";
+	private static final String AUTHOR = "author";
 	
 	private static final int CHAPTER_SELECT = 0;
 
@@ -41,17 +47,32 @@ public class ArchiveOfOurOwn extends Site {
 	
 	private static final String ADULT = "?view_adult=true";
 	
+	private static final String RESTRICTED = "?restricted=true";
+
+	private static final String LOGIN_PROMPT = "user_session_login";
+	
+	private static final String PEN_NAME_KEY = "user_session[login]";
+	
+	private static final String PEN_NAME = "Ouatic7";
+	
+	private static final String PASSWORD_KEY = "user_session[password]";
+	
+	private static final String PASSWORD = "d6eath";
+
+	private static final String LOGIN_URL = "https://archiveofourown.org/user_sessions/new";
+	
 	Connection conn;
 
 	public ArchiveOfOurOwn(String ficUrl) throws IOException {
 		super(ficUrl);
 		logger.entering(this.getClass().getCanonicalName(), "ArchiveOfOurOwn(String ficUrl)");
-		logger.finer("startUrl = " + startUrl);
-		if (!startUrl.contains(ADULT)){
-			startUrl = startUrl + ADULT;
-		}
+	//	logger.finer("startUrl = " + startUrl);
+	//	if (!startUrl.contains(ADULT)){
+	//		startUrl = startUrl + ADULT;
+	//	}
 		logger.finer("startUrl = " + startUrl);
 		siteCharset = AO3_CHARSET;
+		login();
 		super.cookies = AO3_COOKIES;
 		logger.exiting(this.getClass().getCanonicalName(), "ArchiveOfOurOwn(String ficUrl)");
 	}
@@ -101,7 +122,7 @@ public class ArchiveOfOurOwn extends Site {
 	protected String getAuthor(Document doc) {
 		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
 		
-		Elements as = doc.getElementsByAttributeValueStarting(CLASS, AUTHOR);
+		Elements as = doc.getElementsByAttributeValue("rel", AUTHOR);
 		
 		String author = as.get(0).text();
 		logger.info("author = " + author);
@@ -113,7 +134,7 @@ public class ArchiveOfOurOwn extends Site {
 	protected String getTitle(Document doc) {
 		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
 		
-		Elements h2S = doc.getElementsByAttributeValueStarting(CLASS, TITLE);
+		Elements h2S = doc.getElementsByClass("title heading");
 		
 		String title = h2S.get(0).text();
 		logger.info("title = " + title);
@@ -193,18 +214,46 @@ public class ArchiveOfOurOwn extends Site {
 	}
 
 	@Override
-	Document getPage(String url) throws IOException {
-		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
-		conn = Jsoup.connect(url);
-//		conn.timeout(15000);
-		conn.timeout(0);
+	void login() throws IOException {
+		logger.entering(this.getClass().getCanonicalName(), "login()");
+		conn = Jsoup.connect(LOGIN_URL);
+		conn.timeout(180000);
+		conn.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0");
+		Connection.Response resp = conn.execute();
+		Document doc = resp.parse();
+		Elements elist = doc.getElementsByAttributeValue("name",AUTHENTICITY_TOKEN);
+		String token = elist.last().attr("value");
+		Map<String, String> cookies = resp.cookies();
 		
-		conn = addCookies(conn);
-		Document doc = conn.get();
-		doc = recode(doc, url);
+		conn = Jsoup.connect(USER_SESSIONS);
+		conn.method(Connection.Method.POST);
+		conn.cookies(cookies);
+		conn.data(PEN_NAME_KEY, PEN_NAME);
+		conn.data(PASSWORD_KEY, PASSWORD);
+		conn.data(REMEMBER_ME_KEY, "1");
+	//	conn.data("utf8", "&#x2713;");
+		conn.data(AUTHENTICITY_TOKEN, token);
+		conn.data("commit", "Log in");
+
+		Connection.Response resp2 = null;
+		try {
+			resp2 = conn.execute();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
-		return doc;
+		
+		Document doc2 = resp2.parse();
+		Map<String, String> cookies2 = resp2.cookies();
+		Set<String> keys = cookies2.keySet();
+		
+		int i = 0;
+		for(String key : keys){
+			AO3_COOKIES[i] = new Cookie(key, cookies2.get(key));
+			i++;
+		}
+		
+		logger.exiting(this.getClass().getCanonicalName(), "login()");
 	}
 
 }

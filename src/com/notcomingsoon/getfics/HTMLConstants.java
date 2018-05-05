@@ -82,5 +82,7 @@ public class HTMLConstants {
 
 	public static final String P_TAG = "p";
 
+	public static final CharSequence HTTPS = "https://";
+
 	
 }
