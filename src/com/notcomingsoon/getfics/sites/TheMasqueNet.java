@@ -66,7 +66,8 @@ public class TheMasqueNet extends Site {
 		super.cookies = MASQUE_COOKIES;
 	}
 
-	private void login() throws IOException {
+	@Override
+	void login() throws IOException {
 		logger.entering(this.getClass().getCanonicalName(), "login()");
 		conn = Jsoup.connect(LOGIN_URL);
 		conn.timeout(10000);
@@ -202,7 +203,8 @@ public class TheMasqueNet extends Site {
 		return doc;
 	}
 
-	private String ageConsent(Document doc) {
+	@Override
+	String ageConsent(Document doc) {
 		Elements div = doc.getElementsByClass(ERRORTEXT);
 		Elements as = div.get(0).getElementsByTag(HTMLConstants.A_TAG);
 		Element a = as.first();
@@ -213,7 +215,8 @@ public class TheMasqueNet extends Site {
 		return url;
 	}
 
-	private boolean ageConsentRequired(Document doc) {
+	@Override
+	boolean ageConsentRequired(Document doc) {
 		boolean isRequired = false;
 		
 		Elements div = doc.getElementsByClass(ERRORTEXT);

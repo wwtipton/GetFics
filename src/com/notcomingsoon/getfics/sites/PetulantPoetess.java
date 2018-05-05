@@ -3,6 +3,7 @@
  */
 package com.notcomingsoon.getfics.sites;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -11,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 
 import com.notcomingsoon.getfics.Chapter;
@@ -22,6 +24,8 @@ import com.notcomingsoon.getfics.HTMLConstants;
  */
 public class PetulantPoetess extends Site {
 
+	private static final int SUMMARY_TEXT_NODE = 1;
+	private static final int USER_LINK = 0;
 	private static final Charset TPP_CHARSET = HTMLConstants.WIN_1252;
 	private static final String VIEWUSER = "viewuser";
 	private static final String VIEWSTORY = "viewstory";
@@ -31,6 +35,7 @@ public class PetulantPoetess extends Site {
 	private static final String SID = "sid";
 	private static final int CHAPTER_BODY = 5;
 	private Node emptyNode = new TextNode("",startUrl);
+	private static String NEXT_LINK = "[Next]";
 	
 	private static final Cookie[] TPP_COOKIES = new Cookie[]
           {
@@ -41,6 +46,7 @@ public class PetulantPoetess extends Site {
 			new Cookie("userskin", "GraphicLite"), 
 			new Cookie("useruid", "22383")
 		 };
+	private static final int SUMMARY_ROW = 2;
 
 	/**
 	 * @param ficUrl
@@ -143,7 +149,65 @@ public class PetulantPoetess extends Site {
 		return story;
 	}
 
+	@Override
+	protected Chapter extractSummary(Document story, Document chapter) {
+		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		
+		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
+		Element body = addChapterHeader(story, title);
+		
+		Elements elements = chapter.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWUSER);
+		Element userElement = elements.get(USER_LINK);
+		String userRef = userElement.attr(HTMLConstants.HREF_ATTR);
+		int sepIdx = startUrl.lastIndexOf(HTMLConstants.SEPARATOR);
+		String storyRef = startUrl.substring(sepIdx + 1);
+		int ampIdx = storyRef.indexOf("&");
+		if (ampIdx > 0){
+			storyRef = storyRef.substring(0, ampIdx);
+		}
+		String baseUrl = startUrl.substring(0, sepIdx + 1);
+		
+		String summary = searchAuthor(story.tag(), baseUrl, userRef, storyRef);
+		
+		body.appendText(summary);
+		
+		addChapterFooter(body);
+		
+		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		return title;
+	}
 
+	private String searchAuthor(Tag storyTag, String baseUrl, String userRef, String storyRef) {
+		Element summary = new Element(storyTag, "");
+		String summaryText = null;
+		String authorUrl = baseUrl + userRef;
+		while (summaryText == null && authorUrl != null){
+			try {
+				Document authorWorks = getPage(authorUrl);
+				Elements aList = authorWorks.getElementsContainingText(NEXT_LINK);
+				Element a = aList.last();
+				if (a != null){
+					authorUrl = baseUrl + a.attr(HTMLConstants.HREF_ATTR);
+				} else {
+					authorUrl = null;
+				}
+				aList = authorWorks.getElementsByAttributeValue(HTMLConstants.HREF_ATTR, storyRef);
+				if (!aList.isEmpty()){
+					Element table  = aList.first().parent().parent().parent().parent();
+					Elements trList = table.getElementsByTag(HTMLConstants.TR_TAG);
+					Element tr = trList.get(SUMMARY_ROW);
+					Elements eList = tr.getElementsContainingText(SUMMARY_STRING);
+					Element e = eList.get(SUMMARY_TEXT_NODE);
+					int childCnt = e.childNodeSize();
+					summaryText = e.childNode(childCnt - 1).toString();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return summaryText;
+	}
 
 	/* (non-Javadoc)
 	 * @see com.notcomingsoon.getfics.sites.Site#isOneShot(org.jsoup.nodes.Document)
