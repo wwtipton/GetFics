@@ -24,7 +24,6 @@ public class FanFictionNet extends Site {
 	private static final Charset FFN_CHARSET = HTMLConstants.UTF_8;
 	private static final int AUTHOR_ANCHOR = 0;
 	private static final int CHAPTER_SELECT = 1;
-	private static final String URL_DIVIDER = "/";
 	private static final String STORYTEXT = "storytext";
 	private static final int CHAPTER_BODY = 0;
 	private static final int SUMMARY = 6;
@@ -54,10 +53,10 @@ public class FanFictionNet extends Site {
 			
 			String urlSuffix = null;
 			String urlPrefix = null;
-			int slashIndex = startUrl.lastIndexOf(URL_DIVIDER);
+			int slashIndex = startUrl.lastIndexOf(HTMLConstants.URL_DIVIDER);
 			urlSuffix = startUrl.substring(slashIndex);
 	
-			slashIndex = startUrl.lastIndexOf(URL_DIVIDER, slashIndex-1);
+			slashIndex = startUrl.lastIndexOf(HTMLConstants.URL_DIVIDER, slashIndex-1);
 			urlPrefix = startUrl.substring(0, slashIndex+1);
 			logger.info("urlPrefix = " + urlPrefix); 
 			logger.info("urlSuffix = " + urlSuffix); 
@@ -99,10 +98,6 @@ public class FanFictionNet extends Site {
 	protected String getAuthor(Document doc) {
 		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
 		
-//		Elements tables = doc.getElementsByTag(HTMLConstants.TABLE_TAG);
-//		Element table = tables.get(AUTHOR_TABLE);
-//		Elements tds = table.getElementsByTag(HTMLConstants.TD_TAG);
-//      Element td = tds.get(AUTHOR_CELL);
 		Element div = doc.getElementById("profile_top");
 		Elements as = div.getElementsByTag(HTMLConstants.A_TAG);
 		

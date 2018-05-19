@@ -84,5 +84,11 @@ public class HTMLConstants {
 
 	public static final CharSequence HTTPS = "https://";
 
+	public static final String URL_DIVIDER = "/";
+
+	public static final String FRAME_TAG = "frame";
+
+	public static final String FONT_TAG = "font";
+
 	
 }

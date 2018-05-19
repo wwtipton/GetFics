@@ -396,14 +396,15 @@ public abstract class Site {
 				site.siteName = FICTION_HUNT;
 				break;
 			}		
+<<<<<<< HEAD
 			if (s.equals(FICTION_ALLEY) && FictionAlley.isFictionAlley(url)){
 				site = new FictionAlley(url);
 				site.siteName = FICTION_ALLEY;
-				break;
-			}
+=======
 			if (s.equals(WITCH_FICS) && WitchFics.isWitchFics(url)){
 				site = new WitchFics(url);
 				site.siteName = WITCH_FICS;
+>>>>>>> master
 				break;
 			}		
 		}
