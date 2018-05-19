@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +52,8 @@ public abstract class Site {
 
 	static final String MEDIA_MINER = "mediaminer.org";
 
+	static final String FICTION_ALLEY = "fictionalley.org";
+
 	static final String PIC = "image";
 
 	private static final String JPEG = "jpg";
@@ -74,6 +75,7 @@ public abstract class Site {
 		sites.add(GRANGER_ENCHANTED);
 		sites.add(MEDIA_MINER);
 		sites.add(FICTION_HUNT);
+		sites.add(FICTION_ALLEY);
 		Collections.sort(sites, new SiteNameComparator());
 	}
 
@@ -380,6 +382,11 @@ public abstract class Site {
 			if (s.equals(FICTION_HUNT) && FictionHunt.isFictionHunt(url)){
 				site = new FictionHunt(url);
 				site.siteName = FICTION_HUNT;
+				break;
+			}		
+			if (s.equals(FICTION_ALLEY) && FictionAlley.isFictionAlley(url)){
+				site = new FictionAlley(url);
+				site.siteName = FICTION_ALLEY;
 				break;
 			}		
 		}

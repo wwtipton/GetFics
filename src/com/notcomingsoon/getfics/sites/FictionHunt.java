@@ -179,4 +179,5 @@ public class FictionHunt extends Site {
 		return retVal;
 	}
 
+
 }
