@@ -52,6 +52,8 @@ public abstract class Site {
 
 	static final String MEDIA_MINER = "mediaminer.org";
 
+	static final String FICTION_ALLEY = "fictionalley.org";
+
 	static final String WITCH_FICS = "witchfics.org";
 
 	static final String PIC = "image";
@@ -75,6 +77,7 @@ public abstract class Site {
 		sites.add(GRANGER_ENCHANTED);
 		sites.add(MEDIA_MINER);
 		sites.add(FICTION_HUNT);
+		sites.add(FICTION_ALLEY);
 		sites.add(WITCH_FICS);
 		Collections.sort(sites, new SiteNameComparator());
 	}
@@ -393,6 +396,11 @@ public abstract class Site {
 				site.siteName = FICTION_HUNT;
 				break;
 			}		
+			if (s.equals(FICTION_ALLEY) && FictionAlley.isFictionAlley(url)){
+				site = new FictionAlley(url);
+				site.siteName = FICTION_ALLEY;
+				break;
+			}
 			if (s.equals(WITCH_FICS) && WitchFics.isWitchFics(url)){
 				site = new WitchFics(url);
 				site.siteName = WITCH_FICS;

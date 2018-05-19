@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
-import java.util.Map;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;

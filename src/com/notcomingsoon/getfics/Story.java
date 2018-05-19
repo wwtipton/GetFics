@@ -1,15 +1,10 @@
 package com.notcomingsoon.getfics;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.logging.Logger;
 
-import org.jsoup.nodes.Document;
 
-/**
- * 
- */
 
 /**
  * @author Winifred Tipton

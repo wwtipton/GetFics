@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -78,7 +76,6 @@ public class WitchFics extends Site {
 		
 		if (options != null){
 			
-			String urlSuffix = null;
 			String urlPrefix = null;
 			int slashIndex = startUrl.lastIndexOf(HTMLConstants.URL_DIVIDER);
 			urlPrefix = startUrl.substring(0, slashIndex+1);
