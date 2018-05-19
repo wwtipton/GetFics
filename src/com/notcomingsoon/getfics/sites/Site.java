@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +52,8 @@ public abstract class Site {
 
 	static final String MEDIA_MINER = "mediaminer.org";
 
+	static final String WITCH_FICS = "witchfics.org";
+
 	static final String PIC = "image";
 
 	private static final String JPEG = "jpg";
@@ -74,6 +75,7 @@ public abstract class Site {
 		sites.add(GRANGER_ENCHANTED);
 		sites.add(MEDIA_MINER);
 		sites.add(FICTION_HUNT);
+		sites.add(WITCH_FICS);
 		Collections.sort(sites, new SiteNameComparator());
 	}
 
@@ -81,7 +83,7 @@ public abstract class Site {
 
 	protected Logger logger = GFLogger.getLogger();
 	
-	protected Charset siteCharset;
+	protected Charset siteCharset = HTMLConstants.UTF_8;
 	
 	protected Cookie[] cookies;
 
@@ -138,9 +140,12 @@ public abstract class Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#getPage(java.lang.String)
 	 */
 	Document getPage(String url) throws IOException {
-		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
+		logger.entering(this.getClass().getCanonicalName(), "getPage(" + url + ")");
+		
+		logger.info(this.getClass().getCanonicalName() + "\tgetPage(" + url + ")");	
+
 		Connection conn = Jsoup.connect(url);
-		conn.timeout(60000);
+		conn.timeout(120000);
 		
 		conn = addCookies(conn);
 		conn.method(Connection.Method.GET);
@@ -189,17 +194,23 @@ public abstract class Site {
 			extractChapter(story, doc, title);
 		} else {
 			ArrayList<Chapter> chapterList = getChapterList(doc);
+			boolean firstChapter = true;
 			
 			Iterator<Chapter> cIter = chapterList.iterator();
-			Chapter summary = null;
+			Chapter summary = extractSummary(story, doc);
 			while (cIter.hasNext()){
 				Chapter c = cIter.next();
 				Document nextDoc;
 				if (c.getUrl().contains(startUrl)){
 					nextDoc = doc;
-					summary = extractSummary(story, nextDoc);
+					firstChapter = false;
 				} else {
-					nextDoc = getPage(c.getUrl());
+					if (firstChapter){
+						nextDoc = getPage(c.getUrl());
+						firstChapter = false;
+					} else {
+						nextDoc = getPage(c.getUrl());
+					}
 				}
 				extractChapter(story, nextDoc, c);
 			}
@@ -380,6 +391,11 @@ public abstract class Site {
 			if (s.equals(FICTION_HUNT) && FictionHunt.isFictionHunt(url)){
 				site = new FictionHunt(url);
 				site.siteName = FICTION_HUNT;
+				break;
+			}		
+			if (s.equals(WITCH_FICS) && WitchFics.isWitchFics(url)){
+				site = new WitchFics(url);
+				site.siteName = WITCH_FICS;
 				break;
 			}		
 		}
