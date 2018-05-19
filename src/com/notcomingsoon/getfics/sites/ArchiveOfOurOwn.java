@@ -66,11 +66,6 @@ public class ArchiveOfOurOwn extends Site {
 	public ArchiveOfOurOwn(String ficUrl) throws IOException {
 		super(ficUrl);
 		logger.entering(this.getClass().getCanonicalName(), "ArchiveOfOurOwn(String ficUrl)");
-	//	logger.finer("startUrl = " + startUrl);
-	//	if (!startUrl.contains(ADULT)){
-	//		startUrl = startUrl + ADULT;
-	//	}
-		logger.finer("startUrl = " + startUrl);
 		siteCharset = AO3_CHARSET;
 		login();
 		super.cookies = AO3_COOKIES;
