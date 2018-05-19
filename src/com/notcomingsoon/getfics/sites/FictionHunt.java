@@ -20,14 +20,11 @@ import com.notcomingsoon.getfics.HTMLConstants;
  */
 public class FictionHunt extends Site {
 	
-	private static final String A2A_KIT_A2A_DEFAULT_STYLE = "a2a_kit a2a_default_style";
 	private static final Charset FFN_CHARSET = HTMLConstants.UTF_8;
 	private static final int AUTHOR_ANCHOR = 0;
 	private static final int CHAPTER_SELECT = 1;
 	private static final String URL_DIVIDER = "/";
-	private static final String STORYTEXT = "storytext";
 	private static final int CHAPTER_BODY = 0;
-	private static final int SUMMARY = 6;
 	
 
 	/**
