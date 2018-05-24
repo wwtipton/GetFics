@@ -8,6 +8,7 @@ import java.util.ListIterator;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
@@ -20,12 +21,17 @@ import com.notcomingsoon.getfics.HTMLConstants;
  */
 public class FictionAlley extends Site {
 	
+	private static final int FOOTER_STARTS = 4;
 	private static final String GETINFO = "getinfo";
 	private static final String CHAPTERLINK = "chapterlink";
 	private static final String TITLE_CLASS = "title";
 	private static final String TITLE_TEXT = "Title:";
 	private static final String SUMMARY_TEXT = "Summary:";
 	private static final String BY = " by ";
+
+	private static final Cookie[] FICTION_ALLEY_COOKIES = new Cookie[]{new Cookie("fauser", "wizard")};
+
+	private static final String BODY_TOP = "~~~~~~~~~~~~~";
 
 	Boolean IS_ONE_SHOT = null;
 
@@ -34,6 +40,8 @@ public class FictionAlley extends Site {
 	 */
 	public FictionAlley(String ficUrl) {
 		super(ficUrl);
+		super.cookies = FICTION_ALLEY_COOKIES;
+
 	}
 
 	/* (non-Javadoc)
@@ -119,11 +127,12 @@ public class FictionAlley extends Site {
 		
 		Element body = addChapterHeader(story, title);
 	
-		Elements chDivs = chapter.getElementsByAttributeValue("align", "left");
-		for (Element div : chDivs){
-			if (div.tagName().equalsIgnoreCase(HTMLConstants.DIV_TAG)){
-				body.appendChild(div);
-			}
+		Elements pBreaks = chapter.getElementsContainingOwnText(BODY_TOP);
+		Element pBreak = pBreaks.first();
+		Elements siblings = pBreak.siblingElements();
+		for (int i = pBreak.elementSiblingIndex(); i < siblings.size() - FOOTER_STARTS; i++){
+			Element s = siblings.get(i);
+			body.appendChild(s);
 		}
 		
 		addChapterFooter(body);
