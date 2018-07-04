@@ -56,3 +56,4 @@ ncss20161226_0741.txt
 *.html
 reports/pmd-report.txt
 src/com/notcomingsoon/getfics/sites/Site.java
+*.txt
