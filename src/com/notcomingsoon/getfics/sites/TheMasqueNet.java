@@ -153,7 +153,7 @@ public class TheMasqueNet extends Site {
 		
 		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.ID_ATTR, STORY);
 		Element div = divs.first();
-		div.removeAttr(HTMLConstants.ID_ATTR);
+		//div.removeAttr(HTMLConstants.ID_ATTR);
 		
 		body.appendChild(div);
 		
@@ -186,17 +186,14 @@ public class TheMasqueNet extends Site {
 	@Override
 	Document getPage(String url) throws IOException {
 		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
-		conn = Jsoup.connect(url);
-		
-		conn = addCookies(conn);
-		Document doc = conn.get();
+
+		String localUrl = url;
+		Document doc = super.getPage(localUrl);
 		if (ageConsentRequired(doc)){
-			String newUrl = url + ageConsent(doc);
-			conn = Jsoup.connect(newUrl);
-			conn = addCookies(conn);
-			doc = conn.get();
+			localUrl = localUrl + ageConsent(doc);
+			doc = super.getPage(localUrl);
 		}
-		doc = recode(doc, url);
+		doc = recode(doc, localUrl);
 		
 		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
 		return doc;

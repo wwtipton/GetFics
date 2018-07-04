@@ -19,6 +19,12 @@ import org.jsoup.parser.Tag;
  *
  */
 public class Chapter {
+	@Override
+	public String toString() {
+		return origTitle;
+	}
+
+
 	String url;
 	String fileTitle;
 	String origTitle;

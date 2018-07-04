@@ -204,7 +204,7 @@ public abstract class Site {
 			while (cIter.hasNext()){
 				Chapter c = cIter.next();
 				Document nextDoc;
-				if (c.getUrl().contains(startUrl)){
+				if (firstChapter && c.getUrl().contains(startUrl)){
 					nextDoc = doc;
 					firstChapter = false;
 				} else {
