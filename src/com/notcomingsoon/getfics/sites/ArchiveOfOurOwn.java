@@ -174,16 +174,19 @@ public class ArchiveOfOurOwn extends Site {
 	protected Chapter extractSummary(Document story, Document chapter) {
 		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
 		
-		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
-		Element body = addChapterHeader(story, title);
+		Chapter title = null;
 		
 		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, SUMMARY_MODULE);
 		Element div = divs.first();
-		Element p = div.getElementsByTag(HTMLConstants.P_TAG).first();
-		
-		body.appendChild(p);
-		
-		addChapterFooter(body);
+		if (div != null){
+			Element p = div.getElementsByTag(HTMLConstants.P_TAG).first();
+			if (p != null){
+				title = new Chapter(this.startUrl, SUMMARY_STRING);
+				Element body = addChapterHeader(story, title);
+				body.appendChild(p);
+				addChapterFooter(body);	
+			}
+		}
 		
 		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
 		return title;
