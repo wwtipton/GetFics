@@ -25,9 +25,10 @@ public class ArchiveOfOurOwn extends Site {
 
 	private static final Charset AO3_CHARSET = HTMLConstants.UTF_8;
 	
-	private  Cookie[] AO3_COOKIES =  new Cookie[3];
+	private  Cookie[] AO3_COOKIES =  new Cookie[4];
 	//private static final String USERS = "/users";
-	private static final String AUTHOR = "author";
+//	private static final String AUTHOR = "author";
+	private static final String AUTHOR = "byline heading";
 	
 	private static final int CHAPTER_SELECT = 0;
 
@@ -51,15 +52,17 @@ public class ArchiveOfOurOwn extends Site {
 
 	private static final String LOGIN_PROMPT = "user_session_login";
 	
-	private static final String PEN_NAME_KEY = "user_session[login]";
+	private static final String PEN_NAME_KEY = "user[login]";
 	
 	private static final String PEN_NAME = "Ouatic7";
 	
-	private static final String PASSWORD_KEY = "user_session[password]";
+	private static final String PASSWORD_KEY = "user[password]";
 	
 	private static final String PASSWORD = "d6eath";
 
-	private static final String LOGIN_URL = "https://archiveofourown.org/user_sessions/new";
+	private static final String LOGIN_URL = "https://archiveofourown.org/users/login";
+	
+
 	
 	Connection conn;
 
@@ -118,7 +121,7 @@ public class ArchiveOfOurOwn extends Site {
 	protected String getAuthor(Document doc) {
 		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
 		
-		Elements as = doc.getElementsByAttributeValue("rel", AUTHOR);
+		Elements as = doc.getElementsByClass(AUTHOR);
 		
 		String author = as.get(0).text();
 		logger.info("author = " + author);
@@ -224,7 +227,8 @@ public class ArchiveOfOurOwn extends Site {
 		String token = elist.last().attr("value");
 		Map<String, String> cookies = resp.cookies();
 		
-		conn = Jsoup.connect(USER_SESSIONS);
+		//conn = Jsoup.connect(USER_SESSIONS);
+	//	conn = Jsoup.connect(LOGIN_URL);
 		conn.method(Connection.Method.POST);
 		conn.cookies(cookies);
 		conn.data(PEN_NAME_KEY, PEN_NAME);
@@ -245,6 +249,7 @@ public class ArchiveOfOurOwn extends Site {
 		Document doc2 = resp2.parse();
 		Map<String, String> cookies2 = resp2.cookies();
 		Set<String> keys = cookies2.keySet();
+		AO3_COOKIES = new Cookie[keys.size()];
 		
 		int i = 0;
 		for(String key : keys){

@@ -34,7 +34,7 @@ public class TheMasqueNet extends Site {
 	
 	private static final String PEN_NAME_KEY = "penname";
 	
-	private static final String PEN_NAME = "Ouatic-7";
+	private static final String PEN_NAME = "wwtipton";
 	
 	private static final String PASSWORD_KEY = "password";
 	
