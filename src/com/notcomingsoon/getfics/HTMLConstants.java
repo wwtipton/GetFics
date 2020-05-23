@@ -89,6 +89,11 @@ public class HTMLConstants {
 	public static final String FRAME_TAG = "frame";
 
 	public static final String FONT_TAG = "font";
+	
+	public static final String AMPERSAND = "&";
+
+	public static final String TITLE_TAG = "title";
+
 
 	
 }

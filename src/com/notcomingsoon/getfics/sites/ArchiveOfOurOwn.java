@@ -260,4 +260,16 @@ public class ArchiveOfOurOwn extends Site {
 		logger.exiting(this.getClass().getCanonicalName(), "login()");
 	}
 
+	@Override
+	Document getPage(String url) throws IOException {
+		
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return super.getPage(url);
+	}
 }
