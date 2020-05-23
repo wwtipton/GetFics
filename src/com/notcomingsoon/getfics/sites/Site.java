@@ -55,6 +55,8 @@ public abstract class Site {
 	static final String FICTION_ALLEY = "fictionalley.org";
 
 	static final String WITCH_FICS = "witchfics.org";
+	
+	static final String HUNTING_HORCRUXES = "huntinghorcruxes";	
 
 	static final String PIC = "image";
 
@@ -79,6 +81,7 @@ public abstract class Site {
 		sites.add(FICTION_HUNT);
 		sites.add(FICTION_ALLEY);
 		sites.add(WITCH_FICS);
+		sites.add(HUNTING_HORCRUXES);
 		Collections.sort(sites, new SiteNameComparator());
 	}
 
@@ -275,6 +278,7 @@ public abstract class Site {
 	}
 
 
+	@SuppressWarnings("deprecation")
 	private Document initStory(File dir) {
 		logger.entering(this.getClass().getCanonicalName(), "initStory()");
 		
@@ -283,7 +287,7 @@ public abstract class Site {
 	
 		Element html = outDoc.appendElement(HTMLConstants.HTML_TAG);
 		Element head = html.appendElement(HTMLConstants.HEAD_TAG);
-		Comment title = new Comment(startUrl, dir.getName());
+		Comment title = new Comment(" " + startUrl + " ", dir.getName());
 		head.appendChild(title);
 		html.appendElement(HTMLConstants.BODY_TAG);
 		
@@ -404,6 +408,11 @@ public abstract class Site {
 			if (s.equals(WITCH_FICS) && WitchFics.isWitchFics(url)){
 				site = new WitchFics(url);
 				site.siteName = WITCH_FICS;
+				break;
+			}		
+			if (s.equals(HUNTING_HORCRUXES) && HuntingHorcruxes.isHuntingHorcruxes(url)){
+				site = new HuntingHorcruxes(url);
+				site.siteName = HUNTING_HORCRUXES;
 				break;
 			}		
 		}
