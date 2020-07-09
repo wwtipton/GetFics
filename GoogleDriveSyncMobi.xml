@@ -1,0 +1,37 @@
+<project name="Google Drive Syncer" basedir="." default="sync">
+
+<property file="getfics.properties"/>
+<property name="mobi.dir" value="${google.drive.directory}\\${mobi.directory}" />
+<property name="temp.dir" value="${output.directory}\\${mobi.directory}" />
+
+<target name="sync" depends="googleDir">
+	<echoproperties />
+	<sync todir="${target.dir}" verbose="true">
+		<fileset dir="${publish.directory}" />
+	</sync>
+	<mkdir dir="${temp.dir}" />
+	<copy todir="${temp.dir}" preservelastmodified="true" >
+		<fileset dir="${publish.directory}">
+		 	<include name="**/*.prc" />
+			<exclude name="**/${rejects}/**" />
+		</fileset>
+	</copy>
+	<move todir="${temp.dir}" preservelastmodified="true">
+		<fileset dir="${temp.dir}" />
+		<mapper type="glob"  from="*.prc" to="*.mobi" />
+	</move>
+	<sync todir="${mobi.dir}" verbose="true">
+		<fileset dir="${temp.dir}" />
+	</sync>
+	<delete dir="${temp.dir}" />
+</target>
+
+<target name="googleDir">
+	<basename property="kindle.dir" file="${output.directory}" />
+	<basename property="publish.dir" file="${publish.directory}" />
+	<property name="target.dir"
+		value="${google.drive.directory}\\${kindle.dir}\\${publish.dir}" />
+	<mkdir dir="${target.dir}" />
+</target>
+
+</project>
