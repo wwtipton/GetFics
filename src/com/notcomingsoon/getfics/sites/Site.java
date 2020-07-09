@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -235,7 +236,7 @@ public abstract class Site {
 
 	private void getImages(Document story, Story loc) throws IOException {
 		logger.entering(this.getClass().getCanonicalName(), "getImages(Document story, Story loc)");
-		// TODO Auto-generated method stub
+	
 		Elements images = story.getElementsByTag(HTMLConstants.IMG_TAG);
 		 
 		logger.info("images.size = " + images.size());
@@ -247,7 +248,7 @@ public abstract class Site {
 			}
 			int lastPeriod = src.lastIndexOf(PERIOD);
 			String type = src.substring(lastPeriod+1);
-			Iterator ri = ImageIO.getImageReadersBySuffix(type);
+			Iterator<ImageReader> ri = ImageIO.getImageReadersBySuffix(type);
 			if (!ri.hasNext()){
 				type = JPEG;
 			}
@@ -258,7 +259,6 @@ public abstract class Site {
 				if (null == pic) {
 					image.remove();
 				} else {
-					// String filename = source.getFile();
 					try {
 						File outputFile = new File(loc.getOutputDir(), PIC + i
 								+ PERIOD + type);
@@ -270,7 +270,13 @@ public abstract class Site {
 					}
 				}
 			} catch (Exception e) {
-				image.remove();
+				String name = image.attr(HTMLConstants.SRC_ATTR);
+				int idx = name.lastIndexOf(SLASH) + 1;
+				name = name.substring(idx);
+				image.attr(HTMLConstants.SRC_ATTR, name);
+				logger.warning(loc.toString() + " had at least one picture failure.");
+				logger.warning("Target location: " + loc.getOutputDir());
+				logger.log(Level.WARNING, "Failure: " + src, e );
 			}
 		}
 		

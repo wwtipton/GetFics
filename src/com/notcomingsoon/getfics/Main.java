@@ -82,12 +82,14 @@ public class Main {
 			while (ficIter.hasNext())
 			{
 				String ficURL = (String) ficIter.next();
+				logger.warning("Starting: " + ficURL);
 				Story story = Site.getStory(ficURL);
 				
 				if (story != null && mobigenPath != null){
 					ProjectFile projectFile = new ProjectFile(story);
 					buildMobi(projectFile, story);
 				}
+				logger.warning("Done: " + ficURL);
 			}
 		} catch (Exception e){				
 			System.out.print(e);
