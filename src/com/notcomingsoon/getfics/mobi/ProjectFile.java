@@ -163,7 +163,7 @@ public class ProjectFile {
 			Element ref = project.createElement(REFERENCE_TAG);
 			ref.setAttribute(TYPE_ATTR, TYPE_ATTR_VALUE);
 			ref.setAttribute(REF_TITLE_ATTR, REF_TITLE_ATTR_VALUE);
-			ref.setAttribute(HREF_ATTR, encodeFilename(Chapter.CONTENTS));
+			ref.setAttribute(HREF_ATTR, encodeFilename(story.getContentsFileName()));
 			
 			guide.appendChild(ref);
 		}
@@ -191,7 +191,7 @@ public class ProjectFile {
 			item.setAttribute(ID_ATTR, itemID);
 			itemref.setAttribute(IDREF_ATTR, itemID);
 			item.setAttribute(MEDIA_TYPE_ATTR, MEDIA_TYPE_ATTR_VALUE);
-			String contents = encodeFilename(Chapter.CONTENTS);
+			String contents = encodeFilename(story.getContentsFileName());
 			item.setAttribute(HREF_ATTR, contents);
 			item.setAttribute("properties", "nav");
 			

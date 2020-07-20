@@ -31,8 +31,6 @@ public class Chapter {
 	
 	private static Logger logger = GFLogger.getLogger();
 	
-	public static final String CONTENTS = "contents" + HTMLConstants.HTML_EXTENSION;	
-	
 	public static final String CHAPTER = "Chapter";
 	public static final String TOC = "Table of Contents";
 	private static final int ONE_SHOT = 1;
@@ -83,7 +81,7 @@ public class Chapter {
 		
 		if (chapterList.size() > ONE_SHOT){
 			File dir = story.getOutputDir();
-			File f = new File(dir, CONTENTS);
+			File f = new File(dir, story.getContentsFileName());
 	
 			logger.info("f: " + f.toString());	
 			

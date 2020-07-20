@@ -2,6 +2,8 @@ package com.notcomingsoon.getfics;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.logging.Logger;
 
 
@@ -20,6 +22,9 @@ public class Story {
 	
 	String origTitle;
 	
+	/* Only populate if previous version of story exists. */
+	Calendar now;
+	
 	File outputDir;
 	
 	private static final String OUTPUT_DIRECTORY = GFProperties.getPropertyValue(GFProperties.OUTPUT_DIRECTORY_KEY);
@@ -29,6 +34,10 @@ public class Story {
 	private boolean isOneShot = false;
 
 	private Charset charset;
+
+	private static final String CONTENTS = "contents";
+	
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("_yyyyMMddHHmmss");
 	
 
 	public String getFileAuthor() {
@@ -96,6 +105,11 @@ public class Story {
 
 		File dir = GFFileUtils.createDirectory(this.getFileAuthor(), this.getFileTitle(), OUTPUT_DIRECTORY);
 		setOutputDir(dir);
+		File f = new File(dir, toString() + HTMLConstants.HTML_EXTENSION);
+		if (f.exists()) {
+			setNow(Calendar.getInstance());
+		}
+
 		
 		logger.exiting("com.notcomingsoon.getfics.Story", "Story(String author, String title)");
 	}
@@ -103,7 +117,7 @@ public class Story {
 	@Override
 	public String toString()
 	{
-		return fileAuthor + "-" + fileTitle;
+		return fileAuthor + "-" + fileTitle + getTimestamp();
 	}
 
 
@@ -124,5 +138,25 @@ public class Story {
 		return charset;
 	}
 
+	public Calendar getNow() {
+		return now;
+	}
 	
+	/** May be empty string. */
+	public String getTimestamp() {
+		String ts = "";
+		if (null != now) {
+			ts = sdf.format(now.getTime());
+		}
+		return ts;
+	}
+
+	/** Only populate if previous version of story exists. */
+	private void setNow(Calendar now) {
+		this.now = now;
+	}
+
+	public String getContentsFileName() {
+		return CONTENTS + getTimestamp() + HTMLConstants.HTML_EXTENSION;
+	}
 }
