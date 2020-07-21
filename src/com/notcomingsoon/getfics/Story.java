@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.logging.Logger;
 
@@ -38,6 +39,8 @@ public class Story {
 	private static final String CONTENTS = "contents";
 	
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("_yyyyMMddHHmmss");
+	
+	private ArrayList<String> imageFailures = new ArrayList<String>();
 	
 
 	public String getFileAuthor() {
@@ -158,5 +161,14 @@ public class Story {
 
 	public String getContentsFileName() {
 		return CONTENTS + getTimestamp() + HTMLConstants.HTML_EXTENSION;
+	}
+	
+	public void addImageFailure(String failure) {
+		imageFailures.add(failure);
+	}
+
+	public ArrayList<String> getImageFailures() {
+		// TODO Auto-generated method stub
+		return imageFailures;
 	}
 }
