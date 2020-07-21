@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -78,12 +79,17 @@ public class Main {
 		
 		Iterator ficIter = ficList.iterator();
 		
+		HashMap<String, ArrayList<String>> imageFailures = new HashMap<String, ArrayList<String>>();
 		try {
 			while (ficIter.hasNext())
 			{
 				String ficURL = (String) ficIter.next();
 				logger.warning("Starting: " + ficURL);
 				Story story = Site.getStory(ficURL);
+
+				if (null != story) {
+					imageFailures.put(story.toString(), story.getImageFailures());
+				}
 				
 				if (story != null && mobigenPath != null){
 					ProjectFile projectFile = new ProjectFile(story);
@@ -95,7 +101,16 @@ public class Main {
 			System.out.print(e);
 			e.printStackTrace(System.out);
 		}			
-			
+
+		for (String k : imageFailures.keySet()) {
+			ArrayList<String> failures = imageFailures.get(k);
+			for (int i = 0; i < failures.size(); i++) {
+				if (i == 0) {
+					logger.warning(k + " had at least one picture failure.");
+				}
+				logger.warning(failures.get(i));
+			}
+		}
 		logger.exiting(this.getClass().getCanonicalName(), "getFics()");
 	}
 

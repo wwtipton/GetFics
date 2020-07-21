@@ -270,13 +270,11 @@ public abstract class Site {
 					}
 				}
 			} catch (Exception e) {
-				String name = image.attr(HTMLConstants.SRC_ATTR);
-				int idx = name.lastIndexOf(SLASH) + 1;
-				name = name.substring(idx);
+				String pathname = image.attr(HTMLConstants.SRC_ATTR);
+				int idx = pathname.lastIndexOf(SLASH) + 1;
+				String name = pathname.substring(idx);
 				image.attr(HTMLConstants.SRC_ATTR, name);
-				logger.warning(loc.toString() + " had at least one picture failure.");
-				logger.warning("Target location: " + loc.getOutputDir());
-				logger.log(Level.WARNING, "Failure: " + src, e );
+				loc.addImageFailure(pathname + "\t" + e);
 			}
 		}
 		
