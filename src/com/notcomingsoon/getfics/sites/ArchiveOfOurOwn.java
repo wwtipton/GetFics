@@ -61,6 +61,10 @@ public class ArchiveOfOurOwn extends Site {
 	private static final String PASSWORD = "d6eath";
 
 	private static final String LOGIN_URL = "https://archiveofourown.org/users/login";
+
+	private static final String NOTES_MODULE = "notes module";
+
+	private static final String END_NOTES_MODULE = "end notes module";
 	
 
 	
@@ -147,6 +151,8 @@ public class ArchiveOfOurOwn extends Site {
 		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
 		
 		Element body = addChapterHeader(story, title);
+		
+		extractNotes(story, chapter, body);
 
 		Element chapterText = null;
 		if (isOneShot(chapter)){
@@ -166,7 +172,9 @@ public class ArchiveOfOurOwn extends Site {
 		}
 		
 		body.appendChild(chapterText);
-		
+
+		extractAfterNotes(story, chapter, body);
+
 		addChapterFooter(body);
 		
 		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
@@ -182,7 +190,7 @@ public class ArchiveOfOurOwn extends Site {
 		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, SUMMARY_MODULE);
 		Element div = divs.first();
 		if (div != null){
-			Element p = div.getElementsByTag(HTMLConstants.P_TAG).first();
+			Element p = div.getElementsByTag(HTMLConstants.BLOCKQUOTE_TAG).first();
 			if (p != null){
 				title = new Chapter(this.startUrl, SUMMARY_STRING);
 				Element body = addChapterHeader(story, title);
@@ -272,4 +280,46 @@ public class ArchiveOfOurOwn extends Site {
 		
 		return super.getPage(url);
 	}
+
+	/**
+	 * 
+	 * @param story
+	 * @param chapter
+	 * @param body modified by method
+	 */
+	void extractAfterNotes(Document story, Document chapter, Element body) {
+		logger.entering(this.getClass().getCanonicalName(), "extractAfterNotes");
+
+		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, END_NOTES_MODULE);
+		if (!divs.isEmpty()) {
+			addNotesFooter(body);
+			Element chapterText = divs.first();
+			body.appendChild(chapterText);
+		}
+			
+		logger.exiting(this.getClass().getCanonicalName(), "extractAfterNotes");
+	}
+
+	/**
+	 * 
+	 * @param story
+	 * @param chapter
+	 * @param body modified by method
+	 */
+	void extractNotes(Document story, Document chapter, Element body) {
+		logger.entering(this.getClass().getCanonicalName(), "extractNotes");
+
+		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, NOTES_MODULE);
+		if (!divs.isEmpty()) {
+			Element chapterText = divs.first();
+			body.appendChild(chapterText);
+			addNotesFooter(body);
+		}
+		
+		logger.exiting(this.getClass().getCanonicalName(), "extractNotes");
+	}
+
+
+	
+
 }

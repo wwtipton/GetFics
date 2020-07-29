@@ -257,7 +257,7 @@ public abstract class Site {
 				URL source = new URL(src);
 				BufferedImage pic = ImageIO.read(source);
 				if (null == pic) {
-					image.remove();
+					throw new Exception("Picture diddn't download!!!");
 				} else {
 					try {
 						File outputFile = new File(loc.getOutputDir(), PIC + i
@@ -322,11 +322,23 @@ public abstract class Site {
 
 
 	/**
-	 * @param body
+	 * @param body modified by method
 	 */
 	protected void addChapterFooter(Element body) {
 		body.appendElement(HTMLConstants.HR_TAG);
 		body.appendElement(HTMLConstants.HR_TAG);
+	}
+
+
+	/**
+	 * @param body modified by method
+	 */
+	protected void addNotesFooter(Element body) {
+		Element p = new Element(HTMLConstants.P_TAG);
+		p.attr("style", "text-align:center");
+		p.appendText("~^~^~^~");
+		
+		body.appendChild(p);
 	}
 
 
