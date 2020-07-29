@@ -94,6 +94,10 @@ public class HTMLConstants {
 
 	public static final String TITLE_TAG = "title";
 
+	public static final String BLOCKQUOTE_TAG = "blockquote";
+
+	public static final String CENTER_TAG = "center";
+
 
 	
 }
