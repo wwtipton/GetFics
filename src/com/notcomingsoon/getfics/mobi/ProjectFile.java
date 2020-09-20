@@ -295,7 +295,9 @@ public class ProjectFile {
 		dcMetadata.setAttribute(XMLNS_DC_ATTR, XMLNS_DC_ATTR_VALUE);
 		dcMetadata.setAttribute(XMLNS_OEBPACKAGE_ATTR, XMLNS_OEBPACKAGE_ATTR_VALUE);
 		Element dcTitle = project.createElement(DC_TITLE_TAG);
-		dcTitle.setTextContent(story.getOrigTitle());
+		// 20200920 Added timestamp to more easily differentiate between version of story 
+		// when looking at story list on Kindle.
+		dcTitle.setTextContent(story.getOrigTitle() + story.getTimestamp()); 
 		Element dcLang = project.createElement(DC_LANGUAGE_TAG);
 		dcLang.setTextContent(DC_LANGUAGE_TAG_VALUE);
 		Element dcCreator = project.createElement(DC_CREATOR_TAG);
