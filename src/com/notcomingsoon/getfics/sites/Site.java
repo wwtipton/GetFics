@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -15,8 +14,6 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -30,6 +27,11 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpEntity;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
@@ -47,8 +49,6 @@ import com.notcomingsoon.getfics.Story;
 public abstract class Site {
 
 	static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
-
-//	static  SSLSocketFactoryImpl sslFactory = null;
 
 	static final String FFN = "fanfiction.net";
 
@@ -123,17 +123,19 @@ public abstract class Site {
 	Boolean ignoreHttpErrors = false;
 
 	static CookieManager cookieManager = new CookieManager();
-	static HttpClient client = null;
+	static CloseableHttpClient client = HttpClients.createDefault();
 	static{
 		CookieHandler.setDefault(cookieManager);
 		cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
 		
+		/*
 	   client = HttpClient.newBuilder()
 		        .followRedirects(Redirect.NORMAL)
 		        .connectTimeout(Duration.ofSeconds(120))
 		        .cookieHandler(CookieHandler.getDefault())
 	//	        .authenticator(Authenticator.getDefault())
 		        .build();
+		        */
 	}
 	
 	protected static final String SUMMARY_STRING = "Summary";
@@ -198,13 +200,13 @@ public abstract class Site {
 			e.printStackTrace();
 		}
 
-	    HttpRequest.Builder builder = getRequestBuilder(url);
-
-	    HttpRequest request = builder.build();
+		HttpGet request = new HttpGet(url);
 	    
-		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+		CloseableHttpResponse response = client.execute(request);
+		HttpEntity body = response.getEntity();
+		
 
-		Document doc = Jsoup.parse(response.body(), siteCharset.name(), url);
+		Document doc = Jsoup.parse(body.getContent(), siteCharset.name(), url);
 		
 		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
 		return doc;

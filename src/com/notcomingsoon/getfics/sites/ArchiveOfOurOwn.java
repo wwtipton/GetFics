@@ -215,6 +215,7 @@ public class ArchiveOfOurOwn extends Site {
 		return retVal;
 	}
 
+	/*
 	@Override
 	void login() throws IOException, InterruptedException {
 		logger.entering(this.getClass().getCanonicalName(), "login()");
@@ -235,8 +236,8 @@ public class ArchiveOfOurOwn extends Site {
 		Document doc = resp.parse();
 		*/
 		
-		Elements elist = doc.getElementsByAttributeValue("name",AUTHENTICITY_TOKEN);
-		String token = elist.last().attr("value");
+	//	Elements elist = doc.getElementsByAttributeValue("name",AUTHENTICITY_TOKEN);
+	//	String token = elist.last().attr("value");
 	//	Map<String, String> cookies = resp.cookies();
 		
 		/*
@@ -249,7 +250,7 @@ public class ArchiveOfOurOwn extends Site {
 		conn.data("commit", "Log in");
 		*/
 		
-
+/*
 		if (request.uri().toString().equals(LOGIN_URL)) {
 
 			Map<Object, Object> formMap = new HashMap<>();
@@ -270,7 +271,7 @@ public class ArchiveOfOurOwn extends Site {
 			}
 		}
 
-		/*
+
 		if (conn.request().url().toString().equals(LOGIN_URL)) {
 			Connection.Response resp2 = null;
 			try {
@@ -292,8 +293,8 @@ public class ArchiveOfOurOwn extends Site {
 		}
 		*/
 		
-		logger.exiting(this.getClass().getCanonicalName(), "login()");
-	}
+	//	logger.exiting(this.getClass().getCanonicalName(), "login()");
+//	}
 
 	/*
 	@Override
