@@ -10,9 +10,6 @@
 	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1.jar" sourcepath="C:/JavaLibs/jsoup/jsoup-1.13.1-sources.jar"/>
 	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1-javadoc.jar"/>
 	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1-sources.jar"/>
-	<classpathentry kind="lib" path="C:/JavaLibs/kotlin-stdlib-common-1.4.30.jar"/>
-	<classpathentry kind="lib" path="C:/JavaLibs/okio-2.10.0.jar"/>
-	<classpathentry kind="lib" path="C:/JavaLibs/okhttp-4.9.1.jar"/>
-	<classpathentry kind="lib" path="C:/JavaLibs/okhttp-urlconnection-4.9.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/OKHttp"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
