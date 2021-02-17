@@ -3,6 +3,11 @@
  */
 package com.notcomingsoon.getfics.sites;
 
+import java.io.IOException;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -28,14 +33,28 @@ public class FanFictionNet extends Site {
 	private static final int CHAPTER_BODY = 0;
 	private static final int SUMMARY = 6;
 	
-
+	private static  URI U = null;
+	static{
+		try {
+			U = new URI("https://www.fanfiction.net");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		addCookie(U,"__gads","ID=1f75c52f56b20fc4-22e117f392c20095:T=1596330031:RT=1596330031:R:S=ALNI_MYIa9bthqfKNyxM_9UFnpqHaMdGxg");
+	}
+	
 	/**
 	 * @param ficUrl
+	 * @throws IOException 
 	 */
-	public FanFictionNet(String ficUrl) {
+	public FanFictionNet(String ficUrl) throws IOException {
 		super(ficUrl);
-
+	//	super.cookieManager = FFN_COOKIES;
 		siteCharset = FFN_CHARSET;
+	//	login();
+		ignoreHttpErrors = true;
 	}
 
 	/* (non-Javadoc)
@@ -188,5 +207,77 @@ public class FanFictionNet extends Site {
 		
 		return retVal;
 	}
+	 
+	/*
+	@Override
+	Document getPage(String url) throws IOException {
+		logger.entering(this.getClass().getCanonicalName(), "getPage(" + url + ")");
+		
+		logger.info(this.getClass().getCanonicalName() + "\tgetPage(" + url + ")");
+		
+		Document doc = super.getPage(url);
+		
+		Map<String, String> cookieMap = conn.response().cookies();
+		cookieMap.forEach((key, value) -> {
+		    logger.info("Key : " + key + " Value : " + value);
+		    Cookie c = new Cookie(key, value);
+		    cookies[cookies.length] = c;
+		});
+	
+	    logger.info("cookies : " + cookies);
+		return doc;
+	}
+
+
+	private BiConsumer<? super String, ? super String> addCookie() {
+		
+		return null;
+	}
+		*/
+
+	/*
+	@Override
+	void login() throws IOException {
+		logger.entering(this.getClass().getCanonicalName(), "login()");
+		Connection conn = Jsoup.connect("https://www.fanfiction.net/login.php?cache=bust");
+		conn.timeout(180000);
+		conn.userAgent(USER_AGENT);
+		Connection.Response resp = conn.execute();
+		Document doc = resp.parse();
+//		Elements elist = doc.getElementsByAttributeValue("name",AUTHENTICITY_TOKEN);
+	//	String token = elist.last().attr("value");
+		Map<String, String> cookies = resp.cookies();
+		
+		conn.method(Connection.Method.POST);
+		conn.cookies(cookies);
+	//	conn.data(PEN_NAME_KEY, PEN_NAME);
+//		conn.data(PASSWORD_KEY, PASSWORD);
+	//	conn.data(REMEMBER_ME_KEY, "1");
+	//	conn.data(AUTHENTICITY_TOKEN, token);
+//		conn.data("commit", "Log in");
+
+		Connection.Response resp2 = null;
+		try {
+			resp2 = conn.execute();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+		
+		
+		Document doc2 = resp2.parse();
+		Map<String, String> cookies2 = resp2.cookies();
+		Set<String> keys = cookies2.keySet();
+//		AO3_COOKIES = new Cookie[keys.size()];
+		
+		int i = 0;
+		for(String key : keys){
+	//		AO3_COOKIES[i] = new Cookie(key, cookies2.get(key));
+			i++;
+		}
+		
+		logger.exiting(this.getClass().getCanonicalName(), "login()");
+	}
+	*/
+
 
 }

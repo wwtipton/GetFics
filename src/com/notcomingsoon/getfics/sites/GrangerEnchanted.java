@@ -191,6 +191,7 @@ public class GrangerEnchanted extends Site {
 		return retVal;
 	}
 
+	/*
 	@Override
 	Document getPage(String url) throws IOException {
 		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
@@ -209,6 +210,7 @@ public class GrangerEnchanted extends Site {
 		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
 		return doc;
 	}
+	*/
 
 	@Override
 	String ageConsent(Document doc) {

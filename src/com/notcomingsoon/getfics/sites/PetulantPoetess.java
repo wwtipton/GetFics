@@ -34,7 +34,8 @@ public class PetulantPoetess extends Site {
 	private static final String NAME = "name";
 	private static final String SID = "sid";
 	private static final int CHAPTER_BODY = 5;
-	private Node emptyNode = new TextNode("",startUrl);
+//	private Node emptyNode = new TextNode("",startUrl);
+	private Node emptyNode = new TextNode("");
 	private static String NEXT_LINK = "[Next]";
 	
 	private static final Cookie[] TPP_COOKIES = new Cookie[]
@@ -150,7 +151,7 @@ public class PetulantPoetess extends Site {
 	}
 
 	@Override
-	protected Chapter extractSummary(Document story, Document chapter) {
+	protected Chapter extractSummary(Document story, Document chapter) throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
 		
 		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
@@ -177,7 +178,7 @@ public class PetulantPoetess extends Site {
 		return title;
 	}
 
-	private String searchAuthor(Tag storyTag, String baseUrl, String userRef, String storyRef) {
+	private String searchAuthor(Tag storyTag, String baseUrl, String userRef, String storyRef) throws Exception {
 		Element summary = new Element(storyTag, "");
 		String summaryText = null;
 		String authorUrl = baseUrl + userRef;

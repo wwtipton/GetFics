@@ -184,7 +184,7 @@ public class TheMasqueNet extends Site {
 	}
 
 	@Override
-	Document getPage(String url) throws IOException {
+	Document getPage(String url) throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
 
 		String localUrl = url;

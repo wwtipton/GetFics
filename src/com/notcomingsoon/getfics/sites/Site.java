@@ -1,22 +1,35 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.HttpCookie;
+import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Redirect;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
@@ -28,8 +41,14 @@ import com.notcomingsoon.getfics.GFLogger;
 import com.notcomingsoon.getfics.HTMLConstants;
 import com.notcomingsoon.getfics.Story;
 
+
+
 @SuppressWarnings("unchecked")
 public abstract class Site {
+
+	static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+
+//	static  SSLSocketFactoryImpl sslFactory = null;
 
 	static final String FFN = "fanfiction.net";
 
@@ -59,6 +78,8 @@ public abstract class Site {
 	
 	static final String HUNTING_HORCRUXES = "huntinghorcruxes";	
 
+	static final String SSHG_EXCHANGE = "sshg-exchange";	
+
 	static final String PIC = "image";
 
 	private static final String JPEG = "jpg";
@@ -83,6 +104,7 @@ public abstract class Site {
 		sites.add(FICTION_ALLEY);
 		sites.add(WITCH_FICS);
 		sites.add(HUNTING_HORCRUXES);
+		sites.add(SSHG_EXCHANGE);
 		Collections.sort(sites, new SiteNameComparator());
 	}
 
@@ -95,6 +117,24 @@ public abstract class Site {
 	protected Cookie[] cookies;
 
 	private String siteName;
+
+//	Connection conn;
+	
+	Boolean ignoreHttpErrors = false;
+
+	static CookieManager cookieManager = new CookieManager();
+	static HttpClient client = null;
+	static{
+		CookieHandler.setDefault(cookieManager);
+		cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+		
+	   client = HttpClient.newBuilder()
+		        .followRedirects(Redirect.NORMAL)
+		        .connectTimeout(Duration.ofSeconds(120))
+		        .cookieHandler(CookieHandler.getDefault())
+	//	        .authenticator(Authenticator.getDefault())
+		        .build();
+	}
 	
 	protected static final String SUMMARY_STRING = "Summary";
 
@@ -122,13 +162,13 @@ public abstract class Site {
 	}
 
 
-	protected abstract ArrayList<Chapter> getChapterList(Document doc);
+	protected abstract ArrayList<Chapter> getChapterList(Document doc) throws Exception;
 
 	protected abstract String getAuthor(Document doc);
 
 	protected abstract String getTitle(Document doc);
 	
-	protected Chapter extractSummary(Document story, Document chapter){
+	protected Chapter extractSummary(Document story, Document chapter) throws Exception {
 		return null;
 	}
 
@@ -146,36 +186,66 @@ public abstract class Site {
 	/* (non-Javadoc)
 	 * @see com.notcomingsoon.getfics.sites.Site#getPage(java.lang.String)
 	 */
-	Document getPage(String url) throws IOException {
+	Document getPage(String url) throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "getPage(" + url + ")");
 		
 		logger.info(this.getClass().getCanonicalName() + "\tgetPage(" + url + ")");	
-
-		Connection conn = Jsoup.connect(url);
-		conn.timeout(120000);
 		
-		conn = addCookies(conn);
-		conn.method(Connection.Method.GET);
-		Connection.Response response = conn.execute();
-		Document doc = Jsoup.parse(new ByteArrayInputStream(response.bodyAsBytes()), siteCharset.name(), url);
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	    HttpRequest.Builder builder = getRequestBuilder(url);
+
+	    HttpRequest request = builder.build();
+	    
+		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+
+		Document doc = Jsoup.parse(response.body(), siteCharset.name(), url);
 		
 		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
 		return doc;
 	}
 
-	protected Connection addCookies(Connection conn) {
-		
-		if (cookies != null){
-			for (int i = 0; i < cookies.length; i++){
-				Cookie cookie = cookies[i];
-				conn.cookie(cookie.getName(), cookie.getValue());
-			}
-		}
-		return conn;
+
+	/**
+	 * @param url
+	 * @return
+	 */
+	HttpRequest.Builder getRequestBuilder(String url) {
+		HttpRequest.Builder builder = HttpRequest.newBuilder()
+			   	.uri(URI.create(url))
+			   	.timeout(Duration.ofSeconds(120))
+			   	.setHeader("User-Agent", USER_AGENT)
+			   	.setHeader("upgrade-insecure-requests", "1")
+			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+			//   	.setHeader("accept-encoding", "gzip")
+			   	.setHeader("sec-fetch-site", "none")
+			   	.setHeader("sec-fetch-mode", "navigate")
+			   	.setHeader("sec-fetch-dest", "document")
+			   	.setHeader("sec-fetch-user", "?1")
+			   	.GET();
+		return builder;
 	}
+	
+    // Sample: 'password=123&custom=secret&username=abc&ts=1570704369823'
+    static HttpRequest.BodyPublisher ofFormData(Map<Object, Object> data) {
+        var builder = new StringBuilder();
+        for (Map.Entry<Object, Object> entry : data.entrySet()) {
+            if (builder.length() > 0) {
+                builder.append("&");
+            }
+            builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
+            builder.append("=");
+            builder.append(URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8));
+        }
+        return HttpRequest.BodyPublishers.ofString(builder.toString());
+    }
 
-
-	protected abstract boolean isOneShot(Document doc);
+	protected abstract boolean isOneShot(Document doc) throws Exception;
 
 	public Site(String ficUrl) {
 		super();
@@ -291,7 +361,7 @@ public abstract class Site {
 	
 		Element html = outDoc.appendElement(HTMLConstants.HTML_TAG);
 		Element head = html.appendElement(HTMLConstants.HEAD_TAG);
-		Comment title = new Comment(" " + startUrl + " ", dir.getName());
+		Comment title = new Comment(" " + startUrl + " ");
 		head.appendChild(title);
 		html.appendElement(HTMLConstants.BODY_TAG);
 		
@@ -431,6 +501,11 @@ public abstract class Site {
 				site.siteName = HUNTING_HORCRUXES;
 				break;
 			}		
+			if (s.equals(SSHG_EXCHANGE) && SSHGExchange.isSSHGExchange(url)){
+				site = new SSHGExchange(url);
+				site.siteName = SSHG_EXCHANGE;
+				break;
+			}		
 		}
 		if (site != null){
 			story = site.download();
@@ -438,10 +513,22 @@ public abstract class Site {
 		return story;
 	}
 
-	void login() throws IOException {
-		logger.entering(this.getClass().getCanonicalName(), "login()");
-		logger.exiting(this.getClass().getCanonicalName(), "login()");
+	protected static void addCookie(URI u, String key, String value) {
+		HttpCookie c = new HttpCookie(key, value);
+		
+		c.setPath("/");
+		c.setSecure(true);
+		c.setHttpOnly(true);
+		c.setVersion(0);
+		cookieManager.getCookieStore().add(u, c);
 	}
 
 
+	void login() throws IOException, InterruptedException {
+		//Intentionally left empty.
+	}
+
+
+		
+	
 }

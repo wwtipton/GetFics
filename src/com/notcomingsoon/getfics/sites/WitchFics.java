@@ -39,13 +39,13 @@ public class WitchFics extends Site {
 
 	
 
-	public WitchFics(String ficUrl) throws IOException {
+	public WitchFics(String ficUrl) throws Exception {
 		super(ficUrl);
 		super.cookies = WITCH_FIC_COOKIES;
 		getNestedSite();
 	}
 
-	private void getNestedSite() throws IOException {
+	private void getNestedSite() throws Exception {
 		// This page has wayback machine stuff.
 		Document doc = getPage(startUrl);
 		Element iframe = doc.getElementById("playback");
@@ -59,7 +59,7 @@ public class WitchFics extends Site {
 	}
 
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
@@ -153,7 +153,7 @@ public class WitchFics extends Site {
 	}
 
 	@Override
-	protected boolean isOneShot(Document doc) {
+	protected boolean isOneShot(Document doc) throws Exception {
 		boolean isOneShot = false;
 		
 		try {
@@ -199,7 +199,7 @@ public class WitchFics extends Site {
 	}
 
 	@Override
-	Document getPage(String url) throws IOException {
+	Document getPage(String url) throws Exception {
 		
 		try {
 			Thread.sleep(30000);

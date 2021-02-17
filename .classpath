@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.11.3.jar"/>
-	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.11.3-javadoc.jar"/>
-	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.11.3-sources.jar"/>
+	<classpathentry excluding="TestImageDownloader.java" kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+			<attribute name="add-exports" value="java.base/sun.security.ssl=ALL-UNNAMED:java.base/jdk.internal.access=ALL-UNNAMED:jdk.jconsole/sun.tools.jconsole=ALL-UNNAMED:java.base/sun.security.util=ALL-UNNAMED:java.base/sun.net.util=ALL-UNNAMED:java.base/sun.security.action=ALL-UNNAMED:java.base/sun.security.provider.certpath=ALL-UNNAMED:java.base/sun.security.internal.spec=ALL-UNNAMED:java.base/sun.security.validator=ALL-UNNAMED:java.base/sun.security.x509=ALL-UNNAMED:java.base/jdk.internal.event=ALL-UNNAMED"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1.jar" sourcepath="C:/JavaLibs/jsoup/jsoup-1.13.1-sources.jar"/>
+	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1-sources.jar"/>
+	<classpathentry kind="lib" path="C:/JavaLibs/kotlin-stdlib-common-1.4.30.jar"/>
+	<classpathentry kind="lib" path="C:/JavaLibs/okio-2.10.0.jar"/>
+	<classpathentry kind="lib" path="C:/JavaLibs/okhttp-4.9.1.jar"/>
+	<classpathentry kind="lib" path="C:/JavaLibs/okhttp-urlconnection-4.9.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

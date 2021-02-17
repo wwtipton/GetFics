@@ -15,9 +15,10 @@ import java.util.Properties;
  */
 public class GFProperties extends Properties {
 	//TODO Put in root of project so we don't need to define
-    static String propFilePath = "c:\\GetFics\\getfics.properties";
+    static String propFilePath = "C:\\CodingProjects\\GetFics\\getfics.properties";
 	public static final String FIC_LIST_FILE_KEY = "fic.list";
 	public static final String LOG_FILE_KEY = "log.file";
+	public static final String INPUT_DIRECTORY_KEY = "input.directory";
 	public static final String OUTPUT_DIRECTORY_KEY = "output.directory";
 	public static final String MOBIGEN_PATH_KEY = "mobigen.path";
 	public static final String PUBLISH_DIRECTORY_KEY = "publish.directory";

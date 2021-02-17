@@ -185,7 +185,7 @@ public class HuntingHorcruxes extends Site {
 	 * @return toc 
 	 * @throws IOException
 	 */
-	private Document getTOCPage() throws IOException {
+	private Document getTOCPage() throws Exception {
 		String tocUrl = startUrl.replace("chapter", "index");
 		Document toc = getPage(tocUrl);
 		return toc;
@@ -241,15 +241,10 @@ public class HuntingHorcruxes extends Site {
 		Document doc = resp.parse();
 		Map<String, String> cookies = resp.cookies();
 		
-		//conn = Jsoup.connect(USER_SESSIONS);
-	//	conn = Jsoup.connect(LOGIN_URL);
 		conn.method(Connection.Method.POST);
 		conn.cookies(cookies);
 		conn.data(PEN_NAME_KEY, PEN_NAME);
 		conn.data(PASSWORD_KEY, PASSWORD);
-//		conn.data(REMEMBER_ME_KEY, "1");
-	//	conn.data("utf8", "&#x2713;");
-	//	conn.data(AUTHENTICITY_TOKEN, token);
 		conn.data("submit", "Submit");
 		Connection.Response resp2 = conn.execute();
 		Document doc2 = resp2.parse();
@@ -267,7 +262,7 @@ public class HuntingHorcruxes extends Site {
 	}
 
 	@Override
-	Document getPage(String url) throws IOException {
+	Document getPage(String url) throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
 
 		String localUrl = url;
