@@ -1,15 +1,9 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.ListIterator;
-import java.util.Map;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,6 +12,9 @@ import org.jsoup.select.Elements;
 
 import com.notcomingsoon.getfics.Chapter;
 import com.notcomingsoon.getfics.HTMLConstants;
+
+import okhttp3.Request;
+import okhttp3.Response;
 public class ArchiveOfOurOwn extends Site {
 
 	private static final String REMEMBER_ME_KEY = "user_session[remember_me]";
@@ -26,8 +23,6 @@ public class ArchiveOfOurOwn extends Site {
 
 	private static final Charset AO3_CHARSET = HTMLConstants.UTF_8;
 	
-	private  Cookie[] AO3_COOKIES =  new Cookie[0];
-
 	private static final String AUTHOR = "byline heading";
 	
 	private static final int CHAPTER_SELECT = 0;
@@ -68,7 +63,6 @@ public class ArchiveOfOurOwn extends Site {
 		logger.finer("startUrl = " + startUrl);
 		siteCharset = AO3_CHARSET;
 		login();
-//		super.cookies = AO3_COOKIES;
 		logger.exiting(this.getClass().getCanonicalName(), "ArchiveOfOurOwn(String ficUrl)");
 	}
 
@@ -219,13 +213,13 @@ public class ArchiveOfOurOwn extends Site {
 	void login() throws IOException, InterruptedException {
 		logger.entering(this.getClass().getCanonicalName(), "login()");
 		
-		HttpRequest.Builder builder = getRequestBuilder(LOGIN_URL);
+		Request.Builder builder = getRequestBuilder(LOGIN_URL);
 
-	    HttpRequest request = builder.build();
+	    Request request = builder.build();
 	    
-		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+		Response response = client.newCall(request).execute();
 
-		Document doc = Jsoup.parse(response.body(), siteCharset.name(), LOGIN_URL);
+		Document doc = Jsoup.parse(response.body().byteStream(), siteCharset.name(), LOGIN_URL);
 
 		/*
 		Connection conn = Jsoup.connect(LOGIN_URL);
@@ -249,7 +243,7 @@ public class ArchiveOfOurOwn extends Site {
 		conn.data("commit", "Log in");
 		*/
 		
-
+/*
 		if (request.uri().toString().equals(LOGIN_URL)) {
 
 			Map<Object, Object> formMap = new HashMap<>();
@@ -270,6 +264,7 @@ public class ArchiveOfOurOwn extends Site {
 			}
 		}
 
+*/
 		/*
 		if (conn.request().url().toString().equals(LOGIN_URL)) {
 			Connection.Response resp2 = null;

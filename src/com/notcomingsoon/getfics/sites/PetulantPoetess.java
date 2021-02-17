@@ -4,6 +4,8 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -34,27 +36,34 @@ public class PetulantPoetess extends Site {
 	private static final String NAME = "name";
 	private static final String SID = "sid";
 	private static final int CHAPTER_BODY = 5;
-//	private Node emptyNode = new TextNode("",startUrl);
 	private Node emptyNode = new TextNode("");
 	private static String NEXT_LINK = "[Next]";
 	
-	private static final Cookie[] TPP_COOKIES = new Cookie[]
-          {
-		 	new Cookie("level", "0"), 
-		 	new Cookie("adminloggedin", "0"), 
-			new Cookie("loggedin", "1"), 
-			new Cookie("penname", "Ouatic"), 
-			new Cookie("userskin", "GraphicLite"), 
-			new Cookie("useruid", "22383")
-		 };
 	private static final int SUMMARY_ROW = 2;
+
+	private static  URI U = null;
+	static{
+		try {
+			U = new URI("http://www.thepetulantpoetess.com/");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//TODO these are from before the site move and may no longer be valid.
+		addCookie(U,"level", "0");
+		addCookie(U,"adminloggedin", "0");
+		addCookie(U,"loggedin", "1");
+		addCookie(U,"penname", "Ouatic");
+		addCookie(U,"userskin", "GraphicLite");
+		addCookie(U,"useruid", "22383");
+	}
 
 	/**
 	 * @param ficUrl
 	 */
 	public PetulantPoetess(String ficUrl) {
 		super(ficUrl);
-		super.cookies = TPP_COOKIES;
 		siteCharset = TPP_CHARSET;
 	}
 

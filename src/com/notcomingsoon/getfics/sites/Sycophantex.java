@@ -3,6 +3,8 @@
  */
 package com.notcomingsoon.getfics.sites;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -39,11 +41,22 @@ public class Sycophantex extends Site {
 	                            			};
 
 
+	private static  URI U = null;
+	static{
+		try {
+			U = new URI("http://ashwinder.sycophanthex.com");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		addCookie(U,COOKIE_USER_NAME_KEY, COOKIE_USER_NAME_VALUE);
+		addCookie(U,COOKIE_USER_PASSWORD_KEY, COOKIE_USER_PASSWORD_VALUE);
+	}
+
 
 	public Sycophantex(String ficURL) {
 		super(ficURL);
-		
-		super.cookies = SYCOPHANTEX_COOKIES;
 		
 		this.siteCharset = SYCOPHANTEX_CHARSET;
 	}

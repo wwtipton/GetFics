@@ -4,6 +4,8 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,14 +36,23 @@ public class SSHGExchange extends Site {
 	
 	Connection conn;
 
-	private static final Cookie[] LJ_COOKIES = new Cookie[]
-			{new Cookie("adult_explicit", "1"),
-			new Cookie("path", "/"),
-			new Cookie("domain", ".livejournal.com") };
-	
 	private ArrayList<TextNode> allTextNodes = new ArrayList<TextNode>();
 	
 	private ArrayList<Chapter> chapters = new ArrayList<Chapter>();
+	
+	private static  URI U = null;
+	static{
+		try {
+			U = new URI("https://sshg-exchange.livejournal.com");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		addCookie(U,"adult_explicit", "1");
+		addCookie(U,"path", "/");
+		addCookie(U,"domain", ".livejournal.com");
+	}
 
 	
 
@@ -51,7 +62,6 @@ public class SSHGExchange extends Site {
 	 */
 	public SSHGExchange(String ficUrl) throws IOException {
 		super(ficUrl);
-		super.cookies = LJ_COOKIES;
 		siteCharset = LJ_CHARSET;
 	}
 

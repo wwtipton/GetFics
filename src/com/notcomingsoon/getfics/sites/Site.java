@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -12,14 +11,9 @@ import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -41,14 +35,18 @@ import com.notcomingsoon.getfics.GFLogger;
 import com.notcomingsoon.getfics.HTMLConstants;
 import com.notcomingsoon.getfics.Story;
 
+import okhttp3.Cookie;
+import okhttp3.JavaNetCookieJar;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 
 
 @SuppressWarnings("unchecked")
 public abstract class Site {
 
 	static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
-
-//	static  SSLSocketFactoryImpl sslFactory = null;
 
 	static final String FFN = "fanfiction.net";
 
@@ -68,11 +66,7 @@ public abstract class Site {
 	
 	static final String AO3 = "archiveofourown.org";
 
-	static final String GRANGER_ENCHANTED = "grangerenchanted.com";
-
 	static final String MEDIA_MINER = "mediaminer.org";
-
-	static final String FICTION_ALLEY = "fictionalley.org";
 
 	static final String WITCH_FICS = "witchfics.org";
 	
@@ -98,10 +92,8 @@ public abstract class Site {
 		sites.add(TTH);
 		sites.add(THE_MASQUE);
 		sites.add(AO3);
-		sites.add(GRANGER_ENCHANTED);
 		sites.add(MEDIA_MINER);
 		sites.add(FICTION_HUNT);
-		sites.add(FICTION_ALLEY);
 		sites.add(WITCH_FICS);
 		sites.add(HUNTING_HORCRUXES);
 		sites.add(SSHG_EXCHANGE);
@@ -114,7 +106,7 @@ public abstract class Site {
 	
 	protected Charset siteCharset = HTMLConstants.UTF_8;
 	
-	protected Cookie[] cookies;
+//	protected Cookie[] cookies;
 
 	private String siteName;
 
@@ -122,19 +114,18 @@ public abstract class Site {
 	
 	Boolean ignoreHttpErrors = false;
 
+	static OkHttpClient client = null;
 	static CookieManager cookieManager = new CookieManager();
-	static HttpClient client = null;
+	static JavaNetCookieJar cookieJar = new JavaNetCookieJar(cookieManager);
 	static{
-		CookieHandler.setDefault(cookieManager);
 		cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+		CookieHandler.setDefault(cookieManager);
 		
-	   client = HttpClient.newBuilder()
-		        .followRedirects(Redirect.NORMAL)
-		        .connectTimeout(Duration.ofSeconds(120))
-		        .cookieHandler(CookieHandler.getDefault())
-	//	        .authenticator(Authenticator.getDefault())
-		        .build();
+	    client = new OkHttpClient.Builder()
+	            .cookieJar(cookieJar)
+	            .build();
 	}
+
 	
 	protected static final String SUMMARY_STRING = "Summary";
 
@@ -198,13 +189,13 @@ public abstract class Site {
 			e.printStackTrace();
 		}
 
-	    HttpRequest.Builder builder = getRequestBuilder(url);
+	    Request.Builder builder = getRequestBuilder(url);
 
-	    HttpRequest request = builder.build();
+	    Request request = builder.build();
 	    
-		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+		Response response = client.newCall(request).execute();
 
-		Document doc = Jsoup.parse(response.body(), siteCharset.name(), url);
+		Document doc = Jsoup.parse(response.body().byteStream(), siteCharset.name(), url);
 		
 		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
 		return doc;
@@ -215,19 +206,23 @@ public abstract class Site {
 	 * @param url
 	 * @return
 	 */
-	HttpRequest.Builder getRequestBuilder(String url) {
-		HttpRequest.Builder builder = HttpRequest.newBuilder()
-			   	.uri(URI.create(url))
+	Request.Builder getRequestBuilder(String url) {
+		Request.Builder builder = new Request.Builder()
+			   	.url(url);
+		/*
 			   	.timeout(Duration.ofSeconds(120))
 			   	.setHeader("User-Agent", USER_AGENT)
 			   	.setHeader("upgrade-insecure-requests", "1")
-			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
-			//   	.setHeader("accept-encoding", "gzip")
+			   	*/
+			//   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+			/*
+				.setHeader("accept-encoding", "gzip")
 			   	.setHeader("sec-fetch-site", "none")
 			   	.setHeader("sec-fetch-mode", "navigate")
 			   	.setHeader("sec-fetch-dest", "document")
 			   	.setHeader("sec-fetch-user", "?1")
 			   	.GET();
+			   	*/
 		return builder;
 	}
 	
@@ -470,12 +465,7 @@ public abstract class Site {
 				site = new ArchiveOfOurOwn(url);
 				site.siteName = AO3;
 				break;
-			}		
-			if (s.equals(GRANGER_ENCHANTED) && GrangerEnchanted.isGrangerEnchanted(url)){
-				site = new GrangerEnchanted(url);
-				site.siteName = GRANGER_ENCHANTED;
-				break;
-			}		
+			}	
 			if (s.equals(MEDIA_MINER) && MediaMiner.isMediaMiner(url)){
 				site = new MediaMiner(url);
 				site.siteName = MEDIA_MINER;
@@ -486,11 +476,11 @@ public abstract class Site {
 				site.siteName = FICTION_HUNT;
 				break;
 			}		
-			if (s.equals(FICTION_ALLEY) && FictionAlley.isFictionAlley(url)){
-				site = new FictionAlley(url);
-				site.siteName = FICTION_ALLEY;
-				break;
-			}
+			// Defunct 		if (s.equals(FICTION_ALLEY) && FictionAlley.isFictionAlley(url)){
+			// Defunct site = new FictionAlley(url);
+			// Defunct site.siteName = FICTION_ALLEY;
+			// Defunct break;
+			// Defunct }
 			if (s.equals(WITCH_FICS) && WitchFics.isWitchFics(url)){
 				site = new WitchFics(url);
 				site.siteName = WITCH_FICS;

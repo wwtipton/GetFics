@@ -1,6 +1,8 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -17,11 +19,6 @@ public class TheMasqueNet extends Site {
 
 	private static final Charset MASQUE_CHARSET = HTMLConstants.UTF_8;
 	
-	private  Cookie[] MASQUE_COOKIES =  new Cookie[]  {
-		new Cookie("PHPSESSID", "19d1319ded032a2ce278d957f54c3bcc"),
-		new Cookie("jPKKerrGED_salt", "cfcd208495d565ef66e7dff9f98764da"),
-		new Cookie("jPKKerrGED_useruid", "11496") };
-
 	private static final String STORY = "story";
 
 	private static final String JUMP_ATTR = "jump";
@@ -57,12 +54,26 @@ public class TheMasqueNet extends Site {
 	private static final String MILD = "This story may contain mild sexual situations or violence.";
 	
 	Connection conn;
+	
+	private static  URI U = null;
+	static{
+		try {
+			U = new URI("https://www.themasque.net");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		addCookie(U,"PHPSESSID", "19d1319ded032a2ce278d957f54c3bcc");
+		addCookie(U,"jPKKerrGED_salt", "cfcd208495d565ef66e7dff9f98764da");
+		addCookie(U,"jPKKerrGED_useruid", "11496");
+	}
+
 
 	public TheMasqueNet(String ficUrl) throws IOException {
 		super(ficUrl);
 		siteCharset = MASQUE_CHARSET;
 		login();
-		super.cookies = MASQUE_COOKIES;
 	}
 
 	@Override
@@ -78,9 +89,9 @@ public class TheMasqueNet extends Site {
 		conn.data("submit", "Go");
 
 		Connection.Response resp = conn.execute();
-		MASQUE_COOKIES[0] = new Cookie(PHPSESSID, resp.cookie(PHPSESSID));
-		MASQUE_COOKIES[1] = new Cookie(SALT, resp.cookie(SALT) );
-		MASQUE_COOKIES[2] = new Cookie(USERUID, resp.cookie(USERUID) );
+//		MASQUE_COOKIES[0] = new Cookie(PHPSESSID, resp.cookie(PHPSESSID));
+//		MASQUE_COOKIES[1] = new Cookie(SALT, resp.cookie(SALT) );
+//		MASQUE_COOKIES[2] = new Cookie(USERUID, resp.cookie(USERUID) );
 		
 		logger.exiting(this.getClass().getCanonicalName(), "login()");
 	}

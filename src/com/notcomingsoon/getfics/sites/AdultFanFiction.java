@@ -3,6 +3,8 @@
  */
 package com.notcomingsoon.getfics.sites;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -34,8 +36,20 @@ public class AdultFanFiction extends Site {
 	
 	private static final Charset AFF_CHARSET = HTMLConstants.WIN_1252;
 
-	private static final Cookie[] AFF_COOKIES = new Cookie[]{new Cookie("bdv", "10%2F25%2F1960")};
+	//private static final Cookie[] AFF_COOKIES = new Cookie[]{new Cookie("bdv", "10%2F25%2F1960")};
 	
+	private static  URI U = null;
+	static{
+		try {
+			U = new URI("http://adult-fanfiction.org");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		addCookie(U,"bdv","10%2F25%2F1960");
+	}
+
 	
 
 	/**
@@ -44,7 +58,7 @@ public class AdultFanFiction extends Site {
 	public AdultFanFiction(String ficUrl) 
 	{
 		super(ficUrl);
-		super.cookies = AFF_COOKIES;
+//		super.cookies = AFF_COOKIES;
 		siteCharset = AFF_CHARSET;
 	}
 

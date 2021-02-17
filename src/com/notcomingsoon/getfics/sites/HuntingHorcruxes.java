@@ -4,6 +4,8 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -32,9 +34,6 @@ public class HuntingHorcruxes extends Site {
 	private static final int PRINT_BUTTON = 0;
 	private static final int CHAPTER_BODY = 0;
 	
-	private  Cookie[] HH_COOKIES =  new Cookie[]{ new Cookie("catkey5_useruid", "1182")};
-
-	
 	private static final String CLASS = "class";
 	private static final String CONTENT = "content";
 	private static final String PAGETITLE = "pagetitle";
@@ -59,6 +58,19 @@ public class HuntingHorcruxes extends Site {
 	private static final String VIEW_USER = "viewuser";
 	private static final String VIEW_STORY = "viewstory";	
 	
+	private static  URI U = null;
+	static{
+		try {
+			U = new URI("http://www.huntinghorcruxes.themaplebookshelf.com");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		addCookie(U,"catkey5_useruid", "1182");
+	}
+
+	
 	/**
 	 * @param ficUrl
 	 */
@@ -66,7 +78,6 @@ public class HuntingHorcruxes extends Site {
 		super(ficUrl);
 		login();
 
-		super.cookies = HH_COOKIES;
 		siteCharset = HH_CHARSET;
 	}
 
@@ -249,6 +260,7 @@ public class HuntingHorcruxes extends Site {
 		Connection.Response resp2 = conn.execute();
 		Document doc2 = resp2.parse();
 
+		/*
 		Set<String> keys = cookies.keySet();
 		HH_COOKIES = new Cookie[keys.size()];
 		
@@ -257,7 +269,7 @@ public class HuntingHorcruxes extends Site {
 			HH_COOKIES[i] = new Cookie(key, cookies.get(key));
 			i++;
 		}
-		
+		*/
 		logger.exiting(this.getClass().getCanonicalName(), "login()");
 	}
 
