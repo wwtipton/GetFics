@@ -4,34 +4,42 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpClient.Redirect;
-import java.net.http.HttpRequest;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.net.ssl.SSLSession;
 
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.client5.http.async.methods.SimpleBody;
+import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
+import org.apache.hc.client5.http.async.methods.SimpleHttpRequests;
+import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
+import org.apache.hc.client5.http.async.methods.SimpleRequestProducer;
+import org.apache.hc.client5.http.async.methods.SimpleResponseConsumer;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
+import org.apache.hc.core5.concurrent.FutureCallback;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.nio.ssl.TlsStrategy;
+import org.apache.hc.core5.http2.HttpVersionPolicy;
+import org.apache.hc.core5.io.CloseMode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
@@ -68,11 +76,11 @@ public abstract class Site {
 	
 	static final String AO3 = "archiveofourown.org";
 
-	static final String GRANGER_ENCHANTED = "grangerenchanted.com";
+	// Site is defunct static final String GRANGER_ENCHANTED = "grangerenchanted.com";
 
 	static final String MEDIA_MINER = "mediaminer.org";
 
-	static final String FICTION_ALLEY = "fictionalley.org";
+// Site is defunct	static final String FICTION_ALLEY = "fictionalley.org";
 
 	static final String WITCH_FICS = "witchfics.org";
 	
@@ -98,10 +106,10 @@ public abstract class Site {
 		sites.add(TTH);
 		sites.add(THE_MASQUE);
 		sites.add(AO3);
-		sites.add(GRANGER_ENCHANTED);
+// Site is defunct		sites.add(GRANGER_ENCHANTED);
 		sites.add(MEDIA_MINER);
 		sites.add(FICTION_HUNT);
-		sites.add(FICTION_ALLEY);
+// Site is defunct		sites.add(FICTION_ALLEY);
 		sites.add(WITCH_FICS);
 		sites.add(HUNTING_HORCRUXES);
 		sites.add(SSHG_EXCHANGE);
@@ -118,28 +126,50 @@ public abstract class Site {
 
 	private String siteName;
 
-//	Connection conn;
-	
-	Boolean ignoreHttpErrors = false;
-
-	static CookieManager cookieManager = new CookieManager();
-	static CloseableHttpClient client = HttpClients.createDefault();
-	static{
-		CookieHandler.setDefault(cookieManager);
-		cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-		
-		/*
-	   client = HttpClient.newBuilder()
-		        .followRedirects(Redirect.NORMAL)
-		        .connectTimeout(Duration.ofSeconds(120))
-		        .cookieHandler(CookieHandler.getDefault())
-	//	        .authenticator(Authenticator.getDefault())
-		        .build();
-		        */
-	}
-	
 	protected static final String SUMMARY_STRING = "Summary";
+	
+	Document page;
+	
+    static final CookieStore cookieStore = new BasicCookieStore();
 
+	static final TlsStrategy tlsStrategy = ClientTlsStrategyBuilder.create()
+            .useSystemProperties()
+            // IMPORTANT uncomment the following method when running Java 9 or older
+            // in order for ALPN support to work and avoid the illegal reflective
+            // access operation warning
+            /*
+            .setTlsDetailsFactory(new Factory<SSLEngine, TlsDetails>() {
+                @Override
+                public TlsDetails create(final SSLEngine sslEngine) {
+                    return new TlsDetails(sslEngine.getSession(), sslEngine.getApplicationProtocol());
+                }
+            })
+            */
+            .build();
+	
+    static final RequestConfig defaultRequestConfig = RequestConfig.custom()
+            .setCookieSpec(StandardCookieSpec.RELAXED)
+            .build();
+
+	
+    static final PoolingAsyncClientConnectionManager cm = PoolingAsyncClientConnectionManagerBuilder.create()
+            .setTlsStrategy(tlsStrategy)
+            .build();
+    
+    static final CloseableHttpAsyncClient client = HttpAsyncClients.custom()
+            .setVersionPolicy(HttpVersionPolicy.NEGOTIATE)
+            .setConnectionManager(cm)
+            .setDefaultCookieStore(cookieStore)
+            .setDefaultRequestConfig(defaultRequestConfig)
+            .build(); 
+
+    static final HttpClientContext clientContext = HttpClientContext.create();
+
+    static {
+        client.start();
+    }
+
+	
 	protected Document recode(Document doc, String url) {
 		logger.entering(this.getClass().getCanonicalName(), "recode(Document doc, String url)");
 
@@ -200,16 +230,53 @@ public abstract class Site {
 			e.printStackTrace();
 		}
 
-		HttpGet request = new HttpGet(url);
+		//HttpGet request = new HttpGet(url);
 	    
-		CloseableHttpResponse response = client.execute(request);
-		HttpEntity body = response.getEntity();
+	//	CloseableHttpResponse response = client.execute(request);
+	//	HttpEntity body = response.getEntity();
+		URI uri = new URI(url);
+		HttpHost target = new HttpHost(uri.getHost());
+        String requestUri = uri.getPath();
+        
+        SimpleHttpRequest request = SimpleHttpRequests.get(target, requestUri);
+        Future<SimpleHttpResponse> future = client.execute(
+                SimpleRequestProducer.create(request),
+                SimpleResponseConsumer.create(),
+                clientContext,
+                new FutureCallback<SimpleHttpResponse>() {
+
+					@Override
+                    public void completed(final SimpleHttpResponse response) {
+                        System.out.println(requestUri + "->" + response.getCode());
+                        System.out.println(response.getBody());
+                        final SSLSession sslSession = clientContext.getSSLSession();
+                        if (sslSession != null) {
+                            System.out.println("SSL protocol " + sslSession.getProtocol());
+                            System.out.println("SSL cipher suite " + sslSession.getCipherSuite());
+                        }
+                        SimpleBody body = response.getBody();
+                        page = Jsoup.parse(body.getBodyText());
+                    }
+
+                    @Override
+                    public void failed(final Exception ex) {
+                        System.out.println(requestUri + "->" + ex);
+                    }
+
+                    @Override
+                    public void cancelled() {
+                        System.out.println(requestUri + " cancelled");
+                    }
+
+                });
+        future.get();
 		
 
-		Document doc = Jsoup.parse(body.getContent(), siteCharset.name(), url);
-		
+
 		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
-		return doc;
+
+		return page;
+
 	}
 
 
@@ -217,36 +284,20 @@ public abstract class Site {
 	 * @param url
 	 * @return
 	 */
-	HttpRequest.Builder getRequestBuilder(String url) {
-		HttpRequest.Builder builder = HttpRequest.newBuilder()
-			   	.uri(URI.create(url))
-			   	.timeout(Duration.ofSeconds(120))
-			   	.setHeader("User-Agent", USER_AGENT)
-			   	.setHeader("upgrade-insecure-requests", "1")
-			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+//	HttpRequest.Builder getRequestBuilder(String url) {
+	//	HttpRequest.Builder builder = HttpRequest.newBuilder()
+		//	   	.uri(URI.create(url))
+	//		   	.setHeader("upgrade-insecure-requests", "1")
+	//		   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
 			//   	.setHeader("accept-encoding", "gzip")
-			   	.setHeader("sec-fetch-site", "none")
-			   	.setHeader("sec-fetch-mode", "navigate")
-			   	.setHeader("sec-fetch-dest", "document")
-			   	.setHeader("sec-fetch-user", "?1")
-			   	.GET();
-		return builder;
-	}
+		//	   	.setHeader("sec-fetch-site", "none")
+	//		   	.setHeader("sec-fetch-mode", "navigate")
+	//		   	.setHeader("sec-fetch-dest", "document")
+	//		   	.setHeader("sec-fetch-user", "?1")
+	//		   	.GET();
+	//	return builder;
+//	}
 	
-    // Sample: 'password=123&custom=secret&username=abc&ts=1570704369823'
-    static HttpRequest.BodyPublisher ofFormData(Map<Object, Object> data) {
-        var builder = new StringBuilder();
-        for (Map.Entry<Object, Object> entry : data.entrySet()) {
-            if (builder.length() > 0) {
-                builder.append("&");
-            }
-            builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
-            builder.append("=");
-            builder.append(URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8));
-        }
-        return HttpRequest.BodyPublishers.ofString(builder.toString());
-    }
-
 	protected abstract boolean isOneShot(Document doc) throws Exception;
 
 	public Site(String ficUrl) {
@@ -354,7 +405,6 @@ public abstract class Site {
 	}
 
 
-	@SuppressWarnings("deprecation")
 	private Document initStory(File dir) {
 		logger.entering(this.getClass().getCanonicalName(), "initStory()");
 		
@@ -472,12 +522,14 @@ public abstract class Site {
 				site = new ArchiveOfOurOwn(url);
 				site.siteName = AO3;
 				break;
-			}		
+			}	
+			/* Site is defunct
 			if (s.equals(GRANGER_ENCHANTED) && GrangerEnchanted.isGrangerEnchanted(url)){
 				site = new GrangerEnchanted(url);
 				site.siteName = GRANGER_ENCHANTED;
 				break;
-			}		
+			}	
+			*/	
 			if (s.equals(MEDIA_MINER) && MediaMiner.isMediaMiner(url)){
 				site = new MediaMiner(url);
 				site.siteName = MEDIA_MINER;
@@ -487,12 +539,14 @@ public abstract class Site {
 				site = new FictionHunt(url);
 				site.siteName = FICTION_HUNT;
 				break;
-			}		
+			}	
+			/* Site is defunct
 			if (s.equals(FICTION_ALLEY) && FictionAlley.isFictionAlley(url)){
 				site = new FictionAlley(url);
 				site.siteName = FICTION_ALLEY;
 				break;
 			}
+			*/
 			if (s.equals(WITCH_FICS) && WitchFics.isWitchFics(url)){
 				site = new WitchFics(url);
 				site.siteName = WITCH_FICS;
@@ -516,18 +570,29 @@ public abstract class Site {
 	}
 
 	protected static void addCookie(URI u, String key, String value) {
-		HttpCookie c = new HttpCookie(key, value);
+		BasicClientCookie c = new BasicClientCookie(key, value);
 		
 		c.setPath("/");
 		c.setSecure(true);
-		c.setHttpOnly(true);
-		c.setVersion(0);
-		cookieManager.getCookieStore().add(u, c);
+		c.setDomain(u.getHost());
+		
+		cookieStore.addCookie(c);
+		
+//		c.setHttpOnly(true);
+//		c.setVersion(0);
+		//cookieManager.getCookieStore().add(u, c);
 	}
 
 
 	void login() throws IOException, InterruptedException {
 		//Intentionally left empty.
+	}
+
+
+	public static void close() {
+		// TODO Auto-generated method stub
+		 client.close(CloseMode.GRACEFUL);
+		 System.out.println("Client closed!!");
 	}
 
 
