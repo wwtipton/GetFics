@@ -116,6 +116,7 @@ public class Main {
 				logger.warning(failures.get(i));
 			}
 		}
+	//	Site.close();
 		logger.exiting(this.getClass().getCanonicalName(), "getFics()");
 	}
 

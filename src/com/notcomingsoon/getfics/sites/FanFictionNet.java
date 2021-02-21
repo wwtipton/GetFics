@@ -54,7 +54,7 @@ public class FanFictionNet extends Site {
 	//	super.cookieManager = FFN_COOKIES;
 		siteCharset = FFN_CHARSET;
 	//	login();
-		ignoreHttpErrors = true;
+	//	ignoreHttpErrors = true;
 	}
 
 	/* (non-Javadoc)

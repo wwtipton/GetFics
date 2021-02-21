@@ -128,46 +128,13 @@ public abstract class Site {
 
 	protected static final String SUMMARY_STRING = "Summary";
 	
-	Document page;
+	static Document page;
 	
     static final CookieStore cookieStore = new BasicCookieStore();
 
-	static final TlsStrategy tlsStrategy = ClientTlsStrategyBuilder.create()
-            .useSystemProperties()
-            // IMPORTANT uncomment the following method when running Java 9 or older
-            // in order for ALPN support to work and avoid the illegal reflective
-            // access operation warning
-            /*
-            .setTlsDetailsFactory(new Factory<SSLEngine, TlsDetails>() {
-                @Override
-                public TlsDetails create(final SSLEngine sslEngine) {
-                    return new TlsDetails(sslEngine.getSession(), sslEngine.getApplicationProtocol());
-                }
-            })
-            */
-            .build();
-	
     static final RequestConfig defaultRequestConfig = RequestConfig.custom()
             .setCookieSpec(StandardCookieSpec.RELAXED)
             .build();
-
-	
-    static final PoolingAsyncClientConnectionManager cm = PoolingAsyncClientConnectionManagerBuilder.create()
-            .setTlsStrategy(tlsStrategy)
-            .build();
-    
-    static final CloseableHttpAsyncClient client = HttpAsyncClients.custom()
-            .setVersionPolicy(HttpVersionPolicy.NEGOTIATE)
-            .setConnectionManager(cm)
-            .setDefaultCookieStore(cookieStore)
-            .setDefaultRequestConfig(defaultRequestConfig)
-            .build(); 
-
-    static final HttpClientContext clientContext = HttpClientContext.create();
-
-    static {
-        client.start();
-    }
 
 	
 	protected Document recode(Document doc, String url) {
@@ -230,46 +197,76 @@ public abstract class Site {
 			e.printStackTrace();
 		}
 
-		//HttpGet request = new HttpGet(url);
-	    
-	//	CloseableHttpResponse response = client.execute(request);
-	//	HttpEntity body = response.getEntity();
-		URI uri = new URI(url);
-		HttpHost target = new HttpHost(uri.getHost());
-        String requestUri = uri.getPath();
-        
-        SimpleHttpRequest request = SimpleHttpRequests.get(target, requestUri);
-        Future<SimpleHttpResponse> future = client.execute(
-                SimpleRequestProducer.create(request),
-                SimpleResponseConsumer.create(),
-                clientContext,
-                new FutureCallback<SimpleHttpResponse>() {
+        final TlsStrategy tlsStrategy = ClientTlsStrategyBuilder.create()
+                .useSystemProperties()
+                // IMPORTANT uncomment the following method when running Java 9 or older
+                // in order for ALPN support to work and avoid the illegal reflective
+                // access operation warning
+                /*
+                .setTlsDetailsFactory(new Factory<SSLEngine, TlsDetails>() {
+                    @Override
+                    public TlsDetails create(final SSLEngine sslEngine) {
+                        return new TlsDetails(sslEngine.getSession(), sslEngine.getApplicationProtocol());
+                    }
+                })
+                */
+                .build();
+        final PoolingAsyncClientConnectionManager cm = PoolingAsyncClientConnectionManagerBuilder.create()
+                .setTlsStrategy(tlsStrategy)
+                .build();
+        try (final CloseableHttpAsyncClient client = HttpAsyncClients.custom()
+                .setVersionPolicy(HttpVersionPolicy.NEGOTIATE)
+                .setConnectionManager(cm)
+                .setDefaultCookieStore(cookieStore)
+               .build()) {
 
-					@Override
-                    public void completed(final SimpleHttpResponse response) {
-                        System.out.println(requestUri + "->" + response.getCode());
-                        System.out.println(response.getBody());
-                        final SSLSession sslSession = clientContext.getSSLSession();
-                        if (sslSession != null) {
-                            System.out.println("SSL protocol " + sslSession.getProtocol());
-                            System.out.println("SSL cipher suite " + sslSession.getCipherSuite());
+            client.start();
+
+    		URI uri = new URI(url);
+    		
+    		final HttpHost target = new HttpHost(uri.getHost());
+            final String requestUri = uri.getPath();
+            
+            final HttpClientContext clientContext = HttpClientContext.create();
+
+            final SimpleHttpRequest request = SimpleHttpRequests.get(target, requestUri);
+            final Future<SimpleHttpResponse> future = client.execute(
+                    SimpleRequestProducer.create(request),
+                    SimpleResponseConsumer.create(),
+                    clientContext,
+                    new FutureCallback<SimpleHttpResponse>() {
+
+                        @Override
+                        public void completed(final SimpleHttpResponse response) {
+                            System.out.println(requestUri + "->" + response.getCode());
+                            SimpleBody body = response.getBody();
+                            System.out.println(body);
+                            final SSLSession sslSession = clientContext.getSSLSession();
+                            if (sslSession != null) {
+                                System.out.println("SSL protocol " + sslSession.getProtocol());
+                                System.out.println("SSL cipher suite " + sslSession.getCipherSuite());
+                            }
+                            
+                            page = Jsoup.parse(body.getBodyText());
+                            
                         }
-                        SimpleBody body = response.getBody();
-                        page = Jsoup.parse(body.getBodyText());
-                    }
 
-                    @Override
-                    public void failed(final Exception ex) {
-                        System.out.println(requestUri + "->" + ex);
-                    }
+                        @Override
+                        public void failed(final Exception ex) {
+                            System.out.println(requestUri + "->" + ex);
+                        }
 
-                    @Override
-                    public void cancelled() {
-                        System.out.println(requestUri + " cancelled");
-                    }
+                        @Override
+                        public void cancelled() {
+                            System.out.println(requestUri + " cancelled");
+                        }
 
-                });
-        future.get();
+                    });
+            future.get();
+
+            System.out.println("Shutting down");
+            client.close(CloseMode.GRACEFUL);
+        }
 		
 
 
@@ -278,25 +275,6 @@ public abstract class Site {
 		return page;
 
 	}
-
-
-	/**
-	 * @param url
-	 * @return
-	 */
-//	HttpRequest.Builder getRequestBuilder(String url) {
-	//	HttpRequest.Builder builder = HttpRequest.newBuilder()
-		//	   	.uri(URI.create(url))
-	//		   	.setHeader("upgrade-insecure-requests", "1")
-	//		   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
-			//   	.setHeader("accept-encoding", "gzip")
-		//	   	.setHeader("sec-fetch-site", "none")
-	//		   	.setHeader("sec-fetch-mode", "navigate")
-	//		   	.setHeader("sec-fetch-dest", "document")
-	//		   	.setHeader("sec-fetch-user", "?1")
-	//		   	.GET();
-	//	return builder;
-//	}
 	
 	protected abstract boolean isOneShot(Document doc) throws Exception;
 
@@ -591,8 +569,8 @@ public abstract class Site {
 
 	public static void close() {
 		// TODO Auto-generated method stub
-		 client.close(CloseMode.GRACEFUL);
-		 System.out.println("Client closed!!");
+	//	 client.close(CloseMode.GRACEFUL);
+	//	 System.out.println("Client closed!!");
 	}
 
 
