@@ -35,7 +35,6 @@ import com.notcomingsoon.getfics.GFLogger;
 import com.notcomingsoon.getfics.HTMLConstants;
 import com.notcomingsoon.getfics.Story;
 
-import okhttp3.Cookie;
 import okhttp3.JavaNetCookieJar;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -116,8 +115,9 @@ public abstract class Site {
 
 	static OkHttpClient client = null;
 	static CookieManager cookieManager = new CookieManager();
-	static JavaNetCookieJar cookieJar = new JavaNetCookieJar(cookieManager);
+	static JavaNetCookieJar cookieJar = null;
 	static{
+		cookieJar = new JavaNetCookieJar(cookieManager);
 		cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
 		CookieHandler.setDefault(cookieManager);
 		
