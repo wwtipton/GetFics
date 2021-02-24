@@ -26,10 +26,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 
+import org.brotli.dec.BrotliInputStream;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
@@ -46,7 +48,8 @@ import com.notcomingsoon.getfics.Story;
 @SuppressWarnings("unchecked")
 public abstract class Site {
 
-	static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+	static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36"; //Chroms
+		// Firefox	"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
 
 //	static  SSLSocketFactoryImpl sslFactory = null;
 
@@ -68,11 +71,7 @@ public abstract class Site {
 	
 	static final String AO3 = "archiveofourown.org";
 
-	static final String GRANGER_ENCHANTED = "grangerenchanted.com";
-
 	static final String MEDIA_MINER = "mediaminer.org";
-
-	static final String FICTION_ALLEY = "fictionalley.org";
 
 	static final String WITCH_FICS = "witchfics.org";
 	
@@ -98,10 +97,8 @@ public abstract class Site {
 		sites.add(TTH);
 		sites.add(THE_MASQUE);
 		sites.add(AO3);
-		sites.add(GRANGER_ENCHANTED);
 		sites.add(MEDIA_MINER);
 		sites.add(FICTION_HUNT);
-		sites.add(FICTION_ALLEY);
 		sites.add(WITCH_FICS);
 		sites.add(HUNTING_HORCRUXES);
 		sites.add(SSHG_EXCHANGE);
@@ -203,8 +200,24 @@ public abstract class Site {
 	    HttpRequest request = builder.build();
 	    
 		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+		
+	    String encoding = response.headers().firstValue("Content-Encoding").orElse("");
+	    InputStream is = null;
+	    if (encoding.equals("gzip")) {
+	      System.out.println("gzip compressed");
+	      is = new GZIPInputStream(response.body());
+	      }
+	    else if (encoding.equals("br")) {
+		      System.out.println("br compressed");
+		      is = new BrotliInputStream(response.body());	    	
+	    }
+	    else {
+	      System.out.println("not compressed");
+	      is = response.body();
+	    }
 
-		Document doc = Jsoup.parse(response.body(), siteCharset.name(), url);
+		Document doc = Jsoup.parse(is, siteCharset.name(), url);
+		System.out.println(doc);
 		
 		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
 		return doc;
@@ -221,8 +234,11 @@ public abstract class Site {
 			   	.timeout(Duration.ofSeconds(120))
 			   	.setHeader("User-Agent", USER_AGENT)
 			   	.setHeader("upgrade-insecure-requests", "1")
-			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
-			//   	.setHeader("accept-encoding", "gzip")
+	// FF		   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9") //Chrome
+			   	.setHeader("accept-language", "en-US,en;q=0.5")
+	// if we use this will need to provide a date		   	.setHeader("if-modified-since", "en-US,en;q=0.5")
+			   	.setHeader("accept-encoding", "gzip, deflate, br")  // betting on deflate  never being used...
 			   	.setHeader("sec-fetch-site", "none")
 			   	.setHeader("sec-fetch-mode", "navigate")
 			   	.setHeader("sec-fetch-dest", "document")
@@ -471,11 +487,6 @@ public abstract class Site {
 				site.siteName = AO3;
 				break;
 			}		
-			if (s.equals(GRANGER_ENCHANTED) && GrangerEnchanted.isGrangerEnchanted(url)){
-				site = new GrangerEnchanted(url);
-				site.siteName = GRANGER_ENCHANTED;
-				break;
-			}		
 			if (s.equals(MEDIA_MINER) && MediaMiner.isMediaMiner(url)){
 				site = new MediaMiner(url);
 				site.siteName = MEDIA_MINER;
@@ -486,11 +497,6 @@ public abstract class Site {
 				site.siteName = FICTION_HUNT;
 				break;
 			}		
-			if (s.equals(FICTION_ALLEY) && FictionAlley.isFictionAlley(url)){
-				site = new FictionAlley(url);
-				site.siteName = FICTION_ALLEY;
-				break;
-			}
 			if (s.equals(WITCH_FICS) && WitchFics.isWitchFics(url)){
 				site = new WitchFics(url);
 				site.siteName = WITCH_FICS;
@@ -514,11 +520,13 @@ public abstract class Site {
 	}
 
 	protected static void addCookie(URI u, String key, String value) {
+	//	String encodedValue = URLEncoder.encode(value, StandardCharsets.UTF_8);
+	//	HttpCookie c = new HttpCookie(key, encodedValue);
 		HttpCookie c = new HttpCookie(key, value);
-		
+			
 		c.setPath("/");
-		c.setSecure(true);
-		c.setHttpOnly(true);
+	//	c.setSecure(true);
+	//	c.setHttpOnly(true);
 		c.setVersion(0);
 		cookieManager.getCookieStore().add(u, c);
 	}

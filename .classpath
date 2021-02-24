@@ -10,5 +10,6 @@
 	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1.jar" sourcepath="C:/JavaLibs/jsoup/jsoup-1.13.1-sources.jar"/>
 	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1-javadoc.jar"/>
 	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Brotli"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

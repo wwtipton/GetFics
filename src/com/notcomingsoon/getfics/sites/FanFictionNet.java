@@ -4,8 +4,6 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -43,6 +41,17 @@ public class FanFictionNet extends Site {
 		}
 		
 		addCookie(U,"__gads","ID=1f75c52f56b20fc4-22e117f392c20095:T=1596330031:RT=1596330031:R:S=ALNI_MYIa9bthqfKNyxM_9UFnpqHaMdGxg");
+//		addCookie(U,"bafp_eg","c3b56e50-17e0-11e7-9078-6354797d49b1");
+//		addCookie(U,"bafp_ce","undefined");
+//		addCookie(U,"bafp","c3b56e50-17e0-11e7-9078-6354797d49b1");
+//		addCookie(U,"__utma","19289135.664094029.1564350510.1564350510.1564350510.1");
+		addCookie(U,"cookies","yes");
+//		addCookie(U,"finn","c815c14e4f6d6f0c56c2d415a90a8c566e047529a75a44309017e34cc71b61a2");
+//		addCookie(U,"fknn","ec0157398b2fc3461720c1acd13868fa058d7a97f372f1b81d1001164dd1c46a");
+//		addCookie(U,"funn","Ouatic-7");
+//		addCookie(U,"hbcm_sd","1|1528666129504");
+//		addCookie(U,"session_depth","www.fanfiction.net=501|518233353=501|841773731=501");
+//		addCookie(U,"__utmc","19289135");
 	}
 	
 	/**
