@@ -40,7 +40,7 @@ public class FanFictionNet extends Site {
 			e.printStackTrace();
 		}
 		
-		addCookie(U,"__gads","ID=1f75c52f56b20fc4-22e117f392c20095:T=1596330031:RT=1596330031:R:S=ALNI_MYIa9bthqfKNyxM_9UFnpqHaMdGxg");
+	//	addCookie(U,"__gads","ID=1f75c52f56b20fc4-22e117f392c20095:T=1596330031:RT=1596330031:R:S=ALNI_MYIa9bthqfKNyxM_9UFnpqHaMdGxg");
 //		addCookie(U,"bafp_eg","c3b56e50-17e0-11e7-9078-6354797d49b1");
 //		addCookie(U,"bafp_ce","undefined");
 //		addCookie(U,"bafp","c3b56e50-17e0-11e7-9078-6354797d49b1");

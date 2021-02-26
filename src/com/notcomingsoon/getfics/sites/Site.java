@@ -45,11 +45,13 @@ import com.notcomingsoon.getfics.Story;
 
 
 
+
+
 @SuppressWarnings("unchecked")
 public abstract class Site {
 
-	static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36"; //Chroms
-		// Firefox	"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+	static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0"; //FIrefox
+	//static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36"; //Chroms
 
 //	static  SSLSocketFactoryImpl sslFactory = null;
 
@@ -201,6 +203,8 @@ public abstract class Site {
 	    
 		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
 		
+		System.out.println("Status code: " + response.statusCode());
+		
 	    String encoding = response.headers().firstValue("Content-Encoding").orElse("");
 	    InputStream is = null;
 	    if (encoding.equals("gzip")) {
@@ -219,6 +223,8 @@ public abstract class Site {
 		Document doc = Jsoup.parse(is, siteCharset.name(), url);
 		System.out.println(doc);
 		
+//		Properties.store(System.out, "Current Properties");
+		
 		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
 		return doc;
 	}
@@ -234,15 +240,15 @@ public abstract class Site {
 			   	.timeout(Duration.ofSeconds(120))
 			   	.setHeader("User-Agent", USER_AGENT)
 			   	.setHeader("upgrade-insecure-requests", "1")
-	// FF		   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
-			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9") //Chrome
+			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8") //Firefox
+	//		   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9") //Chrome
 			   	.setHeader("accept-language", "en-US,en;q=0.5")
-	// if we use this will need to provide a date		   	.setHeader("if-modified-since", "en-US,en;q=0.5")
+	// if we use this will need to provide a date		   	.setHeader("if-modified-since", "")
 			   	.setHeader("accept-encoding", "gzip, deflate, br")  // betting on deflate  never being used...
-			   	.setHeader("sec-fetch-site", "none")
-			   	.setHeader("sec-fetch-mode", "navigate")
-			   	.setHeader("sec-fetch-dest", "document")
-			   	.setHeader("sec-fetch-user", "?1")
+	//CHrome		   	.setHeader("sec-fetch-site", "none")
+			  //CHrome		   	.setHeader("sec-fetch-mode", "navigate")
+			  //CHrome		   	.setHeader("sec-fetch-dest", "document")
+			  //CHrome		   	.setHeader("sec-fetch-user", "?1")
 			   	.GET();
 		return builder;
 	}
