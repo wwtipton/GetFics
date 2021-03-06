@@ -37,7 +37,7 @@ public class GFLogger extends java.util.logging.Logger {
 				fh.setLevel(Level.ALL);
 				fh.setFormatter(new SimpleFormatter());
 				logger.addHandler(fh);
-				logger.setLevel(Level.WARNING);
+				logger.setLevel(Level.ALL);
 			} catch (SecurityException e) {
 				e.printStackTrace();
 			} catch (IOException e) {

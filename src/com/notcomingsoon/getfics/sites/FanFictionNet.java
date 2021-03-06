@@ -31,27 +31,15 @@ public class FanFictionNet extends Site {
 	private static final int CHAPTER_BODY = 0;
 	private static final int SUMMARY = 6;
 	
-	private static  URI U = null;
 	static{
 		try {
-			U = new URI("https://www.fanfiction.net");
+			URI U = new URI("https://www.fanfiction.net");
+			addCookie(U,"__gads","ID=1f75c52f56b20fc4-22e117f392c20095:T=1596330031:RT=1596330031:R:S=ALNI_MYIa9bthqfKNyxM_9UFnpqHaMdGxg");
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-	//	addCookie(U,"__gads","ID=1f75c52f56b20fc4-22e117f392c20095:T=1596330031:RT=1596330031:R:S=ALNI_MYIa9bthqfKNyxM_9UFnpqHaMdGxg");
-//		addCookie(U,"bafp_eg","c3b56e50-17e0-11e7-9078-6354797d49b1");
-//		addCookie(U,"bafp_ce","undefined");
-//		addCookie(U,"bafp","c3b56e50-17e0-11e7-9078-6354797d49b1");
-//		addCookie(U,"__utma","19289135.664094029.1564350510.1564350510.1564350510.1");
-		addCookie(U,"cookies","yes");
-//		addCookie(U,"finn","c815c14e4f6d6f0c56c2d415a90a8c566e047529a75a44309017e34cc71b61a2");
-//		addCookie(U,"fknn","ec0157398b2fc3461720c1acd13868fa058d7a97f372f1b81d1001164dd1c46a");
-//		addCookie(U,"funn","Ouatic-7");
-//		addCookie(U,"hbcm_sd","1|1528666129504");
-//		addCookie(U,"session_depth","www.fanfiction.net=501|518233353=501|841773731=501");
-//		addCookie(U,"__utmc","19289135");
 	}
 	
 	/**
@@ -217,76 +205,4 @@ public class FanFictionNet extends Site {
 		return retVal;
 	}
 	 
-	/*
-	@Override
-	Document getPage(String url) throws IOException {
-		logger.entering(this.getClass().getCanonicalName(), "getPage(" + url + ")");
-		
-		logger.info(this.getClass().getCanonicalName() + "\tgetPage(" + url + ")");
-		
-		Document doc = super.getPage(url);
-		
-		Map<String, String> cookieMap = conn.response().cookies();
-		cookieMap.forEach((key, value) -> {
-		    logger.info("Key : " + key + " Value : " + value);
-		    Cookie c = new Cookie(key, value);
-		    cookies[cookies.length] = c;
-		});
-	
-	    logger.info("cookies : " + cookies);
-		return doc;
-	}
-
-
-	private BiConsumer<? super String, ? super String> addCookie() {
-		
-		return null;
-	}
-		*/
-
-	/*
-	@Override
-	void login() throws IOException {
-		logger.entering(this.getClass().getCanonicalName(), "login()");
-		Connection conn = Jsoup.connect("https://www.fanfiction.net/login.php?cache=bust");
-		conn.timeout(180000);
-		conn.userAgent(USER_AGENT);
-		Connection.Response resp = conn.execute();
-		Document doc = resp.parse();
-//		Elements elist = doc.getElementsByAttributeValue("name",AUTHENTICITY_TOKEN);
-	//	String token = elist.last().attr("value");
-		Map<String, String> cookies = resp.cookies();
-		
-		conn.method(Connection.Method.POST);
-		conn.cookies(cookies);
-	//	conn.data(PEN_NAME_KEY, PEN_NAME);
-//		conn.data(PASSWORD_KEY, PASSWORD);
-	//	conn.data(REMEMBER_ME_KEY, "1");
-	//	conn.data(AUTHENTICITY_TOKEN, token);
-//		conn.data("commit", "Log in");
-
-		Connection.Response resp2 = null;
-		try {
-			resp2 = conn.execute();
-		} catch (Exception e){
-			e.printStackTrace();
-		}
-		
-		
-		Document doc2 = resp2.parse();
-		Map<String, String> cookies2 = resp2.cookies();
-		Set<String> keys = cookies2.keySet();
-//		AO3_COOKIES = new Cookie[keys.size()];
-		
-		int i = 0;
-		for(String key : keys){
-	//		AO3_COOKIES[i] = new Cookie(key, cookies2.get(key));
-			i++;
-		}
-		
-		logger.exiting(this.getClass().getCanonicalName(), "login()");
-	}
-	*/
-
-
 }

@@ -1,5 +1,7 @@
 package com.notcomingsoon.getfics.sites;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -15,7 +17,17 @@ public class TwistingTheHellmouth extends Site {
 
 	private static final Charset TTH_CHARSET = HTMLConstants.UTF_8;
 
-	private static final Cookie[] TTH_COOKIES = new Cookie[]{new Cookie("login", "4926%7C15572996591106354041835721568819406381120385835280%7C0")};
+	static{
+		try {
+			URI U = new URI(TTH);
+			addCookie(U,"login", "4926%7C59528348979446508161491382910866814996584764692018%7C1");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
 
 	private static final int AUTHOR_TABLE = 1;
 
@@ -33,7 +45,6 @@ public class TwistingTheHellmouth extends Site {
 	
 	public TwistingTheHellmouth(String ficUrl) {
 		super(ficUrl);
-		super.cookies = TTH_COOKIES;
 		siteCharset = TTH_CHARSET;
 	}
 

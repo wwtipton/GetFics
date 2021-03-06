@@ -7,6 +7,7 @@ package com.notcomingsoon.getfics.sites;
  * @author Winifred Tipton
  *
  */
+@Deprecated
 public class Cookie {
 	
 	private String name=null;

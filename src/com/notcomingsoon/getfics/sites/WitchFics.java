@@ -1,6 +1,8 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -21,8 +23,6 @@ public class WitchFics extends Site {
 	
 	private static final String BY = " by ";
 
-	//private static final Charset WBM_CHARSET = HTMLConstants.UTF_8;
-	
 	private static final String SRC = "src";
 
 	private static final String WAYBACK_MACHINE_URL = "https://web.archive.org";
@@ -35,13 +35,21 @@ public class WitchFics extends Site {
 	
 	String navUrl = null;
 	
-	private  Cookie[] WITCH_FIC_COOKIES =  new Cookie[]{ new Cookie(PHPSESSID, "pg6dm0elglserhrbeqtfb7h4l3")};
+	static{
+		try {
+			URI U = new URI(WAYBACK_MACHINE_URL);
+			addCookie(U,PHPSESSID, "pg6dm0elglserhrbeqtfb7h4l3");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 
 	
 
 	public WitchFics(String ficUrl) throws Exception {
 		super(ficUrl);
-		super.cookies = WITCH_FIC_COOKIES;
 		getNestedSite();
 	}
 
@@ -198,7 +206,8 @@ public class WitchFics extends Site {
 		return title;
 	}
 
-	@Override
+	//@Override
+	/*
 	Document getPage(String url) throws Exception {
 		
 		try {
@@ -210,6 +219,7 @@ public class WitchFics extends Site {
 		
 		return super.getPage(url);
 	}
+	*/
 
 	
 }

@@ -24,6 +24,26 @@ public class GFProperties extends Properties {
 	public static final String PUBLISH_DIRECTORY_KEY = "publish.directory";
 	public static final String MOBI_EXTENSION_KEY = "mobi.extension";	
 	
+	// Site
+	public static final String USER_AGENT = "user.agent";
+	public static final String SUMMARY = "summary";
+	public static final String NOTES_FOOTER = "notes.footer";
+	
+	// Archive of Our Owns
+	public static final String AO3_PEN_NAME = "ao3.pen.name";
+	public static final String AO3_PASSWORD = "ao3.password";
+	
+	// Hunting Horcruxes
+	public static final String HUNTING_HORCRUXES_PEN_NAME = "hunting.horcruxes.pen.name";
+	public static final String HUNTING_HORCRUXES_PASSWORD = "hunting.horcruxes.password";
+	
+	// The Petulant Poetess
+	public static final String TPP_PEN_NAME = "tpp.pen.name";
+	
+	// Ashwinder Sycophantex
+	public static final String SYCOPHANTEX_PEN_NAME = "sycophantex.pen.name";
+	
+	
 	static GFProperties props = new GFProperties();
 	
 	
@@ -50,5 +70,10 @@ public class GFProperties extends Properties {
 		}
 		
 		return props.getProperty(key, null);
+	}
+
+	public static String getString(String key) {
+		// TODO Auto-generated method stub
+		return getPropertyValue(key);
 	}
 }

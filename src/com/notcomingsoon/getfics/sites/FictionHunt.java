@@ -49,16 +49,6 @@ public class FictionHunt extends Site {
 		
 		if (options != null){
 			
-//			String urlSuffix = null;
-	//		String urlPrefix = null;
-		//	int slashIndex = startUrl.lastIndexOf(URL_DIVIDER);
-			//urlSuffix = startUrl.substring(slashIndex);
-	
-			//slashIndex = startUrl.lastIndexOf(URL_DIVIDER, slashIndex-1);
-			//urlPrefix = startUrl.substring(0, slashIndex+1);
-			//logger.info("urlPrefix = " + urlPrefix); 
-			//logger.info("urlSuffix = " + urlSuffix); 
-	
 			ListIterator<Element> lIter = options.listIterator();
 			while (lIter.hasNext()){
 				Element option = lIter.next();

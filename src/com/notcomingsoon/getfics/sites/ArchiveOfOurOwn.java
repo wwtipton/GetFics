@@ -17,6 +17,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFProperties;
 import com.notcomingsoon.getfics.HTMLConstants;
 public class ArchiveOfOurOwn extends Site {
 
@@ -26,8 +27,6 @@ public class ArchiveOfOurOwn extends Site {
 
 	private static final Charset AO3_CHARSET = HTMLConstants.UTF_8;
 	
-	private  Cookie[] AO3_COOKIES =  new Cookie[0];
-
 	private static final String AUTHOR = "byline heading";
 	
 	private static final int CHAPTER_SELECT = 0;
@@ -46,11 +45,11 @@ public class ArchiveOfOurOwn extends Site {
 	
 	private static final String PEN_NAME_KEY = "user[login]";
 	
-	private static final String PEN_NAME = "Ouatic7";
+	private static final String PEN_NAME = GFProperties.getPropertyValue(GFProperties.AO3_PEN_NAME);
 	
 	private static final String PASSWORD_KEY = "user[password]";
 	
-	private static final String PASSWORD = "Am9u7^73";
+	private static final String PASSWORD = GFProperties.getPropertyValue(GFProperties.AO3_PASSWORD);
 
 	private static final String LOGIN_URL = "https://archiveofourown.org/users/login";
 
@@ -68,7 +67,6 @@ public class ArchiveOfOurOwn extends Site {
 		logger.finer("startUrl = " + startUrl);
 		siteCharset = AO3_CHARSET;
 		login();
-//		super.cookies = AO3_COOKIES;
 		logger.exiting(this.getClass().getCanonicalName(), "ArchiveOfOurOwn(String ficUrl)");
 	}
 
@@ -218,6 +216,8 @@ public class ArchiveOfOurOwn extends Site {
 	@Override
 	void login() throws IOException, InterruptedException {
 		logger.entering(this.getClass().getCanonicalName(), "login()");
+
+		waitRandom();
 		
 		HttpRequest.Builder builder = getRequestBuilder(LOGIN_URL);
 
@@ -227,32 +227,14 @@ public class ArchiveOfOurOwn extends Site {
 
 		Document doc = Jsoup.parse(response.body(), siteCharset.name(), LOGIN_URL);
 
-		/*
-		Connection conn = Jsoup.connect(LOGIN_URL);
-		conn.timeout(180000);
-		conn.userAgent(USER_AGENT);
-		Connection.Response resp = conn.execute();
-		Document doc = resp.parse();
-		*/
-		
 		Elements elist = doc.getElementsByAttributeValue("name",AUTHENTICITY_TOKEN);
 		String token = elist.last().attr("value");
-	//	Map<String, String> cookies = resp.cookies();
-		
-		/*
-		conn.method(Connection.Method.POST);
-		conn.cookies(cookies);
-		conn.data(PEN_NAME_KEY, PEN_NAME);
-		conn.data(PASSWORD_KEY, PASSWORD);
-		conn.data(REMEMBER_ME_KEY, "1");
-		conn.data(AUTHENTICITY_TOKEN, token);
-		conn.data("commit", "Log in");
-		*/
-		
 
 		if (request.uri().toString().equals(LOGIN_URL)) {
 
-			Map<Object, Object> formMap = new HashMap<>();
+			waitRandom();
+
+			Map<String, String> formMap = new HashMap<>();
 			formMap.put(PEN_NAME_KEY, PEN_NAME);
 			formMap.put(PASSWORD_KEY, PASSWORD);
 			formMap.put(REMEMBER_ME_KEY, "1");
@@ -270,45 +252,9 @@ public class ArchiveOfOurOwn extends Site {
 			}
 		}
 
-		/*
-		if (conn.request().url().toString().equals(LOGIN_URL)) {
-			Connection.Response resp2 = null;
-			try {
-				resp2 = conn.execute();
-				Document doc2 = resp2.parse();
-				Map<String, String> cookies2 = resp2.cookies();
-				Set<String> keys = cookies2.keySet();
-				AO3_COOKIES = new Cookie[keys.size()];
-
-				int i = 0;
-				for (String key : keys) {
-					AO3_COOKIES[i] = new Cookie(key, cookies2.get(key));
-					i++;
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		*/
-		
 		logger.exiting(this.getClass().getCanonicalName(), "login()");
 	}
 
-	/*
-	@Override
-	Document getPage(String url) throws Exception {
-		
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return super.getPage(url);
-	}
-	*/
 
 	/**
 	 * 

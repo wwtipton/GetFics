@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -40,60 +41,59 @@ import org.jsoup.select.Elements;
 
 import com.notcomingsoon.getfics.Chapter;
 import com.notcomingsoon.getfics.GFLogger;
+import com.notcomingsoon.getfics.GFProperties;
 import com.notcomingsoon.getfics.HTMLConstants;
 import com.notcomingsoon.getfics.Story;
-
-
-
 
 
 @SuppressWarnings("unchecked")
 public abstract class Site {
 
-	static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0"; //FIrefox
-	//static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36"; //Chroms
+	static final String USER_AGENT = GFProperties.getString(GFProperties.USER_AGENT); 
 
-//	static  SSLSocketFactoryImpl sslFactory = null;
+	static final String FFN = "fanfiction.net"; //$NON-NLS-1$
 
-	static final String FFN = "fanfiction.net";
+	static final String FICTION_HUNT = "fictionhunt.com"; //$NON-NLS-1$
 
-	static final String FICTION_HUNT = "fictionhunt.com";
+	static final String AFF = "https://adult-fanfiction.org/"; //$NON-NLS-1$
 
-	static final String AFF = "adult-fanfiction.org";
+	static final String TPP = "http://www.thepetulantpoetess.com/"; //$NON-NLS-1$
 
-	static final String TPP = "thepetulantpoetess.com";
+	static final String DIGITAL_QUILL = "digital-quill.org"; //$NON-NLS-1$
 
-	static final String DIGITAL_QUILL = "digital-quill.org";
-
-	static final String SYCOPHANTEX = "sycophanthex.com";
+	static final String SYCOPHANTEX = "http://ashwinder.sycophanthex.com/"; //$NON-NLS-1$
 	
-	static final String TTH = "tthfanfic.org";
+	static final String TTH = "https://www.tthfanfic.org/"; //$NON-NLS-1$
 	
-	static final String THE_MASQUE = "themasque.net";
+	static final String THE_MASQUE = "https://www.themasque.net"; //$NON-NLS-1$
 	
-	static final String AO3 = "archiveofourown.org";
+	static final String AO3 = "archiveofourown.org"; //$NON-NLS-1$
 
-	static final String MEDIA_MINER = "mediaminer.org";
+	static final String MEDIA_MINER = "mediaminer.org"; //$NON-NLS-1$
 
-	static final String WITCH_FICS = "witchfics.org";
+	static final String WITCH_FICS = "witchfics.org"; //$NON-NLS-1$
 	
-	static final String HUNTING_HORCRUXES = "huntinghorcruxes";	
+	static final String HUNTING_HORCRUXES = "http://huntinghorcruxes.themaplebookshelf.com/";	 //$NON-NLS-1$
 
-	static final String SSHG_EXCHANGE = "sshg-exchange";	
-
-	static final String PIC = "image";
-
-	private static final String JPEG = "jpg";
+	static final String SSHG_EXCHANGE = "sshg-exchange";	 //$NON-NLS-1$
 	
-	private static final String PERIOD = ".";
+	static final String LJ = "https://www.livejournal.com/";
+
+	static final String PIC = "image"; //$NON-NLS-1$
+
+	private static final String JPEG = "jpg"; //$NON-NLS-1$
 	
-	private static final String SLASH = "/";
+	private static final String PERIOD = "."; //$NON-NLS-1$
+	
+	private static final String SLASH = "/"; //$NON-NLS-1$
+	
+	private static Random random = new Random();
 	
 	private static ArrayList<String> sites = new ArrayList<String>();
 	static{
 		sites.add(AFF);
 		sites.add(DIGITAL_QUILL);
-		sites.add(FFN);
+	// disabled for now	sites.add(FFN);  
 		sites.add(SYCOPHANTEX);
 		sites.add(TPP);
 		sites.add(TTH);
@@ -113,12 +113,8 @@ public abstract class Site {
 	
 	protected Charset siteCharset = HTMLConstants.UTF_8;
 	
-	protected Cookie[] cookies;
-
 	private String siteName;
 
-//	Connection conn;
-	
 	Boolean ignoreHttpErrors = false;
 
 	static CookieManager cookieManager = new CookieManager();
@@ -131,14 +127,13 @@ public abstract class Site {
 		        .followRedirects(Redirect.NORMAL)
 		        .connectTimeout(Duration.ofSeconds(120))
 		        .cookieHandler(CookieHandler.getDefault())
-	//	        .authenticator(Authenticator.getDefault())
 		        .build();
 	}
 	
-	protected static final String SUMMARY_STRING = "Summary";
+	protected static final String SUMMARY_STRING = GFProperties.getString(GFProperties.SUMMARY); //$NON-NLS-1$
 
 	protected Document recode(Document doc, String url) {
-		logger.entering(this.getClass().getCanonicalName(), "recode(Document doc, String url)");
+		logger.entering(this.getClass().getCanonicalName(), "recode(Document doc, String url)"); //$NON-NLS-1$
 
 		Document utfDoc = doc;
 		//need to recode?
@@ -152,11 +147,11 @@ public abstract class Site {
 			
 			utfDoc = Jsoup.parse(site, url);	
 			utfDoc.charset(siteCharset);
-			logger.log(Level.ALL, this.getClass().getCanonicalName() + "recode(Document doc, String url) \tcharset:" + utfDoc.charset().displayName());
+			logger.log(Level.ALL, this.getClass().getCanonicalName() + "recode(Document doc, String url) \tcharset:" + utfDoc.charset().displayName()); //$NON-NLS-1$
 			
 		}
 
-		logger.exiting(this.getClass().getCanonicalName(), "recode(Document doc)");
+		logger.exiting(this.getClass().getCanonicalName(), "recode(Document doc)"); //$NON-NLS-1$
 		return utfDoc;
 	}
 
@@ -186,16 +181,11 @@ public abstract class Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#getPage(java.lang.String)
 	 */
 	Document getPage(String url) throws Exception {
-		logger.entering(this.getClass().getCanonicalName(), "getPage(" + url + ")");
+		logger.entering(this.getClass().getCanonicalName(), "getPage(" + url + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		
-		logger.info(this.getClass().getCanonicalName() + "\tgetPage(" + url + ")");	
+		logger.info(this.getClass().getCanonicalName() + "\tgetPage(" + url + ")");	 //$NON-NLS-1$ //$NON-NLS-2$
 		
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		waitRandom();
 
 	    HttpRequest.Builder builder = getRequestBuilder(url);
 
@@ -203,29 +193,27 @@ public abstract class Site {
 	    
 		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
 		
-		System.out.println("Status code: " + response.statusCode());
+		logger.info("Status code: " + response.statusCode()); //$NON-NLS-1$
 		
-	    String encoding = response.headers().firstValue("Content-Encoding").orElse("");
+	    String encoding = response.headers().firstValue("Content-Encoding").orElse(""); //$NON-NLS-1$ //$NON-NLS-2$
 	    InputStream is = null;
-	    if (encoding.equals("gzip")) {
-	      System.out.println("gzip compressed");
+	    if (encoding.equals("gzip")) { //$NON-NLS-1$
+	    	logger.info("gzip compressed"); //$NON-NLS-1$
 	      is = new GZIPInputStream(response.body());
 	      }
-	    else if (encoding.equals("br")) {
-		      System.out.println("br compressed");
+	    else if (encoding.equals("br")) { //$NON-NLS-1$
+	    	logger.info("br compressed"); //$NON-NLS-1$
 		      is = new BrotliInputStream(response.body());	    	
 	    }
 	    else {
-	      System.out.println("not compressed");
+	    	logger.info("not compressed"); //$NON-NLS-1$
 	      is = response.body();
 	    }
 
 		Document doc = Jsoup.parse(is, siteCharset.name(), url);
-		System.out.println(doc);
+		logger.info(doc.wholeText());
 		
-//		Properties.store(System.out, "Current Properties");
-		
-		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
+		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)"); //$NON-NLS-1$
 		return doc;
 	}
 
@@ -238,31 +226,25 @@ public abstract class Site {
 		HttpRequest.Builder builder = HttpRequest.newBuilder()
 			   	.uri(URI.create(url))
 			   	.timeout(Duration.ofSeconds(120))
-			   	.setHeader("User-Agent", USER_AGENT)
-			   	.setHeader("upgrade-insecure-requests", "1")
-			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8") //Firefox
-	//		   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9") //Chrome
-			   	.setHeader("accept-language", "en-US,en;q=0.5")
-	// if we use this will need to provide a date		   	.setHeader("if-modified-since", "")
-			   	.setHeader("accept-encoding", "gzip, deflate, br")  // betting on deflate  never being used...
-	//CHrome		   	.setHeader("sec-fetch-site", "none")
-			  //CHrome		   	.setHeader("sec-fetch-mode", "navigate")
-			  //CHrome		   	.setHeader("sec-fetch-dest", "document")
-			  //CHrome		   	.setHeader("sec-fetch-user", "?1")
+			   	.setHeader("User-Agent", USER_AGENT) //$NON-NLS-1$
+			   	.setHeader("upgrade-insecure-requests", "1") //$NON-NLS-1$ //$NON-NLS-2$
+			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8") //Firefox //$NON-NLS-1$ //$NON-NLS-2$
+			   	.setHeader("accept-language", "en-US,en;q=0.5") //$NON-NLS-1$ //$NON-NLS-2$
+			   	.setHeader("accept-encoding", "gzip, br")   //$NON-NLS-1$ //$NON-NLS-2$
 			   	.GET();
 		return builder;
 	}
 	
     // Sample: 'password=123&custom=secret&username=abc&ts=1570704369823'
-    static HttpRequest.BodyPublisher ofFormData(Map<Object, Object> data) {
+    HttpRequest.BodyPublisher ofFormData(Map<String, String> data) {
         var builder = new StringBuilder();
-        for (Map.Entry<Object, Object> entry : data.entrySet()) {
+        for (Map.Entry<String, String> entry : data.entrySet()) {
             if (builder.length() > 0) {
-                builder.append("&");
+                builder.append("&"); //$NON-NLS-1$
             }
-            builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
-            builder.append("=");
-            builder.append(URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8));
+            builder.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8));
+            builder.append("="); //$NON-NLS-1$
+            builder.append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
         }
         return HttpRequest.BodyPublishers.ofString(builder.toString());
     }
@@ -275,8 +257,8 @@ public abstract class Site {
 	}
 
 	public Story download() throws Exception {
-		logger.entering(this.getClass().getCanonicalName(), "download()");
-		logger.info("Sending request to URL:" + startUrl);	
+		logger.entering(this.getClass().getCanonicalName(), "download()"); //$NON-NLS-1$
+		logger.info("Sending request to URL:" + startUrl);	 //$NON-NLS-1$
 		
 		Document doc = getPage(startUrl);
 	
@@ -322,16 +304,16 @@ public abstract class Site {
 		getImages(story, loc);
 		writeStory(story, loc);
 	
-		logger.exiting(this.getClass().getCanonicalName(), "download()");
+		logger.exiting(this.getClass().getCanonicalName(), "download()"); //$NON-NLS-1$
 		return loc;
 	}
 
 	private void getImages(Document story, Story loc) throws IOException {
-		logger.entering(this.getClass().getCanonicalName(), "getImages(Document story, Story loc)");
+		logger.entering(this.getClass().getCanonicalName(), "getImages(Document story, Story loc)"); //$NON-NLS-1$
 	
 		Elements images = story.getElementsByTag(HTMLConstants.IMG_TAG);
 		 
-		logger.info("images.size = " + images.size());
+		logger.info("images.size = " + images.size()); //$NON-NLS-1$
 		for (int i = 0; i < images.size(); i++){
 			Element image = images.get(i);
 			String src = image.attr(HTMLConstants.SRC_ATTR);
@@ -344,18 +326,18 @@ public abstract class Site {
 			if (!ri.hasNext()){
 				type = JPEG;
 			}
-			logger.info("href = " + src);
+			logger.info("href = " + src); //$NON-NLS-1$
 			try {
 				URL source = new URL(src);
 				BufferedImage pic = ImageIO.read(source);
 				if (null == pic) {
-					throw new Exception("Picture diddn't download!!!");
+					throw new Exception("Picture diddn't download!!!"); //$NON-NLS-1$
 				} else {
 					try {
 						File outputFile = new File(loc.getOutputDir(), PIC + i
 								+ PERIOD + type);
 						image.attr(HTMLConstants.SRC_ATTR, outputFile.getPath());
-						logger.info("outputFile = " + outputFile);
+						logger.info("outputFile = " + outputFile); //$NON-NLS-1$
 						ImageIO.write(pic, type, outputFile);
 					} catch (Exception e) {
 						image.remove();
@@ -366,49 +348,49 @@ public abstract class Site {
 				int idx = pathname.lastIndexOf(SLASH) + 1;
 				String name = pathname.substring(idx);
 				image.attr(HTMLConstants.SRC_ATTR, name);
-				loc.addImageFailure(pathname + "\t" + e);
+				loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
 			}
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getImages(Document story, Story loc)");
+		logger.exiting(this.getClass().getCanonicalName(), "getImages(Document story, Story loc)"); //$NON-NLS-1$
 	}
 
 
 	@SuppressWarnings("deprecation")
 	private Document initStory(File dir) {
-		logger.entering(this.getClass().getCanonicalName(), "initStory()");
+		logger.entering(this.getClass().getCanonicalName(), "initStory()"); //$NON-NLS-1$
 		
 		Document outDoc = new Document(dir.getName());
 		outDoc.outputSettings().charset(siteCharset);
 	
 		Element html = outDoc.appendElement(HTMLConstants.HTML_TAG);
 		Element head = html.appendElement(HTMLConstants.HEAD_TAG);
-		Comment title = new Comment(" " + startUrl + " ");
+		Comment title = new Comment(" " + startUrl + " "); //$NON-NLS-1$ //$NON-NLS-2$
 		head.appendChild(title);
 		html.appendElement(HTMLConstants.BODY_TAG);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "initStory()");
+		logger.exiting(this.getClass().getCanonicalName(), "initStory()"); //$NON-NLS-1$
 		return outDoc;
 	}
 
 	private void writeStory(Document story, Story loc) throws Exception {
-		logger.entering(this.getClass().getCanonicalName(), "writeStory(Document doc, File dir)");
+		logger.entering(this.getClass().getCanonicalName(), "writeStory(Document doc, File dir)"); //$NON-NLS-1$
 		
 		File dir = loc.getOutputDir();
 		File f = new File(dir, loc.toString() + HTMLConstants.HTML_EXTENSION);
 	
-		logger.info("f: " + dir.getParent());	
+		logger.info("f: " + dir.getParent());	 //$NON-NLS-1$
 		
 		f.createNewFile();
 		FileOutputStream fos = new FileOutputStream(f);
-		logger.log(Level.ALL, this.getClass().getCanonicalName() + "gwriteStory(Document story, Story loc) \tcharset:" + story.charset().displayName());
+		logger.log(Level.ALL, this.getClass().getCanonicalName() + "gwriteStory(Document story, Story loc) \tcharset:" + story.charset().displayName()); //$NON-NLS-1$
 		
 		String content = story.html();		
 		byte[] b = content.getBytes();
 		
 		fos.write(b);
 		fos.close();
-		logger.exiting(this.getClass().getCanonicalName(), "writeStory(Document doc, File dir)");
+		logger.exiting(this.getClass().getCanonicalName(), "writeStory(Document doc, File dir)"); //$NON-NLS-1$
 		
 	}
 
@@ -427,8 +409,8 @@ public abstract class Site {
 	 */
 	protected void addNotesFooter(Element body) {
 		Element p = new Element(HTMLConstants.P_TAG);
-		p.attr("style", "text-align:center");
-		p.appendText("~^~^~^~");
+		p.attr("style", "text-align:center"); //$NON-NLS-1$ //$NON-NLS-2$
+		p.appendText(GFProperties.getString(GFProperties.NOTES_FOOTER)); //$NON-NLS-1$
 		
 		body.appendChild(p);
 	}
@@ -457,11 +439,6 @@ public abstract class Site {
 				site = new AdultFanFiction(url);
 				site.siteName = AFF;
 				break;
-			}
-			if (s.equals(DIGITAL_QUILL) && DigitalQuill.isDigitalQuill(url)){
-				site = new DigitalQuill(url);
-				site.siteName = DIGITAL_QUILL;
-				break;			
 			}
 			if (s.equals(SYCOPHANTEX) && Sycophantex.isSycophantex(url)){
 				site = new Sycophantex(url);
@@ -526,23 +503,30 @@ public abstract class Site {
 	}
 
 	protected static void addCookie(URI u, String key, String value) {
-	//	String encodedValue = URLEncoder.encode(value, StandardCharsets.UTF_8);
-	//	HttpCookie c = new HttpCookie(key, encodedValue);
 		HttpCookie c = new HttpCookie(key, value);
 			
-		c.setPath("/");
-	//	c.setSecure(true);
-	//	c.setHttpOnly(true);
+		c.setPath("/"); //$NON-NLS-1$
 		c.setVersion(0);
+		
 		cookieManager.getCookieStore().add(u, c);
 	}
 
 
-	void login() throws IOException, InterruptedException {
+	void login() throws Exception {
 		//Intentionally left empty.
 	}
 
+	static void waitRandom() {
 
-		
-	
+		int ms = 5000 + random.nextInt(10000); //random between 5000 and 15000
+
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
 }
