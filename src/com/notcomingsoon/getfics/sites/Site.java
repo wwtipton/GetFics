@@ -27,6 +27,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -197,7 +198,7 @@ public abstract class Site {
 		
 	    Document doc = parse(url, response);
 	    
-		logger.info(doc.wholeText());
+	//	logger.info(doc.wholeText());
 		
 		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)"); //$NON-NLS-1$
 		return doc;
@@ -223,19 +224,20 @@ public abstract class Site {
 	 * @return
 	 * @throws IOException
 	 */
-	InputStream decompress(HttpResponse<InputStream> response) throws IOException {
+	static InputStream decompress(HttpResponse<InputStream> response) throws IOException {
 		String encoding = response.headers().firstValue("Content-Encoding").orElse(""); //$NON-NLS-1$ //$NON-NLS-2$
 	    InputStream is = null;
+	    System.out.println("Encoding:\t" + encoding);
 	    if (encoding.equals("gzip")) { //$NON-NLS-1$
-	    	logger.info("gzip compressed"); //$NON-NLS-1$
 	      is = new GZIPInputStream(response.body());
 	      }
 	    else if (encoding.equals("br")) { //$NON-NLS-1$
-	    	logger.info("br compressed"); //$NON-NLS-1$
 		      is = new BrotliInputStream(response.body());	    	
 	    }
+	    else if (encoding.equals("deflate")) {
+		      is = new InflaterInputStream(response.body());	    	
+	    }
 	    else {
-	    	logger.info("not compressed"); //$NON-NLS-1$
 	      is = response.body();
 	    }
 		return is;
@@ -254,7 +256,7 @@ public abstract class Site {
 			   	.setHeader("upgrade-insecure-requests", "1") //$NON-NLS-1$ //$NON-NLS-2$
 			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8") //Firefox //$NON-NLS-1$ //$NON-NLS-2$
 			   	.setHeader("accept-language", "en-US,en;q=0.5") //$NON-NLS-1$ //$NON-NLS-2$
-			   	.setHeader("accept-encoding", "gzip, br")   //$NON-NLS-1$ //$NON-NLS-2$
+			   	.setHeader("accept-encoding", "gzip, deflate, br")   //$NON-NLS-1$ //$NON-NLS-2$
 			   	.GET();
 		return builder;
 	}
@@ -351,6 +353,7 @@ public abstract class Site {
 				type = JPEG;
 			}
 			logger.info("href = " + src); //$NON-NLS-1$
+			logger.info("type = " + type); //$NON-NLS-1$
 			
 			waitRandom();
 			
@@ -390,7 +393,6 @@ public abstract class Site {
 	}
 
 
-	@SuppressWarnings("deprecation")
 	private Document initStory(File dir) {
 		logger.entering(this.getClass().getCanonicalName(), "initStory()"); //$NON-NLS-1$
 		

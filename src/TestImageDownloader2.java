@@ -6,23 +6,21 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URI;
-import java.net.URL;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Date;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.brotli.dec.BrotliInputStream;
-
-import com.notcomingsoon.getfics.HTMLConstants;
 
 
  
@@ -56,6 +54,7 @@ public class TestImageDownloader2
 	    
 		try {
 			HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+			System.out.println("Status code:\t" + response.statusCode());
 			InputStream is = decompress(response);
 			MemoryCacheImageInputStream iis = new MemoryCacheImageInputStream(is);
 			BufferedImage pic = ImageIO.read(iis);
@@ -87,7 +86,7 @@ public class TestImageDownloader2
 			   	.setHeader("upgrade-insecure-requests", "1") //$NON-NLS-1$ //$NON-NLS-2$
 			   	.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8") //Firefox //$NON-NLS-1$ //$NON-NLS-2$
 			   	.setHeader("accept-language", "en-US,en;q=0.5") //$NON-NLS-1$ //$NON-NLS-2$
-			   	.setHeader("accept-encoding", "gzip, br")   //$NON-NLS-1$ //$NON-NLS-2$
+			   	.setHeader("accept-encoding", "gzip, deflate, br")   //$NON-NLS-1$ //$NON-NLS-2$
 			   	.GET();
 		return builder;
 	}
@@ -95,6 +94,7 @@ public class TestImageDownloader2
 	static InputStream decompress(HttpResponse<InputStream> response) throws IOException {
 		String encoding = response.headers().firstValue("Content-Encoding").orElse(""); //$NON-NLS-1$ //$NON-NLS-2$
 	    InputStream is = null;
+	    System.out.println("Encoding:\t" + encoding);
 	    if (encoding.equals("gzip")) { //$NON-NLS-1$
 	    	System.out.println("gzip compressed"); //$NON-NLS-1$
 	      is = new GZIPInputStream(response.body());
@@ -102,6 +102,10 @@ public class TestImageDownloader2
 	    else if (encoding.equals("br")) { //$NON-NLS-1$
 	    	System.out.println("br compressed"); //$NON-NLS-1$
 		      is = new BrotliInputStream(response.body());	    	
+	    }
+	    else if (encoding.equals("deflate")) {
+	    	System.out.println("deflate compressed"); //$NON-NLS-1$
+		      is = new InflaterInputStream(response.body());	    	
 	    }
 	    else {
 	    	System.out.println("not compressed"); //$NON-NLS-1$
