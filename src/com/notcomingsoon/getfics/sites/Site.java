@@ -10,7 +10,6 @@ import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
 import java.net.URI;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
@@ -31,6 +30,7 @@ import java.util.zip.GZIPInputStream;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.brotli.dec.BrotliInputStream;
 import org.jsoup.Jsoup;
@@ -195,7 +195,36 @@ public abstract class Site {
 		
 		logger.info("Status code: " + response.statusCode()); //$NON-NLS-1$
 		
-	    String encoding = response.headers().firstValue("Content-Encoding").orElse(""); //$NON-NLS-1$ //$NON-NLS-2$
+	    Document doc = parse(url, response);
+	    
+		logger.info(doc.wholeText());
+		
+		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)"); //$NON-NLS-1$
+		return doc;
+	}
+
+
+	/**
+	 * @param url
+	 * @param response
+	 * @return
+	 * @throws IOException
+	 */
+	Document parse(String url, HttpResponse<InputStream> response) throws IOException {
+		InputStream is = decompress(response);
+
+		Document doc = Jsoup.parse(is, siteCharset.name(), url);
+		return doc;
+	}
+
+
+	/**
+	 * @param response
+	 * @return
+	 * @throws IOException
+	 */
+	InputStream decompress(HttpResponse<InputStream> response) throws IOException {
+		String encoding = response.headers().firstValue("Content-Encoding").orElse(""); //$NON-NLS-1$ //$NON-NLS-2$
 	    InputStream is = null;
 	    if (encoding.equals("gzip")) { //$NON-NLS-1$
 	    	logger.info("gzip compressed"); //$NON-NLS-1$
@@ -209,12 +238,7 @@ public abstract class Site {
 	    	logger.info("not compressed"); //$NON-NLS-1$
 	      is = response.body();
 	    }
-
-		Document doc = Jsoup.parse(is, siteCharset.name(), url);
-		logger.info(doc.wholeText());
-		
-		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)"); //$NON-NLS-1$
-		return doc;
+		return is;
 	}
 
 
@@ -327,11 +351,20 @@ public abstract class Site {
 				type = JPEG;
 			}
 			logger.info("href = " + src); //$NON-NLS-1$
+			
+			waitRandom();
+			
+		    HttpRequest.Builder builder = getRequestBuilder(src);
+
+		    HttpRequest request = builder.build();
+		    
 			try {
-				URL source = new URL(src);
-				BufferedImage pic = ImageIO.read(source);
+				HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+				InputStream is = decompress(response);
+				MemoryCacheImageInputStream iis = new MemoryCacheImageInputStream(is);
+				BufferedImage pic = ImageIO.read(iis);
 				if (null == pic) {
-					throw new Exception("Picture diddn't download!!!"); //$NON-NLS-1$
+					throw new Exception("Picture didn't download!!!"); //$NON-NLS-1$
 				} else {
 					try {
 						File outputFile = new File(loc.getOutputDir(), PIC + i
@@ -350,6 +383,7 @@ public abstract class Site {
 				image.attr(HTMLConstants.SRC_ATTR, name);
 				loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
 			}
+
 		}
 		
 		logger.exiting(this.getClass().getCanonicalName(), "getImages(Document story, Story loc)"); //$NON-NLS-1$

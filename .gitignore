@@ -59,3 +59,5 @@ src/com/notcomingsoon/getfics/sites/Site.java
 *.txt
 Backup-getfics.properties
 *.log
+getfics.properties
+getfics.properties

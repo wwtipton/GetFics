@@ -1,0 +1,44 @@
+input.directory=C:\\CodingProjects\\GetFics
+output.directory=C:\\Kindle
+fic.list=C:\\CodingProjects\\GetFics\\getficslist.txt
+log.file=GetFics.log
+mobigen.path=C:\\kindlegen\\kindlegen.exe
+publish.directory=C:\\Kindle\\_Published
+mobi.extension=.mobi
+google.drive.directory=
+mobi.directory=mobi
+rejects=_Rejects
+
+#
+#  Site
+#
+summary=Summary
+notes.footer=~^~^~^~
+
+#Firefox
+user.agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0
+
+#Chrome
+#user.agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36
+
+#
+# Archive of Our Own
+#
+ao3.pen.name=
+ao3.password=
+
+#
+# Hunting Horcruxes
+#
+hunting.horcruxes.pen.name=
+hunting.horcruxes.password=
+
+#
+# The Petulant Poetess
+#
+tpp.pen.name=
+
+#
+# Ashwinder Sycophantex
+#
+sycophantex.pen.name=

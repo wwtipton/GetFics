@@ -57,6 +57,8 @@ public class ArchiveOfOurOwn extends Site {
 
 	private static final String END_NOTES_MODULE = "end notes module";
 	
+	boolean loggedIn = false;
+	
 
 	
 	//Connection conn;
@@ -66,7 +68,10 @@ public class ArchiveOfOurOwn extends Site {
 		logger.entering(this.getClass().getCanonicalName(), "ArchiveOfOurOwn(String ficUrl)");
 		logger.finer("startUrl = " + startUrl);
 		siteCharset = AO3_CHARSET;
-		login();
+		
+		if (!loggedIn) {
+			login();
+		}
 		logger.exiting(this.getClass().getCanonicalName(), "ArchiveOfOurOwn(String ficUrl)");
 	}
 
@@ -225,7 +230,7 @@ public class ArchiveOfOurOwn extends Site {
 	    
 		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
 
-		Document doc = Jsoup.parse(response.body(), siteCharset.name(), LOGIN_URL);
+	    Document doc = parse(LOGIN_URL, response);
 
 		Elements elist = doc.getElementsByAttributeValue("name",AUTHENTICITY_TOKEN);
 		String token = elist.last().attr("value");
@@ -252,6 +257,8 @@ public class ArchiveOfOurOwn extends Site {
 			}
 		}
 
+		loggedIn = true;
+		
 		logger.exiting(this.getClass().getCanonicalName(), "login()");
 	}
 
