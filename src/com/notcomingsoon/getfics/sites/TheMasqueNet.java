@@ -1,12 +1,17 @@
 package com.notcomingsoon.getfics.sites;
 
-import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ListIterator;
+import java.util.Map;
 
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -17,10 +22,17 @@ public class TheMasqueNet extends Site {
 
 	private static final Charset MASQUE_CHARSET = HTMLConstants.UTF_8;
 	
-	private  Cookie[] MASQUE_COOKIES =  new Cookie[]  {
-		new Cookie("PHPSESSID", "19d1319ded032a2ce278d957f54c3bcc"),
-		new Cookie("jPKKerrGED_salt", "cfcd208495d565ef66e7dff9f98764da"),
-		new Cookie("jPKKerrGED_useruid", "11496") };
+	static{
+		try {
+			URI U = new URI(THE_MASQUE);
+			addCookie(U,"PHPSESSID", "19d1319ded032a2ce278d957f54c3bcc");
+			addCookie(U,"jPKKerrGED_salt", "cfcd208495d565ef66e7dff9f98764da");
+			addCookie(U,"jPKKerrGED_useruid", "11496");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	private static final String STORY = "story";
 
@@ -56,31 +68,39 @@ public class TheMasqueNet extends Site {
 
 	private static final String MILD = "This story may contain mild sexual situations or violence.";
 	
-	Connection conn;
+	private static boolean loggedIn;
 
-	public TheMasqueNet(String ficUrl) throws IOException {
+	public TheMasqueNet(String ficUrl) throws Exception {
 		super(ficUrl);
 		siteCharset = MASQUE_CHARSET;
-		login();
-		super.cookies = MASQUE_COOKIES;
+		if (!loggedIn) {
+			login();
+		}
 	}
 
 	@Override
-	void login() throws IOException {
+	void login() throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "login()");
-		conn = Jsoup.connect(LOGIN_URL);
-		conn.timeout(10000);
-		
-		conn.method(Connection.Method.POST);
-		conn.data(PEN_NAME_KEY, PEN_NAME);
-		conn.data(PASSWORD_KEY, PASSWORD);
-		conn.data(COOKIE_CHECK, "1");
-		conn.data("submit", "Go");
 
-		Connection.Response resp = conn.execute();
-		MASQUE_COOKIES[0] = new Cookie(PHPSESSID, resp.cookie(PHPSESSID));
-		MASQUE_COOKIES[1] = new Cookie(SALT, resp.cookie(SALT) );
-		MASQUE_COOKIES[2] = new Cookie(USERUID, resp.cookie(USERUID) );
+		waitRandom();
+		
+		Map<String, String> user = new HashMap<String, String>();
+		user.put(PEN_NAME_KEY, PEN_NAME);
+		user.put(PASSWORD_KEY, PASSWORD);
+		user.put(COOKIE_CHECK, "1");
+		user.put("submit", "Go");
+		
+	    HttpRequest.Builder builder = getRequestBuilder(LOGIN_URL);
+	    builder.POST(ofFormData(user));
+
+	    HttpRequest request = builder.build();
+	    
+		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+		
+		if (response.statusCode()==200) {
+			loggedIn = true;
+		}
+
 		
 		logger.exiting(this.getClass().getCanonicalName(), "login()");
 	}
@@ -184,7 +204,7 @@ public class TheMasqueNet extends Site {
 	}
 
 	@Override
-	Document getPage(String url) throws IOException {
+	Document getPage(String url) throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
 
 		String localUrl = url;

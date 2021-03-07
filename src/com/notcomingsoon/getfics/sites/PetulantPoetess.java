@@ -4,6 +4,8 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -16,6 +18,7 @@ import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 
 import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFProperties;
 import com.notcomingsoon.getfics.HTMLConstants;
 
 /**
@@ -34,18 +37,26 @@ public class PetulantPoetess extends Site {
 	private static final String NAME = "name";
 	private static final String SID = "sid";
 	private static final int CHAPTER_BODY = 5;
-	private Node emptyNode = new TextNode("",startUrl);
+	private Node emptyNode = new TextNode("");
 	private static String NEXT_LINK = "[Next]";
 	
-	private static final Cookie[] TPP_COOKIES = new Cookie[]
-          {
-		 	new Cookie("level", "0"), 
-		 	new Cookie("adminloggedin", "0"), 
-			new Cookie("loggedin", "1"), 
-			new Cookie("penname", "Ouatic"), 
-			new Cookie("userskin", "GraphicLite"), 
-			new Cookie("useruid", "22383")
-		 };
+	private static final String PEN_NAME = GFProperties.getPropertyValue(GFProperties.TPP_PEN_NAME);
+
+	
+	static{
+		try {
+			URI U = new URI(TPP);
+			addCookie(U,"level", "0"); 
+			addCookie(U,"loggedin", "1");
+			addCookie(U,"penname", PEN_NAME); 
+			addCookie(U,"userskin", "GraphicLite"); 
+			addCookie(U,"useruid", "22383");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+		 	
 	private static final int SUMMARY_ROW = 2;
 
 	/**
@@ -53,7 +64,6 @@ public class PetulantPoetess extends Site {
 	 */
 	public PetulantPoetess(String ficUrl) {
 		super(ficUrl);
-		super.cookies = TPP_COOKIES;
 		siteCharset = TPP_CHARSET;
 	}
 
@@ -150,7 +160,7 @@ public class PetulantPoetess extends Site {
 	}
 
 	@Override
-	protected Chapter extractSummary(Document story, Document chapter) {
+	protected Chapter extractSummary(Document story, Document chapter) throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
 		
 		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
@@ -177,7 +187,7 @@ public class PetulantPoetess extends Site {
 		return title;
 	}
 
-	private String searchAuthor(Tag storyTag, String baseUrl, String userRef, String storyRef) {
+	private String searchAuthor(Tag storyTag, String baseUrl, String userRef, String storyRef) throws Exception {
 		Element summary = new Element(storyTag, "");
 		String summaryText = null;
 		String authorUrl = baseUrl + userRef;

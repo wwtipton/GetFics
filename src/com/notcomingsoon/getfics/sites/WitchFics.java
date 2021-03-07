@@ -1,6 +1,8 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -21,8 +23,6 @@ public class WitchFics extends Site {
 	
 	private static final String BY = " by ";
 
-	//private static final Charset WBM_CHARSET = HTMLConstants.UTF_8;
-	
 	private static final String SRC = "src";
 
 	private static final String WAYBACK_MACHINE_URL = "https://web.archive.org";
@@ -35,17 +35,25 @@ public class WitchFics extends Site {
 	
 	String navUrl = null;
 	
-	private  Cookie[] WITCH_FIC_COOKIES =  new Cookie[]{ new Cookie(PHPSESSID, "pg6dm0elglserhrbeqtfb7h4l3")};
+	static{
+		try {
+			URI U = new URI(WAYBACK_MACHINE_URL);
+			addCookie(U,PHPSESSID, "pg6dm0elglserhrbeqtfb7h4l3");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 
 	
 
-	public WitchFics(String ficUrl) throws IOException {
+	public WitchFics(String ficUrl) throws Exception {
 		super(ficUrl);
-		super.cookies = WITCH_FIC_COOKIES;
 		getNestedSite();
 	}
 
-	private void getNestedSite() throws IOException {
+	private void getNestedSite() throws Exception {
 		// This page has wayback machine stuff.
 		Document doc = getPage(startUrl);
 		Element iframe = doc.getElementById("playback");
@@ -59,7 +67,7 @@ public class WitchFics extends Site {
 	}
 
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
@@ -153,7 +161,7 @@ public class WitchFics extends Site {
 	}
 
 	@Override
-	protected boolean isOneShot(Document doc) {
+	protected boolean isOneShot(Document doc) throws Exception {
 		boolean isOneShot = false;
 		
 		try {
@@ -198,8 +206,9 @@ public class WitchFics extends Site {
 		return title;
 	}
 
-	@Override
-	Document getPage(String url) throws IOException {
+	//@Override
+	/*
+	Document getPage(String url) throws Exception {
 		
 		try {
 			Thread.sleep(30000);
@@ -210,6 +219,7 @@ public class WitchFics extends Site {
 		
 		return super.getPage(url);
 	}
+	*/
 
 	
 }

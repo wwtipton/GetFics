@@ -4,21 +4,25 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFProperties;
 import com.notcomingsoon.getfics.HTMLConstants;
 
 /**
@@ -32,9 +36,6 @@ public class HuntingHorcruxes extends Site {
 	private static final int PRINT_BUTTON = 0;
 	private static final int CHAPTER_BODY = 0;
 	
-	private  Cookie[] HH_COOKIES =  new Cookie[]{ new Cookie("catkey5_useruid", "1182")};
-
-	
 	private static final String CLASS = "class";
 	private static final String CONTENT = "content";
 	private static final String PAGETITLE = "pagetitle";
@@ -43,11 +44,11 @@ public class HuntingHorcruxes extends Site {
 
 	private static final String PEN_NAME_KEY = "penname";
 	
-	private static final String PEN_NAME = "Ouatic-7";
+	private static final String PEN_NAME = GFProperties.getPropertyValue(GFProperties.HUNTING_HORCRUXES_PEN_NAME);
 	
 	private static final String PASSWORD_KEY = "password";
 	
-	private static final String PASSWORD = "d6eath";
+	private static final String PASSWORD = GFProperties.getPropertyValue(GFProperties.HUNTING_HORCRUXES_PASSWORD);
 	
 	private static final String LOGIN_URL = "http://www.huntinghorcruxes.themaplebookshelf.com/user.php?action=login";
 	
@@ -59,14 +60,30 @@ public class HuntingHorcruxes extends Site {
 	private static final String VIEW_USER = "viewuser";
 	private static final String VIEW_STORY = "viewstory";	
 	
+	private static boolean hhLoggedIn = false;
+	
+	static{
+		try {
+			URI U = new URI(HUNTING_HORCRUXES);
+			addCookie(U,"catkey5_useruid","1182");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	
+
+	
 	/**
 	 * @param ficUrl
 	 */
-	public HuntingHorcruxes(String ficUrl)  throws IOException {
+	public HuntingHorcruxes(String ficUrl)  throws Exception {
 		super(ficUrl);
-		login();
+		if (!hhLoggedIn) {
+			login();
+		}
 
-		super.cookies = HH_COOKIES;
 		siteCharset = HH_CHARSET;
 	}
 
@@ -185,7 +202,7 @@ public class HuntingHorcruxes extends Site {
 	 * @return toc 
 	 * @throws IOException
 	 */
-	private Document getTOCPage() throws IOException {
+	private Document getTOCPage() throws Exception {
 		String tocUrl = startUrl.replace("chapter", "index");
 		Document toc = getPage(tocUrl);
 		return toc;
@@ -232,42 +249,32 @@ public class HuntingHorcruxes extends Site {
 	}
 
 	@Override
-	void login() throws IOException {
+	void login() throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "login()");
-		conn = Jsoup.connect(LOGIN_URL);
-		conn.timeout(180000);
-		conn.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0");
-		Connection.Response resp = conn.execute();
-		Document doc = resp.parse();
-		Map<String, String> cookies = resp.cookies();
-		
-		//conn = Jsoup.connect(USER_SESSIONS);
-	//	conn = Jsoup.connect(LOGIN_URL);
-		conn.method(Connection.Method.POST);
-		conn.cookies(cookies);
-		conn.data(PEN_NAME_KEY, PEN_NAME);
-		conn.data(PASSWORD_KEY, PASSWORD);
-//		conn.data(REMEMBER_ME_KEY, "1");
-	//	conn.data("utf8", "&#x2713;");
-	//	conn.data(AUTHENTICITY_TOKEN, token);
-		conn.data("submit", "Submit");
-		Connection.Response resp2 = conn.execute();
-		Document doc2 = resp2.parse();
 
-		Set<String> keys = cookies.keySet();
-		HH_COOKIES = new Cookie[keys.size()];
+		waitRandom();
 		
-		int i = 0;
-		for(String key : keys){
-			HH_COOKIES[i] = new Cookie(key, cookies.get(key));
-			i++;
+		Map<String, String> user = new HashMap<String, String>();
+		user.put(PEN_NAME_KEY, PEN_NAME);
+		user.put(PASSWORD_KEY, PASSWORD);
+		user.put("submit", "Submit");
+		
+	    HttpRequest.Builder builder = getRequestBuilder(LOGIN_URL);
+	    builder.POST(ofFormData(user));
+
+	    HttpRequest request = builder.build();
+	    
+		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+		
+		if (response.statusCode()==200) {
+			hhLoggedIn = true;
 		}
 		
 		logger.exiting(this.getClass().getCanonicalName(), "login()");
 	}
 
 	@Override
-	Document getPage(String url) throws IOException {
+	Document getPage(String url) throws Exception {
 		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
 
 		String localUrl = url;

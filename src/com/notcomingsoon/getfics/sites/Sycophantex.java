@@ -3,6 +3,8 @@
  */
 package com.notcomingsoon.getfics.sites;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -12,6 +14,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFProperties;
 import com.notcomingsoon.getfics.HTMLConstants;
 
 /**
@@ -21,7 +24,7 @@ import com.notcomingsoon.getfics.HTMLConstants;
 public class Sycophantex extends Site {
 
 	private static final String COOKIE_USER_NAME_KEY = "uname";
-	private static final String COOKIE_USER_NAME_VALUE = "Ouatic7";
+	private static final String COOKIE_USER_NAME_VALUE = GFProperties.getPropertyValue(GFProperties.SYCOPHANTEX_PEN_NAME);
 	
 	private static final String COOKIE_USER_PASSWORD_KEY = "upass";
 	private static final String COOKIE_USER_PASSWORD_VALUE = "b2c198e49284d1fcae577ee91601a5fe";
@@ -33,17 +36,20 @@ public class Sycophantex extends Site {
 	
 	private static final Charset SYCOPHANTEX_CHARSET = HTMLConstants.WIN_1252;
 
-	private static final Cookie[] SYCOPHANTEX_COOKIES = new Cookie[]
-	                                      {new Cookie(COOKIE_USER_NAME_KEY, COOKIE_USER_NAME_VALUE), 
-	                            			new Cookie(COOKIE_USER_PASSWORD_KEY, COOKIE_USER_PASSWORD_VALUE) 
-	                            			};
-
+	static{
+		try {
+			URI U = new URI(SYCOPHANTEX);
+			addCookie(U,COOKIE_USER_NAME_KEY, COOKIE_USER_NAME_VALUE);
+			addCookie(U,COOKIE_USER_PASSWORD_KEY, COOKIE_USER_PASSWORD_VALUE);
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 
 	public Sycophantex(String ficURL) {
 		super(ficURL);
-		
-		super.cookies = SYCOPHANTEX_COOKIES;
 		
 		this.siteCharset = SYCOPHANTEX_CHARSET;
 	}

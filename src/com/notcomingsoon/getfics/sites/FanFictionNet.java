@@ -3,6 +3,9 @@
  */
 package com.notcomingsoon.getfics.sites;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -28,14 +31,27 @@ public class FanFictionNet extends Site {
 	private static final int CHAPTER_BODY = 0;
 	private static final int SUMMARY = 6;
 	
-
+	static{
+		try {
+			URI U = new URI("https://www.fanfiction.net");
+			addCookie(U,"__gads","ID=1f75c52f56b20fc4-22e117f392c20095:T=1596330031:RT=1596330031:R:S=ALNI_MYIa9bthqfKNyxM_9UFnpqHaMdGxg");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 	/**
 	 * @param ficUrl
+	 * @throws IOException 
 	 */
-	public FanFictionNet(String ficUrl) {
+	public FanFictionNet(String ficUrl) throws IOException {
 		super(ficUrl);
-
+	//	super.cookieManager = FFN_COOKIES;
 		siteCharset = FFN_CHARSET;
+	//	login();
+		ignoreHttpErrors = true;
 	}
 
 	/* (non-Javadoc)
@@ -188,5 +204,5 @@ public class FanFictionNet extends Site {
 		
 		return retVal;
 	}
-
+	 
 }
