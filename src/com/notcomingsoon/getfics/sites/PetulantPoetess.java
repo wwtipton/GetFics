@@ -58,6 +58,8 @@ public class PetulantPoetess extends Site {
 	}
 		 	
 	private static final int SUMMARY_ROW = 2;
+	
+	private Document toc = null;
 
 	/**
 	 * @param ficUrl
@@ -72,7 +74,7 @@ public class PetulantPoetess extends Site {
 	 */
 	@Override
 	protected ArrayList<Chapter> getChapterList(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 		Elements options = getChapterOptions(doc);
@@ -93,7 +95,7 @@ public class PetulantPoetess extends Site {
 			list.add(c);
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.exiting(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		return list;
 	}
 
@@ -101,14 +103,16 @@ public class PetulantPoetess extends Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#getAuthor(org.jsoup.nodes.Document)
 	 */
 	@Override
-	protected String getAuthor(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+	protected String getAuthor(Document doc) throws Exception {
+		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
-		Elements as = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWUSER);
+		getTOCPage();
 		
-		String author = as.get(0).text();
+		Elements h3s = toc.getElementsByTag(HTMLConstants.H3_TAG);
+		
+		String author = h3s.first().text();
 		logger.info("author = " + author);
-		logger.exiting(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		return author;
 	}
 
@@ -117,7 +121,7 @@ public class PetulantPoetess extends Site {
 	 */
 	@Override
 	protected String getTitle(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		Elements divs = doc.getElementsByTag(HTMLConstants.DIV_TAG);
 		Element div = divs.get(TITLE_DIV_INDEX);
@@ -126,7 +130,7 @@ public class PetulantPoetess extends Site {
 		
 		String title = bs.get(0).text();
 		logger.info("title = " + title);
-		logger.exiting(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		return title;
 	}
 
@@ -136,7 +140,7 @@ public class PetulantPoetess extends Site {
 	@Override
 	protected Document extractChapter(Document story, Document chapter,
 			Chapter title) {
-		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Element body = addChapterHeader(story, title);
 		
@@ -155,35 +159,26 @@ public class PetulantPoetess extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		return story;
 	}
 
 	@Override
 	protected Chapter extractSummary(Document story, Document chapter) throws Exception {
-		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
 		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
 		Element body = addChapterHeader(story, title);
+
+		getTOCPage();
 		
-		Elements elements = chapter.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWUSER);
-		Element userElement = elements.get(USER_LINK);
-		String userRef = userElement.attr(HTMLConstants.HREF_ATTR);
-		int sepIdx = startUrl.lastIndexOf(HTMLConstants.SEPARATOR);
-		String storyRef = startUrl.substring(sepIdx + 1);
-		int ampIdx = storyRef.indexOf("&");
-		if (ampIdx > 0){
-			storyRef = storyRef.substring(0, ampIdx);
-		}
-		String baseUrl = startUrl.substring(0, sepIdx + 1);
 		
-		String summary = searchAuthor(story.tag(), baseUrl, userRef, storyRef);
 		
-		body.appendText(summary);
+	//	body.appendText(summary);
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return title;
 	}
 
@@ -252,4 +247,22 @@ public class PetulantPoetess extends Site {
 		
 		return retVal;
 	}
+	
+	/**
+	 * Fetch table of contents page for story. It contains summary and list of chapters.
+	 * 
+	 * @return toc 
+	 * @throws IOException
+	 */
+	private Document getTOCPage() throws Exception {
+		if (null == toc) {
+			int index = startUrl.lastIndexOf(SLASH);
+			index = startUrl.lastIndexOf(SLASH, index);
+			String tocUrl = startUrl.substring(0, index);
+			toc = getPage(tocUrl);
+		}
+		return toc;
+	}
+
+
 }

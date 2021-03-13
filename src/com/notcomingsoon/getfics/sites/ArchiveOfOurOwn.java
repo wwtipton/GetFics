@@ -65,19 +65,19 @@ public class ArchiveOfOurOwn extends Site {
 
 	public ArchiveOfOurOwn(String ficUrl) throws IOException, InterruptedException {
 		super(ficUrl);
-		logger.entering(this.getClass().getCanonicalName(), "ArchiveOfOurOwn(String ficUrl)");
+		logger.entering(this.getClass().getSimpleName(), "ArchiveOfOurOwn(String ficUrl)");
 		logger.finer("startUrl = " + startUrl);
 		siteCharset = AO3_CHARSET;
 		
 		if (!loggedIn) {
 			login();
 		}
-		logger.exiting(this.getClass().getCanonicalName(), "ArchiveOfOurOwn(String ficUrl)");
+		logger.exiting(this.getClass().getSimpleName(), "ArchiveOfOurOwn(String ficUrl)");
 	}
 
 	@Override
 	protected ArrayList<Chapter> getChapterList(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 		
@@ -101,7 +101,7 @@ public class ArchiveOfOurOwn extends Site {
 			}
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.exiting(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		return list;
 	}
 
@@ -118,32 +118,32 @@ public class ArchiveOfOurOwn extends Site {
 
 	@Override
 	protected String getAuthor(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
 		Elements as = doc.getElementsByClass(AUTHOR);
 		
 		String author = as.get(0).text();
 		logger.info("author = " + author);
-		logger.exiting(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		return author;
 	}
 
 	@Override
 	protected String getTitle(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		Elements h2S = doc.getElementsByClass("title heading");
 		
 		String title = h2S.get(0).text();
 		logger.info("title = " + title);
-		logger.exiting(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		return title;
 	}
 
 	@Override
 	protected Document extractChapter(Document story, Document chapter,
 			Chapter title) {
-		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Element body = addChapterHeader(story, title);
 		
@@ -172,13 +172,13 @@ public class ArchiveOfOurOwn extends Site {
 
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		return story;
 	}
 
 	@Override
 	protected Chapter extractSummary(Document story, Document chapter) {
-		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
 		Chapter title = null;
 		
@@ -194,7 +194,7 @@ public class ArchiveOfOurOwn extends Site {
 			}
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return title;
 	}
 
@@ -220,7 +220,7 @@ public class ArchiveOfOurOwn extends Site {
 
 	@Override
 	void login() throws IOException, InterruptedException {
-		logger.entering(this.getClass().getCanonicalName(), "login()");
+		logger.entering(this.getClass().getSimpleName(), "login()");
 
 		waitRandom();
 		
@@ -259,7 +259,7 @@ public class ArchiveOfOurOwn extends Site {
 
 		loggedIn = true;
 		
-		logger.exiting(this.getClass().getCanonicalName(), "login()");
+		logger.exiting(this.getClass().getSimpleName(), "login()");
 	}
 
 
@@ -270,7 +270,7 @@ public class ArchiveOfOurOwn extends Site {
 	 * @param body modified by method
 	 */
 	void extractAfterNotes(Document story, Document chapter, Element body) {
-		logger.entering(this.getClass().getCanonicalName(), "extractAfterNotes");
+		logger.entering(this.getClass().getSimpleName(), "extractAfterNotes");
 
 		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, END_NOTES_MODULE);
 		if (!divs.isEmpty()) {
@@ -279,7 +279,7 @@ public class ArchiveOfOurOwn extends Site {
 			body.appendChild(chapterText);
 		}
 			
-		logger.exiting(this.getClass().getCanonicalName(), "extractAfterNotes");
+		logger.exiting(this.getClass().getSimpleName(), "extractAfterNotes");
 	}
 
 	/**
@@ -289,7 +289,7 @@ public class ArchiveOfOurOwn extends Site {
 	 * @param body modified by method
 	 */
 	void extractNotes(Document story, Document chapter, Element body) {
-		logger.entering(this.getClass().getCanonicalName(), "extractNotes");
+		logger.entering(this.getClass().getSimpleName(), "extractNotes");
 
 		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, NOTES_MODULE);
 		if (!divs.isEmpty()) {
@@ -298,7 +298,7 @@ public class ArchiveOfOurOwn extends Site {
 			addNotesFooter(body);
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractNotes");
+		logger.exiting(this.getClass().getSimpleName(), "extractNotes");
 	}
 
 

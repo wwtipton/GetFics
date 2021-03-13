@@ -91,7 +91,7 @@ public class SSHGExchange extends Site {
 
 	@Override
 	protected String getTitle(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		String title = getTextValue(doc, TITLE_KEY);
 		
@@ -143,7 +143,7 @@ public class SSHGExchange extends Site {
 
 	@Override
 	protected Document extractChapter(Document story, Document chapter, Chapter title) {
-		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		if (!isOneShot(chapter)){//One shot body included with summary
 			Element body = addChapterHeader(story, title);
@@ -159,7 +159,7 @@ public class SSHGExchange extends Site {
 		}
 
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		return story;
 	}
 
@@ -176,7 +176,7 @@ public class SSHGExchange extends Site {
 	
 	@Override
 	protected Chapter extractSummary(Document story, Document chapter) {
-		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
 		Chapter summary = new Chapter(this.startUrl, SUMMARY_STRING);
 		Element body = addChapterHeader(story, summary);
@@ -192,7 +192,7 @@ public class SSHGExchange extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return summary;
 	}
 
@@ -214,7 +214,7 @@ public class SSHGExchange extends Site {
 	
 	@Override
 	Document getPage(String url) throws Exception {
-		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
+		logger.entering(this.getClass().getSimpleName(), "getPage(String url)");
 		
 		String localUrl = url;
 		Document doc = super.getPage(localUrl);
@@ -228,7 +228,7 @@ public class SSHGExchange extends Site {
 			
 		local.body().appendChild(divs.first());
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
+		logger.exiting(this.getClass().getSimpleName(), "getPage(String url)");
 		return local;
 	}
 

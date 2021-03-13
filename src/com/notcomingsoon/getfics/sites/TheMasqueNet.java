@@ -25,9 +25,8 @@ public class TheMasqueNet extends Site {
 	static{
 		try {
 			URI U = new URI(THE_MASQUE);
-			addCookie(U,"PHPSESSID", "19d1319ded032a2ce278d957f54c3bcc");
 			addCookie(U,"jPKKerrGED_salt", "cfcd208495d565ef66e7dff9f98764da");
-			addCookie(U,"jPKKerrGED_useruid", "11496");
+			addCookie(U,"jPKKerrGED_useruid", "28409");
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,7 +79,7 @@ public class TheMasqueNet extends Site {
 
 	@Override
 	void login() throws Exception {
-		logger.entering(this.getClass().getCanonicalName(), "login()");
+		logger.entering(this.getClass().getSimpleName(), "login()");
 
 		waitRandom();
 		
@@ -102,12 +101,12 @@ public class TheMasqueNet extends Site {
 		}
 
 		
-		logger.exiting(this.getClass().getCanonicalName(), "login()");
+		logger.exiting(this.getClass().getSimpleName(), "login()");
 	}
 
 	@Override
 	protected ArrayList<Chapter> getChapterList(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 		
@@ -125,7 +124,7 @@ public class TheMasqueNet extends Site {
 			list.add(c);
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.exiting(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		return list;
 	}
 
@@ -142,32 +141,32 @@ public class TheMasqueNet extends Site {
 
 	@Override
 	protected String getAuthor(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
 		Elements as = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWUSER);
 		
 		String author = as.get(0).text();
 		logger.info("author = " + author);
-		logger.exiting(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		return author;
 	}
 
 	@Override
 	protected String getTitle(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		Elements as = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWSTORY);
 		
 		String title = as.get(0).text();
 		logger.info("title = " + title);
-		logger.exiting(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		return title;
 	}
 
 	@Override
 	protected Document extractChapter(Document story, Document chapter,
 			Chapter title) {
-		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Element body = addChapterHeader(story, title);
 		
@@ -179,7 +178,7 @@ public class TheMasqueNet extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		return story;
 	}
 
@@ -205,7 +204,7 @@ public class TheMasqueNet extends Site {
 
 	@Override
 	Document getPage(String url) throws Exception {
-		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
+		logger.entering(this.getClass().getSimpleName(), "getPage(String url)");
 
 		String localUrl = url;
 		Document doc = super.getPage(localUrl);
@@ -215,7 +214,7 @@ public class TheMasqueNet extends Site {
 		}
 		doc = recode(doc, localUrl);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
+		logger.exiting(this.getClass().getSimpleName(), "getPage(String url)");
 		return doc;
 	}
 

@@ -35,6 +35,8 @@ public class AdultFanFiction extends Site {
 	private static final String STORY = "story";
 	
 	private static final Charset AFF_CHARSET = HTMLConstants.WIN_1252;
+	
+	private static final String AFF_SHORT = "adult-fanfiction.org";
 
 	static{
 		try {
@@ -58,7 +60,7 @@ public class AdultFanFiction extends Site {
 	}
 
 	protected Document extractChapter(Document story, Document chapter, Chapter title) {
-		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Element body = addChapterHeader(story, title);
 		
@@ -73,13 +75,13 @@ public class AdultFanFiction extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		return story;
 	}
 
 	
 	protected String getAuthor(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
 		Elements as = doc.getElementsByAttributeValueContaining(HTMLConstants.HREF_ATTR, MEMBERS_ATTR);
 		
@@ -87,13 +89,13 @@ public class AdultFanFiction extends Site {
 
 		logger.info("author = " + author);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		return author;
 
 	}
 
 	protected ArrayList<Chapter> getChapterList(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 		Elements options = getChapterOptions(doc);
@@ -110,7 +112,7 @@ public class AdultFanFiction extends Site {
 			list.add(c);
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.exiting(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		return list;
 	}
 
@@ -136,7 +138,7 @@ public class AdultFanFiction extends Site {
 	}
 
 	protected String getTitle(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		Element mTable = getMainTable(doc);
 		Elements as = mTable.getElementsByAttributeValueContaining(HTMLConstants.HREF_ATTR, STORY);
@@ -144,7 +146,7 @@ public class AdultFanFiction extends Site {
 		
 		logger.info("title = " + title);
 
-		logger.exiting(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		return title;
 	}
 
@@ -161,7 +163,7 @@ public class AdultFanFiction extends Site {
 
 	static public boolean isAFF(String url){
 		boolean retVal = false;
-		if (url.contains(AFF)){
+		if (url.contains(AFF_SHORT)){
 			retVal = true;
 		}
 		

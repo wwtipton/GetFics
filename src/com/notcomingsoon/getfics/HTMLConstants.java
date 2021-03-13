@@ -98,6 +98,8 @@ public class HTMLConstants {
 
 	public static final String CENTER_TAG = "center";
 
+	public static final String H3_TAG = "h3";
+
 
 	
 }

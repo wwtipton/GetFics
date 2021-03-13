@@ -181,7 +181,9 @@ public class Main {
 		while (in.ready())
 		{
 			String fic = in.readLine();
-			ficList.add(fic);
+			if (!fic.startsWith("#")) {
+				ficList.add(fic);
+			}
 		}
 		
 		in.close();
