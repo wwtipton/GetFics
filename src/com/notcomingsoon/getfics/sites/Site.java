@@ -129,6 +129,8 @@ public abstract class Site {
 
 	protected static final String SUMMARY_STRING = GFProperties.getString(GFProperties.SUMMARY); // $NON-NLS-1$
 
+	protected static final String TAGS_STRING = GFProperties.getString(GFProperties.TAGS); // $NON-NLS-1$
+
 	protected Document recode(Document doc, String url) {
 		logger.entering(this.getClass().getSimpleName(), "recode(Document doc, String url)"); //$NON-NLS-1$
 
@@ -446,6 +448,16 @@ public abstract class Site {
 		Element h2 = body.appendElement(HTMLConstants.H2_TAG);
 		h2.text(title.getOrigTitle());
 		return body;
+	}
+
+	/**
+	 * @param story
+	 * @param title
+	 * @return nothing but alters parameter
+	 */
+	protected void addTagsHeader(Element body) {
+		Element h3 = body.appendElement(HTMLConstants.H3_TAG);
+		h3.text(TAGS_STRING);
 	}
 
 	public static Story getStory(String url) throws Exception {

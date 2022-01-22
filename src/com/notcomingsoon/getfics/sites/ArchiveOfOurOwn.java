@@ -8,10 +8,10 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -56,6 +56,8 @@ public class ArchiveOfOurOwn extends Site {
 	private static final String NOTES_MODULE = "notes module";
 
 	private static final String END_NOTES_MODULE = "end notes module";
+
+	private static final String TAG = "tag";
 	
 	boolean loggedIn = false;
 	
@@ -180,7 +182,10 @@ public class ArchiveOfOurOwn extends Site {
 	protected Chapter extractSummary(Document story, Document chapter) {
 		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
+		boolean writeChapter = false;
+		
 		Chapter title = null;
+		Element body = null;
 		
 		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, SUMMARY_MODULE);
 		Element div = divs.first();
@@ -188,14 +193,39 @@ public class ArchiveOfOurOwn extends Site {
 			Element p = div.getElementsByTag(HTMLConstants.BLOCKQUOTE_TAG).first();
 			if (p != null){
 				title = new Chapter(this.startUrl, SUMMARY_STRING);
-				Element body = addChapterHeader(story, title);
+				body = addChapterHeader(story, title);
 				body.appendChild(p);
-				addChapterFooter(body);	
+				writeChapter = true;
 			}
+		}
+	
+		List<String> tagList = extractTags(story, chapter);
+		if (null != tagList) {
+			addTagsHeader(body);
+			writeChapter = true;
+			String textTags = tagList.toString();
+			textTags = textTags.substring(1, textTags.length() - 1);
+			body.appendText(textTags);
+		}
+		
+		if (writeChapter) {
+			addChapterFooter(body);
 		}
 		
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return title;
+	}
+
+	protected List<String> extractTags(Document story, Document chapter) {
+		Elements tags = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, TAG);
+		
+		List tagList = null;
+		
+		if (!tags.isEmpty()) {
+			tagList = tags.eachText();
+		}
+		
+		return tagList;
 	}
 
 	@Override

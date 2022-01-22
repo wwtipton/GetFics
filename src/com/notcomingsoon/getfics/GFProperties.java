@@ -30,6 +30,7 @@ public class GFProperties extends Properties {
 	public static final String USER_AGENT = "user.agent";
 	public static final String SUMMARY = "summary";
 	public static final String NOTES_FOOTER = "notes.footer";
+	public static final String TAGS = "tags";
 	
 	// Archive of Our Owns
 	public static final String AO3_PEN_NAME = "ao3.pen.name";
