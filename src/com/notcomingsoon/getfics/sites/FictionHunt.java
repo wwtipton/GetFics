@@ -41,7 +41,7 @@ public class FictionHunt extends Site {
 	 */
 	@Override
 	protected ArrayList<Chapter> getChapterList(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 		
@@ -60,7 +60,7 @@ public class FictionHunt extends Site {
 			}
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.exiting(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		return list;
 	}
 
@@ -97,14 +97,14 @@ public class FictionHunt extends Site {
 	 */
 	@Override
 	protected String getAuthor(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
 		Element div = doc.getElementsByClass("details").first();
 		Elements as = div.getElementsByTag(HTMLConstants.A_TAG);
 		
 		String author = as.get(AUTHOR_ANCHOR).text();
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		return author;
 	}
 
@@ -113,12 +113,12 @@ public class FictionHunt extends Site {
 	 */
 	@Override
 	protected String getTitle(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		Element div = doc.getElementsByClass("title").first();
 		String title = div.text();
 		logger.info("title = " + title);
-		logger.exiting(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		return title;
 	}
 
@@ -128,7 +128,7 @@ public class FictionHunt extends Site {
 	@Override
 	protected Document extractChapter(Document story, Document chapter,
 			Chapter title) {
-		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Element body = addChapterHeader(story, title);
 		
@@ -139,7 +139,7 @@ public class FictionHunt extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		return story;
 	}
 

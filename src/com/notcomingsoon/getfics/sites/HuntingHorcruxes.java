@@ -92,7 +92,7 @@ public class HuntingHorcruxes extends Site {
 	 */
 	@Override
 	protected ArrayList<Chapter> getChapterList(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 
@@ -110,7 +110,7 @@ public class HuntingHorcruxes extends Site {
 			list.add(c);
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.exiting(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		return list;
 	}
 
@@ -119,14 +119,14 @@ public class HuntingHorcruxes extends Site {
 	 */
 	@Override
 	protected String getAuthor(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
 		Elements es = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEW_USER);
 		Element a = es.first();
 		String author = a.text();
 		
 		logger.info("author = " + author);
-		logger.exiting(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		return author;
 	}
 
@@ -135,14 +135,14 @@ public class HuntingHorcruxes extends Site {
 	 */
 	@Override
 	protected String getTitle(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		Elements es = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEW_STORY);
 		Element s = es.first();
 		String title = s.text();
 
 		logger.info("title = " + title);
-		logger.exiting(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		return title;
 	}
 
@@ -152,7 +152,7 @@ public class HuntingHorcruxes extends Site {
 	@Override
 	protected Document extractChapter(Document story, Document chapter,
 			Chapter title) {
-		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Element body = addChapterHeader(story, title);
 
@@ -165,13 +165,13 @@ public class HuntingHorcruxes extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		return story;
 	}
 
 	@Override
 	protected Chapter extractSummary(Document story, Document chapter)  {
-		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
 		Document toc = null;
 		String summary = null;
@@ -192,7 +192,7 @@ public class HuntingHorcruxes extends Site {
 			addChapterFooter(body);
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return title;
 	}
 
@@ -250,7 +250,7 @@ public class HuntingHorcruxes extends Site {
 
 	@Override
 	void login() throws Exception {
-		logger.entering(this.getClass().getCanonicalName(), "login()");
+		logger.entering(this.getClass().getSimpleName(), "login()");
 
 		waitRandom();
 		
@@ -270,12 +270,12 @@ public class HuntingHorcruxes extends Site {
 			hhLoggedIn = true;
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "login()");
+		logger.exiting(this.getClass().getSimpleName(), "login()");
 	}
 
 	@Override
 	Document getPage(String url) throws Exception {
-		logger.entering(this.getClass().getCanonicalName(), "getPage(String url)");
+		logger.entering(this.getClass().getSimpleName(), "getPage(String url)");
 
 		String localUrl = url;
 		Document doc = super.getPage(localUrl);
@@ -285,7 +285,7 @@ public class HuntingHorcruxes extends Site {
 		}
 		doc = recode(doc, localUrl);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getPage(String url)");
+		logger.exiting(this.getClass().getSimpleName(), "getPage(String url)");
 		return doc;
 	}
 

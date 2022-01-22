@@ -89,7 +89,7 @@ public class Main {
 			while (ficIter.hasNext())
 			{
 				String ficURL = (String) ficIter.next();
-				logger.warning("Starting: " + ficURL);
+				logger.warning(GFLogger.NEW_LINE + GFLogger.NEW_LINE + "Starting: " + ficURL);
 				Story story = Site.getStory(ficURL);
 
 				if (null != story) {
@@ -111,7 +111,7 @@ public class Main {
 			ArrayList<String> failures = imageFailures.get(k);
 			for (int i = 0; i < failures.size(); i++) {
 				if (i == 0) {
-					logger.warning(k + " had at least one picture failure.");
+					logger.warning(GFLogger.NEW_LINE + GFLogger.NEW_LINE + k + " had at least one picture failure.");
 				}
 				logger.warning(failures.get(i));
 			}
@@ -181,7 +181,9 @@ public class Main {
 		while (in.ready())
 		{
 			String fic = in.readLine();
-			ficList.add(fic);
+			if (!fic.startsWith("#")) {
+				ficList.add(fic);
+			}
 		}
 		
 		in.close();

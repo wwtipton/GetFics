@@ -1,31 +1,56 @@
 package com.notcomingsoon.getfics.sites;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFProperties;
 import com.notcomingsoon.getfics.HTMLConstants;
 
 public class TwistingTheHellmouth extends Site {
 
 	private static final Charset TTH_CHARSET = HTMLConstants.UTF_8;
 
+	/*
 	static{
 		try {
 			URI U = new URI(TTH);
-			addCookie(U,"login", "4926%7C59528348979446508161491382910866814996584764692018%7C1");
+			addCookie(U,"login", "login: 4926|79643601359745401948558400011123414202389861891824|1");
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+*/
+	private static final String LOGIN_URL = "https://tthfanfic.org/login.php";
+	
+	private static final String PEN_NAME_KEY = "urealname";
+	
+	private static final String PEN_NAME = GFProperties.getPropertyValue(GFProperties.TTH_PEN_NAME);
+	
+	private static final String LOGIN_KEY = "loginsubmit";
+	
+	private static final String LOGIN_ACTION = "Login";
+	
+	private static final String PASSWORD = GFProperties.getPropertyValue(GFProperties.TTH_PASSWORD);
+
+	private static final String CTKN_ID = "ctkn";
+
+	private static final String PASSWORD_ID = "password";
 
 
 
@@ -43,14 +68,21 @@ public class TwistingTheHellmouth extends Site {
 
 	private static final String SUMMARY_COLON = SUMMARY_STRING + ": ";
 	
-	public TwistingTheHellmouth(String ficUrl) {
+	boolean loggedIn = false;
+	
+	public TwistingTheHellmouth(String ficUrl) throws IOException, InterruptedException {
 		super(ficUrl);
 		siteCharset = TTH_CHARSET;
+		
+		
+		if (!loggedIn) {
+			login();
+		}
 	}
 
 	@Override
 	protected ArrayList<Chapter> getChapterList(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 		
@@ -71,14 +103,14 @@ public class TwistingTheHellmouth extends Site {
 
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.exiting(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		return list;
 
 	}
 
 	@Override
 	protected String getAuthor(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
 		Elements tables = doc.getElementsByTag(HTMLConstants.TABLE_TAG);
 		Element table = tables.get(AUTHOR_TABLE);
@@ -87,26 +119,26 @@ public class TwistingTheHellmouth extends Site {
 		
 		String author = td.text();
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		return author;
 	}
 
 	@Override
 	protected String getTitle(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		Elements h2s = doc.getElementsByTag(HTMLConstants.H2_TAG);
 		Element h2 = h2s.first();
 		String title = h2.text();
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		return title;
 	}
 
 	@Override
 	protected Document extractChapter(Document story, Document chapter,
 			Chapter title) {
-		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Element body = addChapterHeader(story, title);
 		
@@ -118,14 +150,14 @@ public class TwistingTheHellmouth extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		return story;
 
 	}
 
 	@Override
 	protected Chapter extractSummary(Document story, Document chapter) {
-		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
 		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
 		Element body = addChapterHeader(story, title);
@@ -149,7 +181,7 @@ public class TwistingTheHellmouth extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return title;
 	}
 
@@ -186,6 +218,52 @@ public class TwistingTheHellmouth extends Site {
 			options = form.getElementsByTag(HTMLConstants.OPTION_TAG);
 		}
 		return options;
+	}
+
+	@Override
+	void login() throws IOException, InterruptedException {
+		logger.entering(this.getClass().getSimpleName(), "login()");
+
+		waitRandom();
+		
+		HttpRequest.Builder builder = getRequestBuilder(LOGIN_URL);
+
+	    HttpRequest request = builder.build();
+	    
+		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+
+	    Document doc = parse(LOGIN_URL, response);
+
+		if (request.uri().toString().equals(LOGIN_URL)) {
+
+			Elements elist = doc.getElementsByAttributeValue("name", CTKN_ID);
+			String ctkn = elist.last().attr("value");
+
+			Element el = doc.getElementById(PASSWORD_ID);
+			String passwordKey = el.attr("name");
+
+			waitRandom();
+
+			Map<String, String> formMap = new HashMap<>();
+			formMap.put(PEN_NAME_KEY, PEN_NAME);
+			formMap.put(passwordKey, PASSWORD);
+			formMap.put(CTKN_ID, ctkn);
+			formMap.put(LOGIN_KEY, LOGIN_ACTION);
+
+			builder.POST(ofFormData(formMap));
+			
+			HttpRequest request2 = builder.build();
+
+			try {
+				HttpResponse<InputStream> resp2 = client.send(request2, BodyHandlers.ofInputStream());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		loggedIn = true;
+		
+		logger.exiting(this.getClass().getSimpleName(), "login()");
 	}
 
 

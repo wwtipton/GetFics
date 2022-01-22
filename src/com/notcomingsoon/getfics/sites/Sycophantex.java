@@ -56,7 +56,7 @@ public class Sycophantex extends Site {
 
 	@Override
 	protected Document extractChapter(Document story, Document chapter, Chapter title) {
-		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Element body = addChapterHeader(story, title);
 		
@@ -65,26 +65,26 @@ public class Sycophantex extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		return story;
 	}
 
 	@Override
 	protected String getAuthor(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
 		Elements as = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWUSER);
 		
 		String author = as.get(0).text();
 		logger.info("author = " + author);
-		logger.exiting(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		return author;
 	}
 
 	
 	@Override
 	protected ArrayList<Chapter> getChapterList(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 		
@@ -106,7 +106,7 @@ public class Sycophantex extends Site {
 			list.add(c);
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.exiting(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		return list;
 	}
 
@@ -125,13 +125,13 @@ public class Sycophantex extends Site {
 
 	@Override
 	protected String getTitle(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		Elements as = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWSTORY);
 		
 		String title = as.get(0).text();
 		logger.info("title = " + title);
-		logger.exiting(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		return title;
 	}
 	

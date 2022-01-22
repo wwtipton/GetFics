@@ -61,3 +61,5 @@ Backup-getfics.properties
 *.log
 getfics.properties
 getfics.properties
+*.properties
+JavaAgent

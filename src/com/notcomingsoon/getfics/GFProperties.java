@@ -22,6 +22,8 @@ public class GFProperties extends Properties {
 	public static final String OUTPUT_DIRECTORY_KEY = "output.directory";
 	public static final String MOBIGEN_PATH_KEY = "mobigen.path";
 	public static final String PUBLISH_DIRECTORY_KEY = "publish.directory";
+	public static final String DEVICE_DIRECTORY_KEY = "device.directory";
+	public static final String REJECTS_DIRECTORY_KEY = "rejects.directory";
 	public static final String MOBI_EXTENSION_KEY = "mobi.extension";	
 	
 	// Site
@@ -42,6 +44,10 @@ public class GFProperties extends Properties {
 	
 	// Ashwinder Sycophantex
 	public static final String SYCOPHANTEX_PEN_NAME = "sycophantex.pen.name";
+	
+	// Twisting the Hellmouth
+	public static final String TTH_PEN_NAME = "tth.pen.name";
+	public static final String TTH_PASSWORD = "tth.password";
 	
 	
 	static GFProperties props = new GFProperties();

@@ -34,7 +34,7 @@ public class MediaMiner extends Site {
 
 	@Override
 	protected ArrayList<Chapter> getChapterList(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 		Elements options = getChapterOptions(doc);
@@ -51,13 +51,13 @@ public class MediaMiner extends Site {
 			list.add(c);
 		}
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getChapterList(Document doc");
+		logger.exiting(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		return list;
 	}
 
 	@Override
 	protected String getAuthor(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
 		Elements as = doc.getElementsByAttributeValueContaining(HTMLConstants.HREF_ATTR, USER_INFO);
 		
@@ -65,13 +65,13 @@ public class MediaMiner extends Site {
 
 		logger.info("author = " + author);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "getAuthor(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		return author;
 	}
 
 	@Override
 	protected String getTitle(Document doc) {
-		logger.entering(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		Element header = doc.getElementById(POST_TITLE);
 		String info = header.text();
@@ -81,13 +81,13 @@ public class MediaMiner extends Site {
 		
 		logger.info("title = " + title);
 
-		logger.exiting(this.getClass().getCanonicalName(), "getTitle(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		return title;
 	}
 
 	@Override
 	protected Document extractChapter(Document story, Document chapter, Chapter title) {
-		logger.entering(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Element body = addChapterHeader(story, title);
 		Element div = chapter.getElementById("fanfic-text");
@@ -96,13 +96,13 @@ public class MediaMiner extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractChapter(Document doc)");
+		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		return story;
 	}
 
 	@Override
 	protected Chapter extractSummary(Document story, Document chapter) {
-		logger.entering(this.getClass().getCanonicalName(), "extractSummary");
+		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
 		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
 		Element body = addChapterHeader(story, title);
@@ -116,7 +116,7 @@ public class MediaMiner extends Site {
 		
 		addChapterFooter(body);
 		
-		logger.exiting(this.getClass().getCanonicalName(), "extractSummary");
+		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return title;
 	}
 
