@@ -7,7 +7,8 @@ publish.directory=C:\\Kindle\\_Published
 mobi.extension=.mobi
 google.drive.directory=
 mobi.directory=mobi
-rejects=_Rejects
+rejects.directory=
+device.directory=
 
 #
 #  Site
@@ -42,3 +43,9 @@ tpp.pen.name=
 # Ashwinder Sycophantex
 #
 sycophantex.pen.name=
+
+#
+# Twisting the Hellmouth
+#
+tth.pen.name=
+tth.password=
