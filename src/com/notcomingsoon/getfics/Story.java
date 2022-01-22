@@ -23,6 +23,8 @@ public class Story {
 	
 	String origTitle;
 	
+	String delimitedAuthor;
+	
 	/* Only populate if previous version of story exists. */
 	Calendar now;
 	
@@ -104,6 +106,7 @@ public class Story {
 		setFileTitle(title);
 		setOrigAuthor(author);
 		setOrigTitle(title);
+		setDelimitedAuthor(author);
 
 
 		File dir = GFFileUtils.createDirectory(this.getFileAuthor(), this.getFileTitle(), OUTPUT_DIRECTORY);
@@ -115,6 +118,14 @@ public class Story {
 
 		
 		logger.exiting("com.notcomingsoon.getfics.Story", "Story(String author, String title)");
+	}
+
+	void setDelimitedAuthor(String author) {
+		delimitedAuthor = author.replace(',', ';');
+	}
+	
+	public String getDelimitedAuthor() {
+		return delimitedAuthor;
 	}
 
 	@Override

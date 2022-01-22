@@ -1,31 +1,56 @@
 package com.notcomingsoon.getfics.sites;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFProperties;
 import com.notcomingsoon.getfics.HTMLConstants;
 
 public class TwistingTheHellmouth extends Site {
 
 	private static final Charset TTH_CHARSET = HTMLConstants.UTF_8;
 
+	/*
 	static{
 		try {
 			URI U = new URI(TTH);
-			addCookie(U,"login", "4926%7C59528348979446508161491382910866814996584764692018%7C1");
+			addCookie(U,"login", "login: 4926|79643601359745401948558400011123414202389861891824|1");
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+*/
+	private static final String LOGIN_URL = "https://tthfanfic.org/login.php";
+	
+	private static final String PEN_NAME_KEY = "urealname";
+	
+	private static final String PEN_NAME = GFProperties.getPropertyValue(GFProperties.TTH_PEN_NAME);
+	
+	private static final String LOGIN_KEY = "loginsubmit";
+	
+	private static final String LOGIN_ACTION = "Login";
+	
+	private static final String PASSWORD = GFProperties.getPropertyValue(GFProperties.TTH_PASSWORD);
+
+	private static final String CTKN_ID = "ctkn";
+
+	private static final String PASSWORD_ID = "password";
 
 
 
@@ -43,9 +68,16 @@ public class TwistingTheHellmouth extends Site {
 
 	private static final String SUMMARY_COLON = SUMMARY_STRING + ": ";
 	
-	public TwistingTheHellmouth(String ficUrl) {
+	boolean loggedIn = false;
+	
+	public TwistingTheHellmouth(String ficUrl) throws IOException, InterruptedException {
 		super(ficUrl);
 		siteCharset = TTH_CHARSET;
+		
+		
+		if (!loggedIn) {
+			login();
+		}
 	}
 
 	@Override
@@ -186,6 +218,52 @@ public class TwistingTheHellmouth extends Site {
 			options = form.getElementsByTag(HTMLConstants.OPTION_TAG);
 		}
 		return options;
+	}
+
+	@Override
+	void login() throws IOException, InterruptedException {
+		logger.entering(this.getClass().getSimpleName(), "login()");
+
+		waitRandom();
+		
+		HttpRequest.Builder builder = getRequestBuilder(LOGIN_URL);
+
+	    HttpRequest request = builder.build();
+	    
+		HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+
+	    Document doc = parse(LOGIN_URL, response);
+
+		if (request.uri().toString().equals(LOGIN_URL)) {
+
+			Elements elist = doc.getElementsByAttributeValue("name", CTKN_ID);
+			String ctkn = elist.last().attr("value");
+
+			Element el = doc.getElementById(PASSWORD_ID);
+			String passwordKey = el.attr("name");
+
+			waitRandom();
+
+			Map<String, String> formMap = new HashMap<>();
+			formMap.put(PEN_NAME_KEY, PEN_NAME);
+			formMap.put(passwordKey, PASSWORD);
+			formMap.put(CTKN_ID, ctkn);
+			formMap.put(LOGIN_KEY, LOGIN_ACTION);
+
+			builder.POST(ofFormData(formMap));
+			
+			HttpRequest request2 = builder.build();
+
+			try {
+				HttpResponse<InputStream> resp2 = client.send(request2, BodyHandlers.ofInputStream());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		loggedIn = true;
+		
+		logger.exiting(this.getClass().getSimpleName(), "login()");
 	}
 
 

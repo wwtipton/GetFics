@@ -12,6 +12,8 @@ public class GFLogger extends java.util.logging.Logger {
 
 	private static Logger logger = null;
 	
+	public static String NEW_LINE = "\r\n";
+	
 	protected GFLogger(String name, String resourceBundleName) {
 		super(name, resourceBundleName);
 	}

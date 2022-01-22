@@ -301,7 +301,7 @@ public class ProjectFile {
 		Element dcLang = project.createElement(DC_LANGUAGE_TAG);
 		dcLang.setTextContent(DC_LANGUAGE_TAG_VALUE);
 		Element dcCreator = project.createElement(DC_CREATOR_TAG);
-		dcCreator.setTextContent(story.getOrigAuthor());
+		dcCreator.setTextContent(story.getDelimitedAuthor());
 		dcMetadata.appendChild(dcTitle);
 		dcMetadata.appendChild(dcLang);
 		dcMetadata.appendChild(dcCreator);

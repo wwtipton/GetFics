@@ -357,7 +357,7 @@ public abstract class Site {
 				} else {
 					try {
 						File outputFile = new File(loc.getOutputDir(), PIC + i + PERIOD + type);
-						image.attr(HTMLConstants.SRC_ATTR, outputFile.getPath());
+						image.attr(HTMLConstants.SRC_ATTR, outputFile.getName());
 						logger.info("outputFile = " + outputFile); //$NON-NLS-1$
 						ImageIO.write(pic, type, outputFile);
 					} catch (Exception e) {
