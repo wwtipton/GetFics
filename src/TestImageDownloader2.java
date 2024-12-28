@@ -18,7 +18,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.MemoryCacheImageInputStream;
+import javax.imageio.stream.FileCacheImageInputStream;
 
 import org.brotli.dec.BrotliInputStream;
 
@@ -48,15 +48,17 @@ public class TestImageDownloader2
           // read the url
    //      HttpRequest.Builder builder = getRequestBuilder("https://i.ibb.co/3k5G8nB/sadfasf.jpg");
 
-	    HttpRequest.Builder builder = getRequestBuilder("https://64.media.tumblr.com/f024e67daddd86a3eaba91137398b9aa/a9e9a5259522f5c8-61/s640x960/ac5eee4e497cc24fb2257a52dee4d19d2775635f.png");
+	    HttpRequest.Builder builder = getRequestBuilder("https://i.imgur.com/BDENSz9.jpg");
 
 	    HttpRequest request = builder.build();
+	    
+	    File dir = new File("E:\\CodingProjects\\GetFics");
 	    
 		try {
 			HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
 			System.out.println("Status code:\t" + response.statusCode());
 			InputStream is = decompress(response);
-			MemoryCacheImageInputStream iis = new MemoryCacheImageInputStream(is);
+			FileCacheImageInputStream iis = new FileCacheImageInputStream(is, dir);
 			BufferedImage pic = ImageIO.read(iis);
 			if (null == pic) {
 				throw new Exception("Picture diddn't download!!!"); //$NON-NLS-1$
