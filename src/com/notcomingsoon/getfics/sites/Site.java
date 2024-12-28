@@ -389,22 +389,14 @@ public abstract class Site {
 		logger.entering(this.getClass().getSimpleName(), "writeStory(Document doc, File dir)"); //$NON-NLS-1$
 
 		File dir = loc.getOutputDir();
-		//File f = new File(dir, loc.toString() + HTMLConstants.HTML_EXTENSION);
 
 		logger.info("f: " + dir.getParent()); //$NON-NLS-1$
 
-//		f.createNewFile();
-	//	FileOutputStream fos = new FileOutputStream(f);
 		OutputStreamWriter osw = getOSW(dir.getPath(), loc.toString() + HTMLConstants.HTML_EXTENSION);
 		logger.log(Level.ALL, this.getClass().getSimpleName() + "gwriteStory(Document story, Story loc) \tcharset:" //$NON-NLS-1$
 				+ story.charset().displayName());
 
 		String content = story.html();
-	//	byte[] b = content.getBytes();
-
-		//fos.write(b);
-	//	fos.close();
-		
 		osw.write(content);
 		osw.close();
 		

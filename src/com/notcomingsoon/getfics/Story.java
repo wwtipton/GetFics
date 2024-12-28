@@ -111,10 +111,12 @@ public class Story {
 
 		File dir = GFFileUtils.createDirectory(this.getFileAuthor(), this.getFileTitle(), OUTPUT_DIRECTORY);
 		setOutputDir(dir);
+		/*
 		File f = new File(dir, toString() + HTMLConstants.HTML_EXTENSION);
 		if (f.exists()) {
 			setNow(Calendar.getInstance());
 		}
+		*/
 
 		
 		logger.exiting("com.notcomingsoon.getfics.Story", "Story(String author, String title)");
