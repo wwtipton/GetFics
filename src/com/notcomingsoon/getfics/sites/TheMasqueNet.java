@@ -55,11 +55,11 @@ public class TheMasqueNet extends Site {
 	
 	private static final String LOGIN_URL = "http://www.themasque.net/wiktt/efiction/user.php?action=login";
 	
-	private static final String PHPSESSID = "PHPSESSID";
+//	private static final String PHPSESSID = "PHPSESSID";
 
-	private static final String SALT = "jPKKerrGED_salt";
+//	private static final String SALT = "jPKKerrGED_salt";
 
-	private static final String USERUID = "jPKKerrGED_useruid";
+//	private static final String USERUID = "jPKKerrGED_useruid";
 
 	private static final String ERRORTEXT = "errortext";
 	

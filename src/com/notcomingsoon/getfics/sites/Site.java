@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -31,7 +33,7 @@ import java.util.zip.InflaterInputStream;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.stream.MemoryCacheImageInputStream;
+import javax.imageio.stream.FileCacheImageInputStream;
 
 import org.brotli.dec.BrotliInputStream;
 import org.jsoup.Jsoup;
@@ -69,6 +71,8 @@ public abstract class Site {
 
 	static final String AO3 = "archiveofourown.org"; //$NON-NLS-1$
 
+	static final String SQUIDGE_WORLD = "squidgeworld.org"; //$NON-NLS-1$
+
 	static final String MEDIA_MINER = "mediaminer.org"; //$NON-NLS-1$
 
 	static final String WITCH_FICS = "witchfics.org"; //$NON-NLS-1$
@@ -99,6 +103,7 @@ public abstract class Site {
 		sites.add(TTH);
 		sites.add(THE_MASQUE);
 		sites.add(AO3);
+		sites.add(SQUIDGE_WORLD);
 		sites.add(MEDIA_MINER);
 		sites.add(FICTION_HUNT);
 		sites.add(WITCH_FICS);
@@ -252,7 +257,7 @@ public abstract class Site {
 
 	// Sample: 'password=123&custom=secret&username=abc&ts=1570704369823'
 	HttpRequest.BodyPublisher ofFormData(Map<String, String> data) {
-		var builder = new StringBuilder();
+		StringBuilder builder = new StringBuilder();
 		for (Map.Entry<String, String> entry : data.entrySet()) {
 			if (builder.length() > 0) {
 				builder.append("&"); //$NON-NLS-1$
@@ -330,50 +335,32 @@ public abstract class Site {
 		logger.info("images.size = " + images.size()); //$NON-NLS-1$
 		for (int i = 0; i < images.size(); i++) {
 			Element image = images.get(i);
-			String src = image.attr(HTMLConstants.SRC_ATTR);
-			if (!(src.contains(HTMLConstants.HTTP) || src.contains(HTMLConstants.HTTPS))) {
-				src = HTMLConstants.HTTP + this.siteName + SLASH + src;
-			}
-			int lastPeriod = src.lastIndexOf(PERIOD);
-			String type = src.substring(lastPeriod + 1);
-			Iterator<ImageReader> ri = ImageIO.getImageReadersBySuffix(type);
-			if (!ri.hasNext()) {
-				type = JPEG;
-			}
-			logger.info("href = " + src); //$NON-NLS-1$
-			logger.info("type = " + type); //$NON-NLS-1$
 
 			waitRandom();
 
-			HttpRequest.Builder builder = getRequestBuilder(src);
+			Thread ri = new Thread(new ReadImage(image, loc, i));
+			ri.start();
 
-			HttpRequest request = builder.build();
-
-			try {
-				HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
-				InputStream is = decompress(response);
-				MemoryCacheImageInputStream iis = new MemoryCacheImageInputStream(is);
-				BufferedImage pic = ImageIO.read(iis);
-				if (null == pic) {
-					throw new Exception("Picture didn't download!!!"); //$NON-NLS-1$
-				} else {
+			int seconds = 0;
+			while (ri.isAlive()) {
+				if (seconds >= 60) {
+					logger.info("Attempting interrupt. seconds = " + seconds); //$NON-NLS-1$
 					try {
-						File outputFile = new File(loc.getOutputDir(), PIC + i + PERIOD + type);
-						image.attr(HTMLConstants.SRC_ATTR, outputFile.getName());
-						logger.info("outputFile = " + outputFile); //$NON-NLS-1$
-						ImageIO.write(pic, type, outputFile);
+						ri.stop();
+						wait1();
 					} catch (Exception e) {
-						image.remove();
+						String pathname = image.attr(HTMLConstants.SRC_ATTR);
+						int idx = pathname.lastIndexOf(SLASH) + 1;
+						String name = pathname.substring(idx);
+						image.attr(HTMLConstants.SRC_ATTR, name);
+						loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
 					}
+				} else {
+					wait1();
+					seconds++;
+					logger.info("seconds = " + seconds); //$NON-NLS-1$
 				}
-			} catch (Exception e) {
-				String pathname = image.attr(HTMLConstants.SRC_ATTR);
-				int idx = pathname.lastIndexOf(SLASH) + 1;
-				String name = pathname.substring(idx);
-				image.attr(HTMLConstants.SRC_ATTR, name);
-				loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
 			}
-
 		}
 
 		logger.exiting(this.getClass().getSimpleName(), "getImages(Document story, Story loc)"); //$NON-NLS-1$
@@ -500,6 +487,11 @@ public abstract class Site {
 				site.siteName = AO3;
 				break;
 			}
+			if (s.equals(SQUIDGE_WORLD) && SquidgeWorld.isSquidgeWorld(url)) {
+				site = new SquidgeWorld(url);
+				site.siteName = SQUIDGE_WORLD;
+				break;
+			}
 			if (s.equals(MEDIA_MINER) && MediaMiner.isMediaMiner(url)) {
 				site = new MediaMiner(url);
 				site.siteName = MEDIA_MINER;
@@ -557,4 +549,94 @@ public abstract class Site {
 		}
 	}
 
+	static void wait1() {
+
+		int ms = 1000; // random between 5000 and 15000
+
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	class ReadImage implements Runnable {
+
+		Element image;
+		Story loc;
+		int i;
+
+		ReadImage(Element image, Story loc, int i) {
+			this.image = image;
+			this.loc = loc;
+			this.i = i;
+		}
+
+		@Override
+		public void run() {
+			String src = image.attr(HTMLConstants.SRC_ATTR);
+			if (!(src.contains(HTMLConstants.HTTP) || src.contains(HTMLConstants.HTTPS))) {
+				src = HTMLConstants.HTTP + siteName + SLASH + src;
+			}
+			int lastPeriod = src.lastIndexOf(PERIOD);
+			String type = src.substring(lastPeriod + 1);
+			Iterator<ImageReader> ri = ImageIO.getImageReadersBySuffix(type);
+			if (!ri.hasNext()) {
+				type = JPEG;
+			}
+			logger.info("href = " + src); //$NON-NLS-1$
+			logger.info("type = " + type); //$NON-NLS-1$
+
+			HttpRequest.Builder builder = getRequestBuilder(src);
+
+			HttpRequest request = builder.build();
+
+			try {
+				HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+				logger.info("Status code:\t" + response.statusCode());
+
+				InputStream is = decompress(response);
+				FileCacheImageInputStream iis = new FileCacheImageInputStream(is, loc.getOutputDir());
+				BufferedImage pic = ImageIO.read(iis);
+				if (null == pic) {
+					throw new Exception("Picture didn't download!!!"); //$NON-NLS-1$
+				} else {
+					try {
+						File outputFile = new File(loc.getOutputDir(), PIC + i + PERIOD + type);
+						image.attr(HTMLConstants.SRC_ATTR, outputFile.getName());
+						logger.info("outputFile = " + outputFile); //$NON-NLS-1$
+						ImageIO.write(pic, type, outputFile);
+					} catch (Exception e) {
+						image.remove();
+					}
+				}
+			} catch (Exception e) {
+				String pathname = image.attr(HTMLConstants.SRC_ATTR);
+				int idx = pathname.lastIndexOf(SLASH) + 1;
+				String name = pathname.substring(idx);
+				image.attr(HTMLConstants.SRC_ATTR, name);
+				loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
+			}
+
+		}
+	}
+
+	class TimeOutTask extends TimerTask {
+		private Thread thread;
+		private Timer timer;
+
+		public TimeOutTask(Thread thread, Timer timer) {
+			this.thread = thread;
+			this.timer = timer;
+		}
+
+		@Override
+		public void run() {
+			if (thread != null && thread.isAlive()) {
+				thread.interrupt();
+				timer.cancel();
+			}
+		}
+	}
 }

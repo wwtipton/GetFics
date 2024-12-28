@@ -27,7 +27,7 @@ import com.notcomingsoon.getfics.sites.Site;
  */
 public class Main {
 	
-	ArrayList<String> ficList = new ArrayList();
+	ArrayList<String> ficList = new ArrayList<String>();
 	
 	private static String ficListFileName;
 	
@@ -82,7 +82,7 @@ public class Main {
 	{
 		logger.entering(this.getClass().getCanonicalName(), "getFics()");
 		
-		Iterator ficIter = ficList.iterator();
+		Iterator<String> ficIter = ficList.iterator();
 		
 		HashMap<String, ArrayList<String>> imageFailures = new HashMap<String, ArrayList<String>>();
 		try {

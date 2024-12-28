@@ -201,7 +201,12 @@ public class ArchiveOfOurOwn extends Site {
 	
 		List<String> tagList = extractTags(story, chapter);
 		if (null != tagList) {
-			addTagsHeader(body);
+			if (!writeChapter) {
+				title = new Chapter(this.startUrl, TAGS_STRING);
+				body = addChapterHeader(story, title);
+			} else {
+				addTagsHeader(body);
+			}
 			writeChapter = true;
 			String textTags = tagList.toString();
 			textTags = textTags.substring(1, textTags.length() - 1);
@@ -219,7 +224,7 @@ public class ArchiveOfOurOwn extends Site {
 	protected List<String> extractTags(Document story, Document chapter) {
 		Elements tags = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, TAG);
 		
-		List tagList = null;
+		List<String> tagList = null;
 		
 		if (!tags.isEmpty()) {
 			tagList = tags.eachText();

@@ -15,7 +15,7 @@ import java.util.Properties;
  */
 public class GFProperties extends Properties {
 	//TODO Put in root of project so we don't need to define
-    static String propFilePath = "C:\\CodingProjects\\GetFics\\getfics.properties";
+    static String propFilePath = "E:\\CodingProjects\\GetFics\\getfics.properties";
 	public static final String FIC_LIST_FILE_KEY = "fic.list";
 	public static final String LOG_FILE_KEY = "log.file";
 	public static final String INPUT_DIRECTORY_KEY = "input.directory";
@@ -35,6 +35,10 @@ public class GFProperties extends Properties {
 	// Archive of Our Owns
 	public static final String AO3_PEN_NAME = "ao3.pen.name";
 	public static final String AO3_PASSWORD = "ao3.password";
+	
+	// SquidgeWorld
+	public static final String SQUIDGE_PEN_NAME = "squidge.pen.name";
+	public static final String SQUIDGE_PASSWORD = "squidge.password";
 	
 	// Hunting Horcruxes
 	public static final String HUNTING_HORCRUXES_PEN_NAME = "hunting.horcruxes.pen.name";

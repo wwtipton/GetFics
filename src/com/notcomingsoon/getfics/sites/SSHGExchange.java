@@ -32,7 +32,7 @@ public class SSHGExchange extends Site {
 	private static final String ENTRY_CONTENT = "entry-content ";
 	private static final Charset LJ_CHARSET = HTMLConstants.UTF_8;
 	
-	private Chapter summary = null;
+	//private Chapter summary = null;
 	
 	Connection conn;
 

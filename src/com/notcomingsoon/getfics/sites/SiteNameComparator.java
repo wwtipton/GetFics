@@ -7,7 +7,7 @@ import java.util.Comparator;
  * @author Winifred Tipton
  *
  */
-public class SiteNameComparator implements Comparator, Serializable{
+public class SiteNameComparator implements Comparator<Object>, Serializable{
 
 	@Override
 	public int compare(Object arg0, Object arg1) {
