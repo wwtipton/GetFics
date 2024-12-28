@@ -2,9 +2,12 @@ package com.notcomingsoon.getfics.sites;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -386,20 +389,25 @@ public abstract class Site {
 		logger.entering(this.getClass().getSimpleName(), "writeStory(Document doc, File dir)"); //$NON-NLS-1$
 
 		File dir = loc.getOutputDir();
-		File f = new File(dir, loc.toString() + HTMLConstants.HTML_EXTENSION);
+		//File f = new File(dir, loc.toString() + HTMLConstants.HTML_EXTENSION);
 
 		logger.info("f: " + dir.getParent()); //$NON-NLS-1$
 
-		f.createNewFile();
-		FileOutputStream fos = new FileOutputStream(f);
+//		f.createNewFile();
+	//	FileOutputStream fos = new FileOutputStream(f);
+		OutputStreamWriter osw = getOSW(dir.getPath(), loc.toString() + HTMLConstants.HTML_EXTENSION);
 		logger.log(Level.ALL, this.getClass().getSimpleName() + "gwriteStory(Document story, Story loc) \tcharset:" //$NON-NLS-1$
 				+ story.charset().displayName());
 
 		String content = story.html();
-		byte[] b = content.getBytes();
+	//	byte[] b = content.getBytes();
 
-		fos.write(b);
-		fos.close();
+		//fos.write(b);
+	//	fos.close();
+		
+		osw.write(content);
+		osw.close();
+		
 		logger.exiting(this.getClass().getSimpleName(), "writeStory(Document doc, File dir)"); //$NON-NLS-1$
 
 	}
@@ -638,5 +646,14 @@ public abstract class Site {
 				timer.cancel();
 			}
 		}
+	}
+	
+	static OutputStreamWriter getOSW(String dir, String filename)
+			throws IOException, FileNotFoundException, UnsupportedEncodingException {
+		File f = new File(dir, filename);
+		f.createNewFile();
+		FileOutputStream fos = new FileOutputStream(f);
+		OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+		return osw;
 	}
 }
