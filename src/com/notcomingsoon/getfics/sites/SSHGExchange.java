@@ -4,6 +4,7 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -17,8 +18,8 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.GFConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 
 /**
  * @author Winifred
@@ -30,7 +31,7 @@ public class SSHGExchange extends Site {
 	private static final String TITLE_KEY = "Title";
 	private static final String BODYWRAPPER = "b-singlepost-bodywrapper";
 	private static final String ENTRY_CONTENT = "entry-content ";
-	private static final Charset LJ_CHARSET = HTMLConstants.UTF_8;
+	private static final Charset LJ_CHARSET = GFConstants.UTF_8;
 	
 	//private Chapter summary = null;
 	
@@ -65,13 +66,13 @@ public class SSHGExchange extends Site {
 	}
 
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		
 		if (chapters.isEmpty()) {
-			Elements links = doc.getElementsByAttributeValueContaining(HTMLConstants.HREF_ATTR, "sshg");
+			Elements links = doc.getElementsByAttributeValueContaining(GFConstants.HREF_ATTR, "sshg");
 			
 			for (Element link : links) {
-				Chapter c = new Chapter(link.attr(HTMLConstants.HREF_ATTR), link.text());
+				Chapter c = new Chapter(link.attr(GFConstants.HREF_ATTR), link.text());
 				chapters.add(c);
 				link.remove();
 			}
@@ -142,29 +143,34 @@ public class SSHGExchange extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document story, Document chapter, Chapter title) {
+	protected Document extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		
-		if (!isOneShot(chapter)){//One shot body included with summary
-			Element body = addChapterHeader(story, title);
-			revealWarnings(chapter);
+
+		Document freshDoc = initDocument();
+
+		if (!isOneShot(page)){//One shot body included with summary
+			Element body = addChapterHeader(freshDoc, chap);
+			revealWarnings(page);
 			Element chapterText = null;
-			chapterText = chapter.body();
-			Elements links = chapterText.getElementsByTag(HTMLConstants.A_TAG);
+			chapterText = page.body();
+			Elements links = chapterText.getElementsByTag(GFConstants.A_TAG);
 			links.remove();
-			Elements divs = chapterText.getElementsByAttributeValueMatching(HTMLConstants.CLASS_ATTR, "ljtags");
+			Elements divs = chapterText.getElementsByAttributeValueMatching(GFConstants.CLASS_ATTR, "ljtags");
 			divs.remove();
 			body.appendChild(chapterText);
 			addChapterFooter(body);
 		}
 
 		
+		chap.setDoc(freshDoc);
+		loc.addChapter(chap);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
+		return freshDoc;
 	}
 
 	@Override
-	protected boolean isOneShot(Document doc) {
+	protected boolean isOneShot(Document doc) throws UnsupportedEncodingException {
 		boolean isOneShot = true;
 		
 		if (getChapterList(doc).size() > 0) {
@@ -175,25 +181,30 @@ public class SSHGExchange extends Site {
 	}
 	
 	@Override
-	protected Chapter extractSummary(Document story, Document chapter) {
+	protected Chapter extractSummary(Document page) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
-		Chapter summary = new Chapter(this.startUrl, SUMMARY_STRING);
-		Element body = addChapterHeader(story, summary);
+		Document summary = initDocument();
+
+		Chapter chap = new Chapter(this.startUrl, SUMMARY_STRING);
+		Element body = addChapterHeader(summary, chap);
 		
 		//Supposed to remove all the malarkey about lj users
-		Elements img = chapter.getElementsByTag(HTMLConstants.IMG_TAG);
+		Elements img = page.getElementsByTag(GFConstants.IMG_TAG);
 		img.remove();
-		revealWarnings(chapter);
-		Elements wbr = chapter.getElementsByTag("wbr");
+		revealWarnings(page);
+		Elements wbr = page.getElementsByTag("wbr");
 		wbr.remove();
 		
-		body.appendChild(chapter.body());
+		body.appendChild(page.body());
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(summary);
+		loc.addChapter(chap);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
-		return summary;
+		return chap;
 	}
 
 	void revealWarnings(Document chapter) {

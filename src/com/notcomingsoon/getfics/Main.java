@@ -4,13 +4,7 @@
 package com.notcomingsoon.getfics;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.util.ArrayList;
@@ -18,7 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import com.notcomingsoon.getfics.mobi.ProjectFile;
+import com.notcomingsoon.getfics.files.Epub;
 import com.notcomingsoon.getfics.sites.Site;
 
 /**
@@ -33,12 +27,10 @@ public class Main {
 	
 	private Logger logger = GFLogger.getLogger();
 
-	private String mobigenPath;
-
 	private String publishDirectory;
 
-	private String mobiExtension;
-
+	ArrayList<String> failures = new ArrayList<String>();
+	
 	/**
 	 * @param args
 	 */
@@ -61,10 +53,7 @@ public class Main {
 	{
 		logger.entering(this.getClass().getCanonicalName(), "doAll()");
 		ficListFileName = GFProperties.getPropertyValue(GFProperties.FIC_LIST_FILE_KEY);
-		mobigenPath = GFProperties.getPropertyValue(GFProperties.MOBIGEN_PATH_KEY);
-		System.out.println("mobigenPath="+mobigenPath);
 		publishDirectory = GFProperties.getPropertyValue(GFProperties.PUBLISH_DIRECTORY_KEY);
-		mobiExtension = GFProperties.getPropertyValue(GFProperties.MOBI_EXTENSION_KEY);
 		
 		if (ficListFileName.length() > 0)
 		{
@@ -90,16 +79,22 @@ public class Main {
 			{
 				String ficURL = (String) ficIter.next();
 				logger.warning(GFLogger.NEW_LINE + GFLogger.NEW_LINE + "Starting: " + ficURL);
-				Story story = Site.getStory(ficURL);
+				Epub epub = Site.getEpub(ficURL);
 
-				if (null != story) {
-					imageFailures.put(story.toString(), story.getImageFailures());
+				epub.build();
+				epub.writeEpub();
+				int code = epub.validate();
+				if (code != 0) {
+					failures.add(ficURL);
+					epub.publishFailure();
+				} else {
+					epub.publish();
 				}
 				
-				if (story != null && mobigenPath != null){
-					ProjectFile projectFile = new ProjectFile(story);
-					buildMobi(projectFile, story);
+				if (null != epub) {
+					imageFailures.put(epub.toString(), epub.getImageFailures());
 				}
+				
 				logger.warning("Done: " + ficURL);
 			}
 		} catch (Exception e){				
@@ -117,57 +112,6 @@ public class Main {
 			}
 		}
 		logger.exiting(this.getClass().getCanonicalName(), "getFics()");
-	}
-
-	private void buildMobi(ProjectFile projectFile, Story story) throws IOException, InterruptedException {
-		logger.entering(this.getClass().getCanonicalName(), "buildMobi(ProjectFile projectFile, Story story)");	
-		
-		String mobiName = story.toString() + this.mobiExtension;
-		
-	//	ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", mobigenPath, projectFile.getProjectFile(),"-verbose", "-o", mobiName);
-		ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", mobigenPath, projectFile.getProjectFile(),"-o", mobiName);
-		pb.redirectErrorStream(true);
-		logger.info("Command: " + pb.command());
-		Process process = pb.start();
-			
-		InputStream is = process.getInputStream();
-	    InputStreamReader isr = new InputStreamReader(is);
-	    BufferedReader br = new BufferedReader(isr);
-	    String line;
-	    while ((line = br.readLine()) != null) {
-	      System.out.println(line);
-	    }
-
-		int exitCode = process.waitFor();
-		logger.info("exitCode = " + exitCode);
-		
-		if (exitCode == 0 || exitCode == 1){
-			moveMobi(mobiName, story);
-		}
-
-		logger.exiting(this.getClass().getCanonicalName(), "buildMobi(ProjectFile projectFile, Story story)");		
-	}
-
-	private void moveMobi(String mobiName, Story story) throws IOException {
-		logger.entering(this.getClass().getCanonicalName(), "moveMobi(String mobiName)");
-		
-		File mobi = new File(story.getOutputDir(), mobiName);
-		
-		File publish = new File(publishDirectory, mobiName);
-		publish.createNewFile();
-		logger.info("publish = " + publish.getCanonicalPath());
-		
-		if (mobi.exists() && publish.exists()){
-			FileInputStream fis = new FileInputStream(mobi);
-			FileOutputStream fos = new FileOutputStream(publish);
-			
-			while (fis.available() > 0){
-				int i = fis.read();
-				fos.write(i);
-			}
-		}
-		
-		logger.exiting(this.getClass().getCanonicalName(), "moveMobi(String mobiName)");
 	}
 
 	private void readFicList() 

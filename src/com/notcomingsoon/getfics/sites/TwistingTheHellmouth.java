@@ -2,8 +2,7 @@ package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.UnsupportedEncodingException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
@@ -17,13 +16,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFConstants;
 import com.notcomingsoon.getfics.GFProperties;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 
 public class TwistingTheHellmouth extends Site {
 
-	private static final Charset TTH_CHARSET = HTMLConstants.UTF_8;
+	private static final Charset TTH_CHARSET = GFConstants.UTF_8;
 
 	/*
 	static{
@@ -81,7 +80,7 @@ public class TwistingTheHellmouth extends Site {
 	}
 
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
@@ -95,7 +94,7 @@ public class TwistingTheHellmouth extends Site {
 			while (lIter.hasNext()){
 				Element option = lIter.next();
 				String title = option.text().trim();
-				String cUrl = option.attr(HTMLConstants.VALUE_ATTR);
+				String cUrl = option.attr(GFConstants.VALUE_ATTR);
 				cUrl = startUrl.replace(startChapter, cUrl);
 				Chapter c = new Chapter(cUrl, title);
 				list.add(c);
@@ -112,9 +111,9 @@ public class TwistingTheHellmouth extends Site {
 	protected String getAuthor(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
-		Elements tables = doc.getElementsByTag(HTMLConstants.TABLE_TAG);
+		Elements tables = doc.getElementsByTag(GFConstants.TABLE_TAG);
 		Element table = tables.get(AUTHOR_TABLE);
-		Elements tds = table.getElementsByTag(HTMLConstants.TD_TAG);
+		Elements tds = table.getElementsByTag(GFConstants.TD_TAG);
 		Element td = tds.get(AUTHOR_CELL);
 		
 		String author = td.text();
@@ -127,7 +126,7 @@ public class TwistingTheHellmouth extends Site {
 	protected String getTitle(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
-		Elements h2s = doc.getElementsByTag(HTMLConstants.H2_TAG);
+		Elements h2s = doc.getElementsByTag(GFConstants.H2_TAG);
 		Element h2 = h2s.first();
 		String title = h2.text();
 		
@@ -136,35 +135,41 @@ public class TwistingTheHellmouth extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document story, Document chapter,
-			Chapter title) {
+	protected Document extractChapter(Document page,
+			Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
 		
-		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.ID_ATTR, STORYINNERBODY);
+		Elements divs = page.getElementsByAttributeValue(GFConstants.ID_ATTR, STORYINNERBODY);
 		Element div = divs.first();
-		div.removeAttr(HTMLConstants.ID_ATTR);
+		div.removeAttr(GFConstants.ID_ATTR);
 		
 		body.appendChild(div);
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(freshDoc);
+		loc.addChapter(chap);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
+		return freshDoc;
 
 	}
 
 	@Override
-	protected Chapter extractSummary(Document story, Document chapter) {
+	protected Chapter extractSummary(Document page) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
-		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
-		Element body = addChapterHeader(story, title);
+		Document summaryDoc = initDocument();
+
+		Chapter chap = new Chapter(this.startUrl, SUMMARY_STRING);
+		Element body = addChapterHeader(summaryDoc, chap);
 		
-		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, STORY_SUMMARY);
+		Elements divs = page.getElementsByAttributeValue(GFConstants.CLASS_ATTR, STORY_SUMMARY);
 		Element div = divs.first();
-		Elements ps = div.getElementsByTag(HTMLConstants.P_TAG);
+		Elements ps = div.getElementsByTag(GFConstants.P_TAG);
 		
 		String summary = null;
 		int idx = 0;
@@ -181,8 +186,11 @@ public class TwistingTheHellmouth extends Site {
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(summaryDoc);
+		loc.addChapter(chap);
+
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
-		return title;
+		return chap;
 	}
 
 	@Override
@@ -212,10 +220,10 @@ public class TwistingTheHellmouth extends Site {
 	protected Elements getChapterOptions(Document doc) {
 		Elements options = null;
 		
-		Elements forms = doc.getElementsByTag(HTMLConstants.FORM_TAG);
+		Elements forms = doc.getElementsByTag(GFConstants.FORM_TAG);
 		if (forms.size() > CHAPTER_SELECT_FORM){
 			Element form = forms.get(CHAPTER_SELECT_FORM);
-			options = form.getElementsByTag(HTMLConstants.OPTION_TAG);
+			options = form.getElementsByTag(GFConstants.OPTION_TAG);
 		}
 		return options;
 	}

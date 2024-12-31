@@ -3,6 +3,7 @@
  */
 package com.notcomingsoon.getfics.sites;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -13,9 +14,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFConstants;
 import com.notcomingsoon.getfics.GFProperties;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 
 /**
  * @author Winifred Tipton
@@ -34,7 +35,7 @@ public class Sycophantex extends Site {
 
 	private static final int FIRST_FORM = 0;
 	
-	private static final Charset SYCOPHANTEX_CHARSET = HTMLConstants.WIN_1252;
+	private static final Charset SYCOPHANTEX_CHARSET = GFConstants.WIN_1252;
 
 	static{
 		try {
@@ -55,25 +56,29 @@ public class Sycophantex extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document story, Document chapter, Chapter title) {
+	protected Document extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
 		
-		Elements spans = chapter.getElementsByTag(HTMLConstants.SPAN_TAG);
+		Elements spans = page.getElementsByTag(GFConstants.SPAN_TAG);
 		body.appendChild(spans.first());
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(freshDoc);
+		loc.addChapter(chap);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
+		return freshDoc;
 	}
 
 	@Override
 	protected String getAuthor(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
-		Elements as = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWUSER);
+		Elements as = doc.getElementsByAttributeValueStarting(GFConstants.HREF_ATTR, VIEWUSER);
 		
 		String author = as.get(0).text();
 		logger.info("author = " + author);
@@ -83,13 +88,13 @@ public class Sycophantex extends Site {
 
 	
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 		
 		Element form = getFirstForm(doc);
-		Elements options = form.getElementsByAttributeValueStarting(HTMLConstants.VALUE_ATTR, VIEWSTORY);
+		Elements options = form.getElementsByAttributeValueStarting(GFConstants.VALUE_ATTR, VIEWSTORY);
 		
 		//first element is "story index" text rather than chapter
 		options.remove(0);
@@ -100,7 +105,7 @@ public class Sycophantex extends Site {
 		while (lIter.hasNext()){
 			Element option = lIter.next();
 			String title = option.text().trim();
-			String cUrl = option.attr(HTMLConstants.VALUE_ATTR);
+			String cUrl = option.attr(GFConstants.VALUE_ATTR);
 			cUrl = startUrl.replace(startChapter, cUrl);
 			Chapter c = new Chapter(cUrl, title);
 			list.add(c);
@@ -116,7 +121,7 @@ public class Sycophantex extends Site {
 	 * @return
 	 */
 	private Element getFirstForm(Document doc) {
-		Elements forms = doc.getElementsByTag(HTMLConstants.FORM_TAG);
+		Elements forms = doc.getElementsByTag(GFConstants.FORM_TAG);
 		Element form = forms.get(FIRST_FORM);
 		return form;
 	}
@@ -127,7 +132,7 @@ public class Sycophantex extends Site {
 	protected String getTitle(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
-		Elements as = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWSTORY);
+		Elements as = doc.getElementsByAttributeValueStarting(GFConstants.HREF_ATTR, VIEWSTORY);
 		
 		String title = as.get(0).text();
 		logger.info("title = " + title);
@@ -137,7 +142,7 @@ public class Sycophantex extends Site {
 	
 	@Override
 	protected boolean isOneShot(Document doc) {
-		return doc.getElementsByTag(HTMLConstants.FORM_TAG).isEmpty();
+		return doc.getElementsByTag(GFConstants.FORM_TAG).isEmpty();
 	}
 
 

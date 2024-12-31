@@ -4,6 +4,7 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -17,9 +18,9 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFConstants;
 import com.notcomingsoon.getfics.GFProperties;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 
 /**
  * @author Winifred Tipton
@@ -29,7 +30,7 @@ public class PetulantPoetess extends Site {
 
 	private static final int SUMMARY_TEXT_NODE = 1;
 	private static final int USER_LINK = 0;
-	private static final Charset TPP_CHARSET = HTMLConstants.WIN_1252;
+	private static final Charset TPP_CHARSET = GFConstants.WIN_1252;
 	private static final String VIEWUSER = "viewuser";
 	private static final String VIEWSTORY = "viewstory";
 	private static final int TITLE_DIV_INDEX = 6;
@@ -73,7 +74,7 @@ public class PetulantPoetess extends Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#getChapterList(org.jsoup.nodes.Document)
 	 */
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
@@ -89,7 +90,7 @@ public class PetulantPoetess extends Site {
 		while (lIter.hasNext()){
 			Element option = lIter.next();
 			String title = option.text().trim();
-			String cUrl = option.attr(HTMLConstants.VALUE_ATTR);
+			String cUrl = option.attr(GFConstants.VALUE_ATTR);
 			cUrl = startUrl.replace(startChapter, cUrl);
 			Chapter c = new Chapter(cUrl, title);
 			list.add(c);
@@ -108,7 +109,7 @@ public class PetulantPoetess extends Site {
 		
 		getTOCPage();
 		
-		Elements h3s = toc.getElementsByTag(HTMLConstants.H3_TAG);
+		Elements h3s = toc.getElementsByTag(GFConstants.H3_TAG);
 		
 		String author = h3s.first().text();
 		logger.info("author = " + author);
@@ -123,10 +124,10 @@ public class PetulantPoetess extends Site {
 	protected String getTitle(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
-		Elements divs = doc.getElementsByTag(HTMLConstants.DIV_TAG);
+		Elements divs = doc.getElementsByTag(GFConstants.DIV_TAG);
 		Element div = divs.get(TITLE_DIV_INDEX);
 		
-		Elements bs = div.getElementsByTag(HTMLConstants.B_TAG);
+		Elements bs = div.getElementsByTag(GFConstants.B_TAG);
 		
 		String title = bs.get(0).text();
 		logger.info("title = " + title);
@@ -138,19 +139,19 @@ public class PetulantPoetess extends Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#extractChapter(org.jsoup.nodes.Document, org.jsoup.nodes.Document, com.notcomingsoon.getfics.Chapter)
 	 */
 	@Override
-	protected Document extractChapter(Document story, Document chapter,
-			Chapter title) {
+	protected Document extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
+
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
 		
-		Element body = addChapterHeader(story, title);
-		
-		Elements tds = chapter.getElementsByTag(HTMLConstants.TD_TAG);
+		Elements tds = page.getElementsByTag(GFConstants.TD_TAG);
 		Element td = tds.get(CHAPTER_BODY);
 		
-		td.tagName(HTMLConstants.SPAN_TAG);
-		td.removeAttr(HTMLConstants.COLSPAN_ATTR);
-		td.removeAttr(HTMLConstants.BGCOLOR_ATTR);
-		Elements divs = td.getElementsByTag(HTMLConstants.DIV_TAG);
+		td.tagName(GFConstants.SPAN_TAG);
+		td.removeAttr(GFConstants.COLSPAN_ATTR);
+		td.removeAttr(GFConstants.BGCOLOR_ATTR);
+		Elements divs = td.getElementsByTag(GFConstants.DIV_TAG);
 		for (Element div : divs){
 			div.replaceWith(emptyNode);
 		}
@@ -159,27 +160,31 @@ public class PetulantPoetess extends Site {
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(freshDoc);
+		loc.addChapter(chap);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
+		return freshDoc;
 	}
 
 	@Override
-	protected Chapter extractSummary(Document story, Document chapter) throws Exception {
+	protected Chapter extractSummary(Document page) throws Exception {
 		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
-		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+
+		Chapter summary = new Chapter(this.startUrl, SUMMARY_STRING);
+		Element body = addChapterHeader(freshDoc, summary);
 
 		getTOCPage();
-		
-		
-		
-	//	body.appendText(summary);
-		
+
 		addChapterFooter(body);
 		
+		summary.setDoc(freshDoc);
+		loc.addChapter(summary);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
-		return title;
+		return summary;
 	}
 
 	private String searchAuthor(Tag storyTag, String baseUrl, String userRef, String storyRef) throws Exception {
@@ -192,14 +197,14 @@ public class PetulantPoetess extends Site {
 				Elements aList = authorWorks.getElementsContainingText(NEXT_LINK);
 				Element a = aList.last();
 				if (a != null){
-					authorUrl = baseUrl + a.attr(HTMLConstants.HREF_ATTR);
+					authorUrl = baseUrl + a.attr(GFConstants.HREF_ATTR);
 				} else {
 					authorUrl = null;
 				}
-				aList = authorWorks.getElementsByAttributeValue(HTMLConstants.HREF_ATTR, storyRef);
+				aList = authorWorks.getElementsByAttributeValue(GFConstants.HREF_ATTR, storyRef);
 				if (!aList.isEmpty()){
 					Element table  = aList.first().parent().parent().parent().parent();
-					Elements trList = table.getElementsByTag(HTMLConstants.TR_TAG);
+					Elements trList = table.getElementsByTag(GFConstants.TR_TAG);
 					Element tr = trList.get(SUMMARY_ROW);
 					Elements eList = tr.getElementsContainingText(SUMMARY_STRING);
 					Element e = eList.get(SUMMARY_TEXT_NODE);
@@ -234,7 +239,7 @@ public class PetulantPoetess extends Site {
 		Elements selects = doc.getElementsByAttributeValue(NAME, SID);
 		if (!selects.isEmpty()){
 			Element select = selects.get(CHAPTER_SELECT);
-			options = select.getElementsByTag(HTMLConstants.OPTION_TAG);
+			options = select.getElementsByTag(GFConstants.OPTION_TAG);
 		}
 		return options;
 	}	

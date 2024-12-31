@@ -1,6 +1,7 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpRequest;
@@ -16,11 +17,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.GFConstants;
+import com.notcomingsoon.getfics.files.Chapter;
+
 public class TheMasqueNet extends Site {
 
-	private static final Charset MASQUE_CHARSET = HTMLConstants.UTF_8;
+	private static final Charset MASQUE_CHARSET = GFConstants.UTF_8;
 	
 	static{
 		try {
@@ -105,7 +107,7 @@ public class TheMasqueNet extends Site {
 	}
 
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
@@ -118,7 +120,7 @@ public class TheMasqueNet extends Site {
 		while (lIter.hasNext()){
 			Element option = lIter.next();
 			String title = option.text().trim();
-			String cUrl = option.attr(HTMLConstants.VALUE_ATTR);
+			String cUrl = option.attr(GFConstants.VALUE_ATTR);
 			cUrl = baseUrl + cUrl;
 			Chapter c = new Chapter(cUrl, title);
 			list.add(c);
@@ -131,10 +133,10 @@ public class TheMasqueNet extends Site {
 	private Elements getChapterOptions(Document doc) {
 		Elements options = null;
 		
-		Elements forms = doc.getElementsByAttributeValue(HTMLConstants.NAME_ATTR, JUMP_ATTR);
+		Elements forms = doc.getElementsByAttributeValue(GFConstants.NAME_ATTR, JUMP_ATTR);
 		if (forms.size() > 0){
 			Element form = forms.get(JUMP_FORM);
-			options = form.getElementsByTag(HTMLConstants.OPTION_TAG);
+			options = form.getElementsByTag(GFConstants.OPTION_TAG);
 		}
 		return options;
 	}
@@ -143,7 +145,7 @@ public class TheMasqueNet extends Site {
 	protected String getAuthor(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
-		Elements as = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWUSER);
+		Elements as = doc.getElementsByAttributeValueStarting(GFConstants.HREF_ATTR, VIEWUSER);
 		
 		String author = as.get(0).text();
 		logger.info("author = " + author);
@@ -155,7 +157,7 @@ public class TheMasqueNet extends Site {
 	protected String getTitle(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
-		Elements as = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEWSTORY);
+		Elements as = doc.getElementsByAttributeValueStarting(GFConstants.HREF_ATTR, VIEWSTORY);
 		
 		String title = as.get(0).text();
 		logger.info("title = " + title);
@@ -164,13 +166,14 @@ public class TheMasqueNet extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document story, Document chapter,
-			Chapter title) {
+	protected Document extractChapter(Document page,
+			Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
 		
-		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.ID_ATTR, STORY);
+		Elements divs = page.getElementsByAttributeValue(GFConstants.ID_ATTR, STORY);
 		Element div = divs.first();
 		//div.removeAttr(HTMLConstants.ID_ATTR);
 		
@@ -178,8 +181,11 @@ public class TheMasqueNet extends Site {
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(freshDoc);
+		loc.addChapter(chap);
+
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
+		return freshDoc;
 	}
 
 	@Override
@@ -221,9 +227,9 @@ public class TheMasqueNet extends Site {
 	@Override
 	String ageConsent(Document doc) {
 		Elements div = doc.getElementsByClass(ERRORTEXT);
-		Elements as = div.get(0).getElementsByTag(HTMLConstants.A_TAG);
+		Elements as = div.get(0).getElementsByTag(GFConstants.A_TAG);
 		Element a = as.first();
-		String url = a.attr(HTMLConstants.HREF_ATTR);
+		String url = a.attr(GFConstants.HREF_ATTR);
 		int ampersand = url.indexOf('&');
 		url = url.substring(ampersand);
 		

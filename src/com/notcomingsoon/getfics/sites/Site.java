@@ -45,11 +45,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFConstants;
 import com.notcomingsoon.getfics.GFLogger;
 import com.notcomingsoon.getfics.GFProperties;
-import com.notcomingsoon.getfics.HTMLConstants;
-import com.notcomingsoon.getfics.Story;
+import com.notcomingsoon.getfics.files.Chapter;
+import com.notcomingsoon.getfics.files.Epub;
+import com.notcomingsoon.getfics.files.EpubFiles;
 
 @SuppressWarnings("unchecked")
 public abstract class Site {
@@ -119,11 +120,13 @@ public abstract class Site {
 
 	protected Logger logger = GFLogger.getLogger();
 
-	protected Charset siteCharset = HTMLConstants.UTF_8;
+	protected Charset siteCharset = GFConstants.UTF_8;
 
 	private String siteName;
 
 	Boolean ignoreHttpErrors = false;
+	
+	Epub loc = null;
 
 	static CookieManager cookieManager = new CookieManager();
 	static HttpClient client = null;
@@ -144,7 +147,7 @@ public abstract class Site {
 
 		Document utfDoc = doc;
 		// need to recode?
-		if (!siteCharset.equals(HTMLConstants.UTF_8)) {
+		if (!siteCharset.equals(GFConstants.UTF_8)) {
 			// doc.outputSettings().charset(siteCharset);
 			String unicode = doc.toString();
 
@@ -169,7 +172,7 @@ public abstract class Site {
 
 	protected abstract String getTitle(Document doc);
 
-	protected Chapter extractSummary(Document story, Document chapter) throws Exception {
+	protected Chapter extractSummary(Document chapterDoc) throws Exception {
 		return null;
 	}
 
@@ -181,7 +184,7 @@ public abstract class Site {
 		return false;
 	}
 
-	protected abstract Document extractChapter(Document story, Document chapter, Chapter title);
+	protected abstract Document extractChapter(Document chapter, Chapter chap) throws UnsupportedEncodingException;
 
 	/*
 	 * (non-Javadoc)
@@ -279,33 +282,34 @@ public abstract class Site {
 		this.startUrl = ficUrl;
 	}
 
-	public Story download() throws Exception {
+	public Epub download() throws Exception {
 		logger.entering(this.getClass().getSimpleName(), "download()"); //$NON-NLS-1$
 		logger.info("Sending request to URL:" + startUrl); //$NON-NLS-1$
 
-		Document doc = getPage(startUrl);
+		Document page = getPage(startUrl);
 
-		Story loc = Story.createStory(getAuthor(doc), getTitle(doc));
+		loc = Epub.createEpub(getAuthor(page), getTitle(page));
 		loc.setCharset(this.siteCharset);
 
-		Document story = initStory(loc.getOutputDir());
+		File epubDir = loc.getEpubDir();
+//		Document freshDoc = initDocument();
 
-		if (isOneShot(doc)) {
+		if (isOneShot(page)) {
 			loc.setOneShot(true);
-			Chapter title = new Chapter(this.startUrl, loc.getOrigTitle());
-			extractSummary(story, doc);
-			extractChapter(story, doc, title);
+			Chapter oneShot = new Chapter(startUrl, loc.getOrigTitle());
+			extractSummary(page);
+			extractChapter(page, oneShot);
 		} else {
-			ArrayList<Chapter> chapterList = getChapterList(doc);
+			ArrayList<Chapter> chapterList = getChapterList(page);
 			boolean firstChapter = true;
 
 			Iterator<Chapter> cIter = chapterList.iterator();
-			Chapter summary = extractSummary(story, doc);
+			Chapter summary = extractSummary(page);
 			while (cIter.hasNext()) {
 				Chapter c = cIter.next();
 				Document nextDoc;
 				if (firstChapter && c.getUrl().contains(startUrl)) {
-					nextDoc = doc;
+					nextDoc = page;
 					firstChapter = false;
 				} else {
 					if (firstChapter) {
@@ -315,25 +319,32 @@ public abstract class Site {
 						nextDoc = getPage(c.getUrl());
 					}
 				}
-				extractChapter(story, nextDoc, c);
+				extractChapter(nextDoc, c);
 			}
 			if (null != summary) {
 				chapterList.add(0, summary);
 			}
-			Chapter.writeContents(loc, chapterList, doc.outputSettings().charset());
+		//	Chapter.writeContents(epub, chapterList, page.outputSettings().charset());
 		}
 
-		getImages(story, loc);
-		writeStory(story, loc);
+		getImages();
+	//	writeStory(freshDoc, loc);
 
 		logger.exiting(this.getClass().getSimpleName(), "download()"); //$NON-NLS-1$
 		return loc;
 	}
 
-	private void getImages(Document story, Story loc) throws IOException {
+	private void getImages() throws IOException {
 		logger.entering(this.getClass().getSimpleName(), "getImages(Document story, Story loc)"); //$NON-NLS-1$
 
-		Elements images = story.getElementsByTag(HTMLConstants.IMG_TAG);
+		ArrayList<Chapter> chapterList = loc.getChapters();
+		
+		Iterator<Chapter> cIter = chapterList.iterator();
+		while (cIter.hasNext()) {
+			Chapter c = cIter.next();
+			
+		Document story = c.getDoc();
+		Elements images = story.getElementsByTag(GFConstants.IMG_TAG);
 
 		logger.info("images.size = " + images.size()); //$NON-NLS-1$
 		for (int i = 0; i < images.size(); i++) {
@@ -352,10 +363,10 @@ public abstract class Site {
 						ri.stop();
 						wait1();
 					} catch (Exception e) {
-						String pathname = image.attr(HTMLConstants.SRC_ATTR);
+						String pathname = image.attr(GFConstants.SRC_ATTR);
 						int idx = pathname.lastIndexOf(SLASH) + 1;
 						String name = pathname.substring(idx);
-						image.attr(HTMLConstants.SRC_ATTR, name);
+						image.attr(GFConstants.SRC_ATTR, name);
 						loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
 					}
 				} else {
@@ -365,58 +376,67 @@ public abstract class Site {
 				}
 			}
 		}
+		}
 
 		logger.exiting(this.getClass().getSimpleName(), "getImages(Document story, Story loc)"); //$NON-NLS-1$
 	}
 
-	private Document initStory(File dir) {
-		logger.entering(this.getClass().getSimpleName(), "initStory()"); //$NON-NLS-1$
+	Document initDocument() {
+		logger.entering(this.getClass().getSimpleName(), "initDocument()"); //$NON-NLS-1$
 
-		Document outDoc = new Document(dir.getName());
-		outDoc.outputSettings().charset(siteCharset);
+		Document outDoc = new Document(getEpubDirName());
+		outDoc = EpubFiles.setOutputType(outDoc);
 
-		Element html = outDoc.appendElement(HTMLConstants.HTML_TAG);
-		Element head = html.appendElement(HTMLConstants.HEAD_TAG);
+		Element html = outDoc.appendElement(GFConstants.HTML_TAG);
+		Element head = html.appendElement(GFConstants.HEAD_TAG);
 		Comment title = new Comment(" " + startUrl + " "); //$NON-NLS-1$ //$NON-NLS-2$
 		head.appendChild(title);
-		html.appendElement(HTMLConstants.BODY_TAG);
+		html.appendElement(GFConstants.BODY_TAG);
 
-		logger.exiting(this.getClass().getSimpleName(), "initStory()"); //$NON-NLS-1$
+		logger.exiting(this.getClass().getSimpleName(), "initDocument()"); //$NON-NLS-1$
 		return outDoc;
 	}
 
-	private void writeStory(Document story, Story loc) throws Exception {
-		logger.entering(this.getClass().getSimpleName(), "writeStory(Document doc, File dir)"); //$NON-NLS-1$
-
-		File dir = loc.getOutputDir();
-
-		logger.info("f: " + dir.getParent()); //$NON-NLS-1$
-
-		OutputStreamWriter osw = getOSW(dir.getPath(), loc.toString() + HTMLConstants.HTML_EXTENSION);
-		logger.log(Level.ALL, this.getClass().getSimpleName() + "gwriteStory(Document story, Story loc) \tcharset:" //$NON-NLS-1$
-				+ story.charset().displayName());
-
-		String content = story.html();
-		osw.write(content);
-		osw.close();
-		
-		logger.exiting(this.getClass().getSimpleName(), "writeStory(Document doc, File dir)"); //$NON-NLS-1$
-
+	private String getEpubDirName() {
+		return loc.getEpubDir().getName();
 	}
+
+	/*
+	 * private void writeStory(Document story, Story loc) throws Exception {
+	 * logger.entering(this.getClass().getSimpleName(),
+	 * "writeStory(Document doc, File dir)"); //$NON-NLS-1$
+	 * 
+	 * File dir = loc.getOutputDir();
+	 * 
+	 * logger.info("f: " + dir.getParent()); //$NON-NLS-1$
+	 * 
+	 * OutputStreamWriter osw = getOSW(dir.getPath(), loc.toString() +
+	 * GFConstants.HTML_EXTENSION); logger.log(Level.ALL,
+	 * this.getClass().getSimpleName() +
+	 * "gwriteStory(Document story, Story loc) \tcharset:" //$NON-NLS-1$ +
+	 * story.charset().displayName());
+	 * 
+	 * String content = story.html(); osw.write(content); osw.close();
+	 * 
+	 * logger.exiting(this.getClass().getSimpleName(),
+	 * "writeStory(Document doc, File dir)"); //$NON-NLS-1$
+	 * 
+	 * }
+	 */
 
 	/**
 	 * @param body modified by method
 	 */
 	protected void addChapterFooter(Element body) {
-		body.appendElement(HTMLConstants.HR_TAG);
-		body.appendElement(HTMLConstants.HR_TAG);
+		body.appendElement(GFConstants.HR_TAG);
+		body.appendElement(GFConstants.HR_TAG);
 	}
 
 	/**
 	 * @param body modified by method
 	 */
 	protected void addNotesFooter(Element body) {
-		Element p = new Element(HTMLConstants.P_TAG);
+		Element p = new Element(GFConstants.P_TAG);
 		p.attr("style", "text-align:center"); //$NON-NLS-1$ //$NON-NLS-2$
 		p.appendText(GFProperties.getString(GFProperties.NOTES_FOOTER)); // $NON-NLS-1$
 
@@ -424,16 +444,17 @@ public abstract class Site {
 	}
 
 	/**
-	 * @param story
-	 * @param title
+	 * @param freshDoc
+	 * @param chap
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	protected Element addChapterHeader(Document story, Chapter title) {
-		Element body = story.body();
-		Element a = body.appendElement(HTMLConstants.A_TAG);
-		a.attr(HTMLConstants.NAME_ATTR, title.getFileTitle());
-		Element h2 = body.appendElement(HTMLConstants.H2_TAG);
-		h2.text(title.getOrigTitle());
+	protected Element addChapterHeader(Document freshDoc, Chapter chap) throws UnsupportedEncodingException {
+		Element body = freshDoc.body();
+		Element a = body.appendElement(GFConstants.A_TAG);
+		a.attr(GFConstants.NAME_ATTR, chap.getFilename());
+		Element h2 = body.appendElement(GFConstants.H2_TAG);
+		h2.text(chap.getName());
 		return body;
 	}
 
@@ -443,12 +464,12 @@ public abstract class Site {
 	 * @return nothing but alters parameter
 	 */
 	protected void addTagsHeader(Element body) {
-		Element h3 = body.appendElement(HTMLConstants.H3_TAG);
+		Element h3 = body.appendElement(GFConstants.H3_TAG);
 		h3.text(TAGS_STRING);
 	}
 
-	public static Story getStory(String url) throws Exception {
-		Story story = null;
+	public static Epub getEpub(String url) throws Exception {
+		Epub story = null;
 		Site site = null;
 
 		for (String s : sites) {
@@ -564,10 +585,10 @@ public abstract class Site {
 	class ReadImage implements Runnable {
 
 		Element image;
-		Story loc;
+		Epub loc;
 		int i;
 
-		ReadImage(Element image, Story loc, int i) {
+		ReadImage(Element image, Epub loc, int i) {
 			this.image = image;
 			this.loc = loc;
 			this.i = i;
@@ -575,9 +596,9 @@ public abstract class Site {
 
 		@Override
 		public void run() {
-			String src = image.attr(HTMLConstants.SRC_ATTR);
-			if (!(src.contains(HTMLConstants.HTTP) || src.contains(HTMLConstants.HTTPS))) {
-				src = HTMLConstants.HTTP + siteName + SLASH + src;
+			String src = image.attr(GFConstants.SRC_ATTR);
+			if (!(src.contains(GFConstants.HTTP) || src.contains(GFConstants.HTTPS))) {
+				src = GFConstants.HTTP + siteName + SLASH + src;
 			}
 			int lastPeriod = src.lastIndexOf(PERIOD);
 			String type = src.substring(lastPeriod + 1);
@@ -603,19 +624,20 @@ public abstract class Site {
 					throw new Exception("Picture didn't download!!!"); //$NON-NLS-1$
 				} else {
 					try {
-						File outputFile = new File(loc.getOutputDir(), PIC + i + PERIOD + type);
-						image.attr(HTMLConstants.SRC_ATTR, outputFile.getName());
+						File outputFile = new File(loc.getEpubDir(), PIC + i + PERIOD + type);
+						image.attr(GFConstants.SRC_ATTR, outputFile.getName());
 						logger.info("outputFile = " + outputFile); //$NON-NLS-1$
 						ImageIO.write(pic, type, outputFile);
+						loc.addImage(outputFile.getName());
 					} catch (Exception e) {
 						image.remove();
 					}
 				}
 			} catch (Exception e) {
-				String pathname = image.attr(HTMLConstants.SRC_ATTR);
+				String pathname = image.attr(GFConstants.SRC_ATTR);
 				int idx = pathname.lastIndexOf(SLASH) + 1;
 				String name = pathname.substring(idx);
-				image.attr(HTMLConstants.SRC_ATTR, name);
+				image.attr(GFConstants.SRC_ATTR, name);
 				loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
 			}
 

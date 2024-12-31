@@ -3,6 +3,7 @@
  */
 package com.notcomingsoon.getfics.sites;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -13,8 +14,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.GFConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 
 /**
  * @author Winifred Tipton
@@ -34,7 +35,7 @@ public class AdultFanFiction extends Site {
 
 	private static final String STORY = "story";
 	
-	private static final Charset AFF_CHARSET = HTMLConstants.WIN_1252;
+	private static final Charset AFF_CHARSET = GFConstants.WIN_1252;
 	
 	private static final String AFF_SHORT = "adult-fanfiction.org";
 
@@ -59,15 +60,16 @@ public class AdultFanFiction extends Site {
 		siteCharset = AFF_CHARSET;
 	}
 
-	protected Document extractChapter(Document story, Document chapter, Chapter title) {
+	protected Document extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
 		
-		Element table = getMainTable(chapter);
-		Elements trs = table.getElementsByTag(HTMLConstants.TR_TAG);
+		Element table = getMainTable(page);
+		Elements trs = table.getElementsByTag(GFConstants.TR_TAG);
 		Element tr = trs.get(5);
-		Elements tds = tr.getElementsByTag(HTMLConstants.TD_TAG);
+		Elements tds = tr.getElementsByTag(GFConstants.TD_TAG);
 		Element td = tds.get(0);
 		
 		
@@ -75,15 +77,18 @@ public class AdultFanFiction extends Site {
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(freshDoc);
+		loc.addChapter(chap);
+
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
+		return freshDoc;
 	}
 
 	
 	protected String getAuthor(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
-		Elements as = doc.getElementsByAttributeValueContaining(HTMLConstants.HREF_ATTR, MEMBERS_ATTR);
+		Elements as = doc.getElementsByAttributeValueContaining(GFConstants.HREF_ATTR, MEMBERS_ATTR);
 		
 		String author = as.get(AUTHOR_ANCHOR).text();
 
@@ -94,7 +99,7 @@ public class AdultFanFiction extends Site {
 
 	}
 
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
@@ -106,7 +111,7 @@ public class AdultFanFiction extends Site {
 		while (lIter.hasNext()){
 			Element option = lIter.next();
 			String title = option.text().trim();
-			String cUrl = option.attr(HTMLConstants.HREF_ATTR);
+			String cUrl = option.attr(GFConstants.HREF_ATTR);
 			cUrl = startUrl.replace(startChapter, cUrl);
 			Chapter c = new Chapter(cUrl, title);
 			list.add(c);
@@ -123,7 +128,7 @@ public class AdultFanFiction extends Site {
 	private Elements getChapterOptions(Document doc) {
 		Elements divs = doc.getElementsByClass("dropdown-content");
 		Element div = divs.first();
-		Elements options = div.getElementsByTag(HTMLConstants.A_TAG);
+		Elements options = div.getElementsByTag(GFConstants.A_TAG);
 		return options;
 	}
 
@@ -132,7 +137,7 @@ public class AdultFanFiction extends Site {
 	 * @return
 	 */
 	private Element getMainTable(Document doc) {
-		Elements forms = doc.getElementsByTag(HTMLConstants.TABLE_TAG);
+		Elements forms = doc.getElementsByTag(GFConstants.TABLE_TAG);
 		Element form = forms.get(MAIN_TABLE);
 		return form;
 	}
@@ -141,7 +146,7 @@ public class AdultFanFiction extends Site {
 		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
 		Element mTable = getMainTable(doc);
-		Elements as = mTable.getElementsByAttributeValueContaining(HTMLConstants.HREF_ATTR, STORY);
+		Elements as = mTable.getElementsByAttributeValueContaining(GFConstants.HREF_ATTR, STORY);
 		String title = as.get(0).text();
 		
 		logger.info("title = " + title);

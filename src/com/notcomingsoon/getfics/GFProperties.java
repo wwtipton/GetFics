@@ -20,11 +20,13 @@ public class GFProperties extends Properties {
 	public static final String LOG_FILE_KEY = "log.file";
 	public static final String INPUT_DIRECTORY_KEY = "input.directory";
 	public static final String OUTPUT_DIRECTORY_KEY = "output.directory";
-	public static final String MOBIGEN_PATH_KEY = "mobigen.path";
 	public static final String PUBLISH_DIRECTORY_KEY = "publish.directory";
 	public static final String DEVICE_DIRECTORY_KEY = "device.directory";
 	public static final String REJECTS_DIRECTORY_KEY = "rejects.directory";
-	public static final String MOBI_EXTENSION_KEY = "mobi.extension";	
+	public static final String PUBLISH_ERROR_DIR_KEY = "publish.error.directory";
+	public static final String EPUB_SUBDIRECTORY_ROOT_KEY = "epub.subdirectory.root";
+	public static final String EPUB_EXTENSION_KEY = "epub.extension";
+
 	
 	// Site
 	public static final String USER_AGENT = "user.agent";
