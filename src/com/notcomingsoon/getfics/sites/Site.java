@@ -288,6 +288,7 @@ public abstract class Site {
 		Document page = getPage(startUrl);
 
 		loc = Epub.createEpub(getAuthor(page), getTitle(page));
+		loc.setStartUrl(startUrl);
 		loc.setCharset(this.siteCharset);
 
 //		File epubDir = loc.getEpubDir();
@@ -384,9 +385,8 @@ public abstract class Site {
 		logger.entering(this.getClass().getSimpleName(), "initDocument()"); //$NON-NLS-1$
 
 		Document outDoc = new Document(getEpubDirName());
-		outDoc = EpubFiles.setOutputType(outDoc);
-
 		Element html = outDoc.appendElement(GFConstants.HTML_TAG);
+		outDoc = EpubFiles.setOutputType(outDoc);
 		Element head = html.appendElement(GFConstants.HEAD_TAG);
 		Comment title = new Comment(" " + startUrl + " "); //$NON-NLS-1$ //$NON-NLS-2$
 		head.appendChild(title);
@@ -595,51 +595,49 @@ public abstract class Site {
 
 		@Override
 		public void run() {
-			while (!Thread.interrupted()) {
-				String src = image.attr(GFConstants.SRC_ATTR);
-				if (!(src.contains(GFConstants.HTTP) || src.contains(GFConstants.HTTPS))) {
-					src = GFConstants.HTTP + siteName + SLASH + src;
-				}
-				int lastPeriod = src.lastIndexOf(PERIOD);
-				String type = src.substring(lastPeriod + 1);
-				Iterator<ImageReader> ri = ImageIO.getImageReadersBySuffix(type);
-				if (!ri.hasNext()) {
-					type = JPEG;
-				}
-				logger.info("href = " + src); //$NON-NLS-1$
-				logger.info("type = " + type); //$NON-NLS-1$
+			String src = image.attr(GFConstants.SRC_ATTR);
+			if (!(src.contains(GFConstants.HTTP) || src.contains(GFConstants.HTTPS))) {
+				src = GFConstants.HTTP + siteName + SLASH + src;
+			}
+			int lastPeriod = src.lastIndexOf(PERIOD);
+			String type = src.substring(lastPeriod + 1);
+			Iterator<ImageReader> ri = ImageIO.getImageReadersBySuffix(type);
+			if (!ri.hasNext()) {
+				type = JPEG;
+			}
+			logger.info("href = " + src); //$NON-NLS-1$
+			logger.info("type = " + type); //$NON-NLS-1$
 
-				HttpRequest.Builder builder = getRequestBuilder(src);
+			HttpRequest.Builder builder = getRequestBuilder(src);
 
-				HttpRequest request = builder.build();
+			HttpRequest request = builder.build();
 
-				try {
-					HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
-					logger.info("Status code:\t" + response.statusCode());
+			try {
+				HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+				logger.info("Status code:\t" + response.statusCode());
 
-					InputStream is = decompress(response);
-					FileCacheImageInputStream iis = new FileCacheImageInputStream(is, loc.getOutputDir());
-					BufferedImage pic = ImageIO.read(iis);
-					if (null == pic) {
-						throw new Exception("Picture didn't download!!!"); //$NON-NLS-1$
-					} else {
-						try {
-							File outputFile = new File(loc.getEpubDir(), PIC + i + PERIOD + type);
-							image.attr(GFConstants.SRC_ATTR, outputFile.getName());
-							logger.info("outputFile = " + outputFile); //$NON-NLS-1$
-							ImageIO.write(pic, type, outputFile);
-							loc.addImage(outputFile.getName());
-						} catch (Exception e) {
-							image.remove();
-						}
+				InputStream is = decompress(response);
+				FileCacheImageInputStream iis = new FileCacheImageInputStream(is, loc.getOutputDir());
+				BufferedImage pic = ImageIO.read(iis);
+				if (null == pic) {
+					throw new Exception("Picture didn't download!!!"); //$NON-NLS-1$
+				} else {
+					try {
+						File outputFile = new File(loc.getEpubDir(), PIC + i + PERIOD + type);
+						image.attr(GFConstants.SRC_ATTR, outputFile.getName());
+						logger.info("outputFile = " + outputFile); //$NON-NLS-1$
+						ImageIO.write(pic, type, outputFile);
+						loc.addImage(outputFile.getName());
+					} catch (Exception e) {
+						image.remove();
 					}
-				} catch (Exception e) {
-					String pathname = image.attr(GFConstants.SRC_ATTR);
-					int idx = pathname.lastIndexOf(SLASH) + 1;
-					String name = pathname.substring(idx);
-					image.attr(GFConstants.SRC_ATTR, name);
-					loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
 				}
+			} catch (Exception e) {
+				String pathname = image.attr(GFConstants.SRC_ATTR);
+				int idx = pathname.lastIndexOf(SLASH) + 1;
+				String name = pathname.substring(idx);
+				image.attr(GFConstants.SRC_ATTR, name);
+				loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
 			}
 		}
 	}

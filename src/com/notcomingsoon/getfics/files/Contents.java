@@ -32,24 +32,21 @@ FileFilter
 	
 	Document contents;
 	
-	String ficPath;
+	//String ficPath;
 	
 	Pattern p = Pattern.compile("[0-9]");
 	
-	public String getFicPath() {
-		return ficPath;
-	}
-
-	private void setFicPath(String ficPath) {
-		this.ficPath = ficPath;
-	}
-
+	/*
+	 * public String getFicPath() { return ficPath; }
+	 * 
+	 * private void setFicPath(String ficPath) { this.ficPath = ficPath; }
+	 */
 
 	boolean orderedList = true;
 
-	public Contents(String ficPath2, ArrayList<Chapter> chapters) throws IOException {
+	public Contents(ArrayList<Chapter> chapters) throws IOException {
 		super(FILENAME);
-		setFicPath(ficPath2);
+	//	setFicPath(ficPath2);
 		setChapters(chapters);
 		
 		makeContents();

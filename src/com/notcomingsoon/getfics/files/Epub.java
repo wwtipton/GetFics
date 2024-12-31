@@ -65,6 +65,16 @@ public class Epub extends EpubFiles implements GFConstants {
 	String delimitedAuthor;
 
 	File outputDir;
+	
+	String startUrl;
+
+	public String getStartUrl() {
+		return startUrl;
+	}
+
+	public void setStartUrl(String startUrl) {
+		this.startUrl = startUrl;
+	}
 
 	private boolean isOneShot = false;
 
@@ -92,7 +102,7 @@ public class Epub extends EpubFiles implements GFConstants {
 		return epubDir;
 	}
 
-	private ArrayList<String> images;
+	private ArrayList<String> images = new ArrayList<String>();
 
 	Charset charset;
 
@@ -194,7 +204,7 @@ public class Epub extends EpubFiles implements GFConstants {
 	}
 
 	private void zipEpubDir(String targetFilename) throws Exception {
-		epubFile = new File(parentDirFile.getPath() + File.separator + targetFilename + EPUB_EXT);
+		epubFile = new File(outputDir, targetFilename + EPUB_EXT);
 
 		ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(epubFile));
 
@@ -279,36 +289,29 @@ public class Epub extends EpubFiles implements GFConstants {
 	*/
 
 	public void build() throws IOException {
-		Document s = loadStory(ficPathStr);
+	//	Document s = loadStory(ficPathStr);
 
 	//	makeChapters(s, ficPathStr);
-		toc = new Contents(ficPathStr, chapters);
+		toc = new Contents(chapters);
 		chapters.add(0, toc);
 
 		opf = new PackageOPF();
 		getAuthorsAndTitle(opf);
-		opf.setPublisher(getSite(s));
+		opf.setPublisher(getSite());
 		opf.setSubjects(getTags());
-		opf.setLastModified(ficPathFile.lastModified());
+		opf.setLastModified(outputDir.lastModified());
 		opf.setImages(getImages());
 		opf.setChapters(chapters);
 		opf.buildDoc();
 	}
 
-	private String getSite(Document story) {
+	private String getSite() {
 		String site = null;
 
-		Elements head = Selector.select(HEAD_TAG, story);
-		ArrayList<Comment> comments = (ArrayList<Comment>) head.comments();
-
-		if (comments.size() > 0) {
-			Comment comment = comments.get(0);
-			String s = comment.getData();
-			int idx = s.indexOf("//");
-			s = s.substring(idx + 2);
-			idx = s.indexOf('/');
-			site = s.substring(0, idx);
-		}
+		int idx = startUrl.indexOf("//");
+		String s = startUrl.substring(idx + 2);
+		idx = s.indexOf('/');
+		site = s.substring(0, idx);
 
 		return site;
 	}
@@ -322,36 +325,10 @@ public class Epub extends EpubFiles implements GFConstants {
 	}
 
 	private void getAuthorsAndTitle(PackageOPF opf) {
-		if (!ficPathFile.isFile()) {
-			return;
-		}
+			opf.setTitle(origTitle);
 
-		String filename = ficPathFile.getName();
-		int i = filename.indexOf('.');
-		filename = filename.substring(0, i); // filename should consist of authors and title.
-
-		String[] strs = filename.split("-");
-
-		switch (strs.length) {
-		case 1: {
-			opf.setTitle(strs[0]);
-			break;
-		}
-		case 2: {
-			opf.setTitle(strs[1]);
-			String[] auts = strs[0].split(COMMA);
+			String[] auts = origAuthor.split(COMMA);
 			opf.setAuthors(auts);
-			break;
-		}
-		default: {
-			String[] auts = strs[0].split(COMMA);
-			opf.setAuthors(auts);
-			int j = filename.indexOf("-");
-			String title = filename.substring(j + 1);
-			opf.setTitle(title);
-		}
-		}
-
 	}
 
 	/*
