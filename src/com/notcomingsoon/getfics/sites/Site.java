@@ -52,7 +52,6 @@ import com.notcomingsoon.getfics.files.Chapter;
 import com.notcomingsoon.getfics.files.Epub;
 import com.notcomingsoon.getfics.files.EpubFiles;
 
-@SuppressWarnings("unchecked")
 public abstract class Site {
 
 	static final String USER_AGENT = GFProperties.getString(GFProperties.USER_AGENT);
@@ -291,7 +290,7 @@ public abstract class Site {
 		loc = Epub.createEpub(getAuthor(page), getTitle(page));
 		loc.setCharset(this.siteCharset);
 
-		File epubDir = loc.getEpubDir();
+//		File epubDir = loc.getEpubDir();
 //		Document freshDoc = initDocument();
 
 		if (isOneShot(page)) {
@@ -360,7 +359,7 @@ public abstract class Site {
 				if (seconds >= 60) {
 					logger.info("Attempting interrupt. seconds = " + seconds); //$NON-NLS-1$
 					try {
-						ri.stop();
+						ri.interrupt();
 						wait1();
 					} catch (Exception e) {
 						String pathname = image.attr(GFConstants.SRC_ATTR);
@@ -596,51 +595,52 @@ public abstract class Site {
 
 		@Override
 		public void run() {
-			String src = image.attr(GFConstants.SRC_ATTR);
-			if (!(src.contains(GFConstants.HTTP) || src.contains(GFConstants.HTTPS))) {
-				src = GFConstants.HTTP + siteName + SLASH + src;
-			}
-			int lastPeriod = src.lastIndexOf(PERIOD);
-			String type = src.substring(lastPeriod + 1);
-			Iterator<ImageReader> ri = ImageIO.getImageReadersBySuffix(type);
-			if (!ri.hasNext()) {
-				type = JPEG;
-			}
-			logger.info("href = " + src); //$NON-NLS-1$
-			logger.info("type = " + type); //$NON-NLS-1$
-
-			HttpRequest.Builder builder = getRequestBuilder(src);
-
-			HttpRequest request = builder.build();
-
-			try {
-				HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
-				logger.info("Status code:\t" + response.statusCode());
-
-				InputStream is = decompress(response);
-				FileCacheImageInputStream iis = new FileCacheImageInputStream(is, loc.getOutputDir());
-				BufferedImage pic = ImageIO.read(iis);
-				if (null == pic) {
-					throw new Exception("Picture didn't download!!!"); //$NON-NLS-1$
-				} else {
-					try {
-						File outputFile = new File(loc.getEpubDir(), PIC + i + PERIOD + type);
-						image.attr(GFConstants.SRC_ATTR, outputFile.getName());
-						logger.info("outputFile = " + outputFile); //$NON-NLS-1$
-						ImageIO.write(pic, type, outputFile);
-						loc.addImage(outputFile.getName());
-					} catch (Exception e) {
-						image.remove();
-					}
+			while (!Thread.interrupted()) {
+				String src = image.attr(GFConstants.SRC_ATTR);
+				if (!(src.contains(GFConstants.HTTP) || src.contains(GFConstants.HTTPS))) {
+					src = GFConstants.HTTP + siteName + SLASH + src;
 				}
-			} catch (Exception e) {
-				String pathname = image.attr(GFConstants.SRC_ATTR);
-				int idx = pathname.lastIndexOf(SLASH) + 1;
-				String name = pathname.substring(idx);
-				image.attr(GFConstants.SRC_ATTR, name);
-				loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
-			}
+				int lastPeriod = src.lastIndexOf(PERIOD);
+				String type = src.substring(lastPeriod + 1);
+				Iterator<ImageReader> ri = ImageIO.getImageReadersBySuffix(type);
+				if (!ri.hasNext()) {
+					type = JPEG;
+				}
+				logger.info("href = " + src); //$NON-NLS-1$
+				logger.info("type = " + type); //$NON-NLS-1$
 
+				HttpRequest.Builder builder = getRequestBuilder(src);
+
+				HttpRequest request = builder.build();
+
+				try {
+					HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+					logger.info("Status code:\t" + response.statusCode());
+
+					InputStream is = decompress(response);
+					FileCacheImageInputStream iis = new FileCacheImageInputStream(is, loc.getOutputDir());
+					BufferedImage pic = ImageIO.read(iis);
+					if (null == pic) {
+						throw new Exception("Picture didn't download!!!"); //$NON-NLS-1$
+					} else {
+						try {
+							File outputFile = new File(loc.getEpubDir(), PIC + i + PERIOD + type);
+							image.attr(GFConstants.SRC_ATTR, outputFile.getName());
+							logger.info("outputFile = " + outputFile); //$NON-NLS-1$
+							ImageIO.write(pic, type, outputFile);
+							loc.addImage(outputFile.getName());
+						} catch (Exception e) {
+							image.remove();
+						}
+					}
+				} catch (Exception e) {
+					String pathname = image.attr(GFConstants.SRC_ATTR);
+					int idx = pathname.lastIndexOf(SLASH) + 1;
+					String name = pathname.substring(idx);
+					image.attr(GFConstants.SRC_ATTR, name);
+					loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
+				}
+			}
 		}
 	}
 

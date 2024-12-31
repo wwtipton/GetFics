@@ -14,6 +14,10 @@ import java.util.Properties;
  *
  */
 public class GFProperties extends Properties {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5899234284994299244L;
 	//TODO Put in root of project so we don't need to define
     static String propFilePath = "E:\\CodingProjects\\GetFics\\getfics.properties";
 	public static final String FIC_LIST_FILE_KEY = "fic.list";

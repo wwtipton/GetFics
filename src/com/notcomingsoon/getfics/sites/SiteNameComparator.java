@@ -9,6 +9,11 @@ import java.util.Comparator;
  */
 public class SiteNameComparator implements Comparator<Object>, Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 832700305884793382L;
+
 	@Override
 	public int compare(Object arg0, Object arg1) {
 		int result = 0;

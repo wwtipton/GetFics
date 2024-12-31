@@ -8,7 +8,6 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -93,7 +92,7 @@ implements GFConstants
 	private static final String ITEM_VALUE = "item";
 	
 	ArrayList<String> images = new ArrayList<String>();
-	private static final String PIC_VALUE = "pic";
+	//private static final String PIC_VALUE = "pic";
 	private static final String PNG = "png";
 	private static final String GIF = "gif";
 	

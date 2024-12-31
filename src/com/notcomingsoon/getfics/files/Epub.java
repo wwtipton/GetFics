@@ -11,7 +11,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -21,12 +20,9 @@ import java.util.zip.ZipOutputStream;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.jsoup.select.Selector;
 
@@ -303,7 +299,7 @@ public class Epub extends EpubFiles implements GFConstants {
 		String site = null;
 
 		Elements head = Selector.select(HEAD_TAG, story);
-		ArrayList<Comment> comments = (ArrayList) head.comments();
+		ArrayList<Comment> comments = (ArrayList<Comment>) head.comments();
 
 		if (comments.size() > 0) {
 			Comment comment = comments.get(0);
