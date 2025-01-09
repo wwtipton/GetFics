@@ -81,18 +81,20 @@ public class Main {
 				logger.warning(GFLogger.NEW_LINE + GFLogger.NEW_LINE + "Starting: " + ficURL);
 				Epub epub = Site.getEpub(ficURL);
 
-				epub.build();
-				epub.writeEpub();
-				int code = epub.validate();
-				if (code != 0) {
-					failures.add(ficURL);
-					epub.publishFailure();
-				} else {
-					epub.publish();
+				if (null != epub) {
+					epub.build();
+					epub.writeEpub();
+					int code = epub.validate();
+					if (code != 0) {
+						failures.add(ficURL);
+						epub.publishFailure();
+					} else {
+						epub.publish();
+					}
 				}
 				
 				if (null != epub) {
-					imageFailures.put(epub.toString(), epub.getImageFailures());
+					imageFailures.put(epub.getOpf().getUniqueId(), epub.getImageFailures());
 				}
 				
 				logger.warning("Done: " + ficURL);

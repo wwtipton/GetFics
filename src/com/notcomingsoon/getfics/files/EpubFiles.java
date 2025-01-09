@@ -22,10 +22,17 @@ import com.notcomingsoon.getfics.GFConstants;
 
 public abstract class EpubFiles {
 	
-	final static String BAD_CHARS = "ç~*.\"\'/\\[]$@?():;!|=,\r\n";
+	final static String BAD_CHARS = "ç~*.\"\'/\\[]$@?():;!|=,\r\n“”’#";
 	
 	static String urlFileName(String name) throws UnsupportedEncodingException {
 		
+		String s = filterBadChars(name);
+		
+		String urlName = URLEncoder.encode(s, GFConstants.UTF_8_CHARSET);
+		return urlName;
+	}
+
+	static String filterBadChars(String name) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < name.length(); i++) {
 			String c = "" + name.charAt(i);
@@ -34,9 +41,7 @@ public abstract class EpubFiles {
 			}
 			sb.append(c);
 		}
-		
-		String urlName = URLEncoder.encode(sb.toString(), GFConstants.UTF_8_CHARSET);
-		return urlName;
+		return sb.toString();
 	}
 	
 	static public Document setOutputType(Document doc) {

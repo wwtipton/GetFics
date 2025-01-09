@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -183,7 +185,7 @@ public abstract class Site {
 		return false;
 	}
 
-	protected abstract Document extractChapter(Document chapter, Chapter chap) throws UnsupportedEncodingException;
+	protected abstract void extractChapter(Document chapter, Chapter chap) throws UnsupportedEncodingException;
 
 	/*
 	 * (non-Javadoc)
@@ -233,6 +235,7 @@ public abstract class Site {
 		String encoding = response.headers().firstValue("Content-Encoding").orElse(""); //$NON-NLS-1$ //$NON-NLS-2$
 		InputStream is = null;
 		System.out.println("Encoding:\t" + encoding);
+		System.out.println(response.headers());
 		if (encoding.equals("gzip")) { //$NON-NLS-1$
 			is = new GZIPInputStream(response.body());
 		} else if (encoding.equals("br")) { //$NON-NLS-1$
@@ -297,14 +300,21 @@ public abstract class Site {
 		if (isOneShot(page)) {
 			loc.setOneShot(true);
 			Chapter oneShot = new Chapter(startUrl, loc.getOrigTitle());
-			extractSummary(page);
+			Chapter summary = extractSummary(page);
+			if (null != summary) {
+				loc.addChapter(summary);
+			}
 			extractChapter(page, oneShot);
+			loc.addChapter(oneShot);
 		} else {
 			ArrayList<Chapter> chapterList = getChapterList(page);
 			boolean firstChapter = true;
 
 			Iterator<Chapter> cIter = chapterList.iterator();
 			Chapter summary = extractSummary(page);
+			if (null != summary) {
+				loc.addChapter(summary);
+			}
 			while (cIter.hasNext()) {
 				Chapter c = cIter.next();
 				Document nextDoc;
@@ -320,9 +330,7 @@ public abstract class Site {
 					}
 				}
 				extractChapter(nextDoc, c);
-			}
-			if (null != summary) {
-				chapterList.add(0, summary);
+				loc.addChapter(c);
 			}
 		//	Chapter.writeContents(epub, chapterList, page.outputSettings().charset());
 		}
@@ -340,12 +348,19 @@ public abstract class Site {
 		ArrayList<Chapter> chapterList = loc.getChapters();
 		
 		Iterator<Chapter> cIter = chapterList.iterator();
+		
+		Elements images = new Elements();
+		
 		while (cIter.hasNext()) {
 			Chapter c = cIter.next();
+			Document story = c.getDoc();
+			Elements els = story.getElementsByTag(GFConstants.IMG_TAG);
 			
-		Document story = c.getDoc();
-		Elements images = story.getElementsByTag(GFConstants.IMG_TAG);
-
+			for (int e = 0; e < els.size(); e++) {
+				images.add(els.get(e));
+			}
+		}
+		
 		logger.info("images.size = " + images.size()); //$NON-NLS-1$
 		for (int i = 0; i < images.size(); i++) {
 			Element image = images.get(i);
@@ -376,7 +391,7 @@ public abstract class Site {
 				}
 			}
 		}
-		}
+		
 
 		logger.exiting(this.getClass().getSimpleName(), "getImages(Document story, Story loc)"); //$NON-NLS-1$
 	}
@@ -450,8 +465,8 @@ public abstract class Site {
 	 */
 	protected Element addChapterHeader(Document freshDoc, Chapter chap) throws UnsupportedEncodingException {
 		Element body = freshDoc.body();
-		Element a = body.appendElement(GFConstants.A_TAG);
-		a.attr(GFConstants.NAME_ATTR, chap.getFilename());
+//		Element a = body.appendElement(GFConstants.A_TAG);
+	//	a.attr(GFConstants.NAME_ATTR, chap.getFilename());
 		Element h2 = body.appendElement(GFConstants.H2_TAG);
 		h2.text(chap.getName());
 		return body;
@@ -615,24 +630,46 @@ public abstract class Site {
 			try {
 				HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
 				logger.info("Status code:\t" + response.statusCode());
+				HttpHeaders headers = response.headers();
+				Optional<String> ct = headers.firstValue("Content-Type");
+				boolean isHtml = false;
+				if (ct.isPresent()) {
+					String contentType = ct.get();
+					if (contentType.contains("html")) {
+						isHtml = true;
+					}
+				}
 
 				InputStream is = decompress(response);
-				FileCacheImageInputStream iis = new FileCacheImageInputStream(is, loc.getOutputDir());
+				// Did we get a picture or a page?
+				if (response.statusCode() == 200 && isHtml) {
+					// gotta a web page so try again
+					Document doc = parse(src, response);
+					
+				}
+				logger.info("is available?\t" + is.available());
+				FileCacheImageInputStream iis = new FileCacheImageInputStream(is, loc.getEpubDir());
+				logger.info("iis length?\t" + iis.length());
 				BufferedImage pic = ImageIO.read(iis);
 				if (null == pic) {
 					throw new Exception("Picture didn't download!!!"); //$NON-NLS-1$
 				} else {
 					try {
+						System.out.println("1. Make File");
 						File outputFile = new File(loc.getEpubDir(), PIC + i + PERIOD + type);
+						outputFile.createNewFile();
+						System.out.println("2. Change HTML "+ image.toString());
 						image.attr(GFConstants.SRC_ATTR, outputFile.getName());
 						logger.info("outputFile = " + outputFile); //$NON-NLS-1$
 						ImageIO.write(pic, type, outputFile);
 						loc.addImage(outputFile.getName());
 					} catch (Exception e) {
+						e.printStackTrace();
 						image.remove();
 					}
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				String pathname = image.attr(GFConstants.SRC_ATTR);
 				int idx = pathname.lastIndexOf(SLASH) + 1;
 				String name = pathname.substring(idx);

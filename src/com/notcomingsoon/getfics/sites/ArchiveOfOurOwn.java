@@ -143,7 +143,7 @@ public class ArchiveOfOurOwn extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
+	protected void extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Document freshDoc = initDocument();
@@ -175,10 +175,9 @@ public class ArchiveOfOurOwn extends Site {
 		addChapterFooter(body);
 		
 		chap.setDoc(freshDoc);
-		loc.addChapter(chap);
+	//	loc.addChapter(chap);
 		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return freshDoc;
 	}
 
 	@Override
@@ -223,7 +222,7 @@ public class ArchiveOfOurOwn extends Site {
 		}
 		
 		newCh.setDoc(summary);
-		loc.addChapter(newCh);
+//		loc.addChapter(newCh);
 		
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return newCh;

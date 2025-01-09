@@ -151,7 +151,7 @@ public class HuntingHorcruxes extends Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#extractChapter(org.jsoup.nodes.Document, org.jsoup.nodes.Document, com.notcomingsoon.getfics.Chapter)
 	 */
 	@Override
-	protected Document extractChapter(Document page,
+	protected void extractChapter(Document page,
 			Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
@@ -167,8 +167,9 @@ public class HuntingHorcruxes extends Site {
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(freshDoc);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return freshDoc;
 	}
 
 	@Override
@@ -197,7 +198,7 @@ public class HuntingHorcruxes extends Site {
 		}
 		
 		newCh.setDoc(freshDoc);
-		loc.addChapter(newCh);
+	//	loc.addChapter(newCh);
 
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return newCh;

@@ -135,7 +135,7 @@ public class TwistingTheHellmouth extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document page,
+	protected void extractChapter(Document page,
 			Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
@@ -151,10 +151,9 @@ public class TwistingTheHellmouth extends Site {
 		addChapterFooter(body);
 		
 		chap.setDoc(freshDoc);
-		loc.addChapter(chap);
+	//	loc.addChapter(chap);
 		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return freshDoc;
 
 	}
 
@@ -187,7 +186,7 @@ public class TwistingTheHellmouth extends Site {
 		addChapterFooter(body);
 		
 		chap.setDoc(summaryDoc);
-		loc.addChapter(chap);
+	//	loc.addChapter(chap);
 
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return chap;

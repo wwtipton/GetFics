@@ -56,7 +56,7 @@ public class Sycophantex extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
+	protected void extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Document freshDoc = initDocument();
@@ -68,10 +68,9 @@ public class Sycophantex extends Site {
 		addChapterFooter(body);
 		
 		chap.setDoc(freshDoc);
-		loc.addChapter(chap);
+//		loc.addChapter(chap);
 		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return freshDoc;
 	}
 
 	@Override

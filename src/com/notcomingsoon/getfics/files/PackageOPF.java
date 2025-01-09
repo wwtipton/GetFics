@@ -149,8 +149,10 @@ implements GFConstants
 		}
 		
 		sb.append(title);
+
+		String id = filterBadChars(sb.toString());
 		
-		return sb.toString();
+		return id;
 	}
 
 	public ArrayList<String> getSubjects() {
@@ -381,9 +383,11 @@ implements GFConstants
 	}
 
 	private void buildSubjects(Element metadata) {
-		for(String s : subjects) {
-			Element subject = metadata.appendElement(SUBJECT_TAG);
-			subject.text(s);
+		if (null != subjects && !subjects.isEmpty()) {
+			for (String s : subjects) {
+				Element subject = metadata.appendElement(SUBJECT_TAG);
+				subject.text(s);
+			}
 		}
 	}
 

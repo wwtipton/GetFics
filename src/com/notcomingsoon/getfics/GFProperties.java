@@ -23,7 +23,7 @@ public class GFProperties extends Properties {
 	public static final String FIC_LIST_FILE_KEY = "fic.list";
 	public static final String LOG_FILE_KEY = "log.file";
 	public static final String INPUT_DIRECTORY_KEY = "input.directory";
-	public static final String OUTPUT_DIRECTORY_KEY = "output.directory";
+	public static final String OUTPUT_ROOT_DIRECTORY_KEY = "output.root.directory";
 	public static final String PUBLISH_DIRECTORY_KEY = "publish.directory";
 	public static final String DEVICE_DIRECTORY_KEY = "device.directory";
 	public static final String REJECTS_DIRECTORY_KEY = "rejects.directory";

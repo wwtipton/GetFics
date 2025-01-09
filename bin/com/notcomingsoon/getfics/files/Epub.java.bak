@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -20,129 +21,61 @@ import java.util.zip.ZipOutputStream;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Attributes;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.jsoup.select.Selector;
 
 import com.adobe.epubcheck.tool.EpubChecker;
 import com.notcomingsoon.getfics.GFConstants;
-import com.notcomingsoon.getfics.GFLogger;
-import com.notcomingsoon.getfics.GFProperties;
+import com.notcomingsoon.getfics.sites.Site;
 
 public class Epub extends EpubFiles implements GFConstants {
 	private Logger logger = GFLogger.getLogger();
 
 	private static final String COMMA = ",";
 
-	private static final String EPUB_EXT = "." + GFProperties.getPropertyValue(GFProperties.EPUB_EXTENSION_KEY);
+	private static final String EPUB_EXT = "." + EFProperties.getPropertyValue(EFProperties.EPUB_EXTENSION_KEY);
 
-	private static final String PUBLISH_DIR = GFProperties.getPropertyValue(GFProperties.PUBLISH_DIRECTORY_KEY);
+	private static final String PUBLISH_DIR = EFProperties.getPropertyValue(EFProperties.PUBLISH_DIRECTORY_KEY);
 
-	private static final String FAILURE_DIR = GFProperties.getPropertyValue(GFProperties.PUBLISH_ERROR_DIR_KEY);
-
-	private static final String OUTPUT_ROOT_DIRECTORY = GFProperties.getPropertyValue(GFProperties.OUTPUT_ROOT_DIRECTORY_KEY);
-
-	private static final String EPUB_DIRECTORY = GFProperties.getPropertyValue(GFProperties.EPUB_SUBDIRECTORY_ROOT_KEY);
+	private static final String FAILURE_DIR = EFProperties.getPropertyValue(EFProperties.PUBLISH_ERROR_DIR_KEY);
 
 	File epubFile;
 
-	File authorDirFile;
+	File parentDirFile;
 
 	String ficPathStr;
 
 	File ficPathFile;
 
-	String fileAuthor;
-
-	String fileTitle;
-
-	String origAuthor;
-
-	String origTitle;
-
-	String delimitedAuthor;
-
-	File titleDirFile;
-	
-	String startUrl;
-
-	public String getStartUrl() {
-		return startUrl;
-	}
-
-	public void setStartUrl(String startUrl) {
-		this.startUrl = startUrl;
-	}
-
-	private boolean isOneShot = false;
-
 	ArrayList<Chapter> chapters = new ArrayList<Chapter>();
-
-	ArrayList<String> tags = null;
-
-	private ArrayList<String> imageFailures = new ArrayList<String>();
-	
-	public ArrayList<String> getTags() {
-		return tags;
-	}
-
-	public void setTags(ArrayList<String> tags) {
-		this.tags = tags;
-	}
 
 	Contents toc;
 
 	PackageOPF opf;
 
-	File epubDir;
+	String epubDir;
 
-	public File getEpubDir() {
-		return epubDir;
-	}
+	private ArrayList<String> imagePaths;
 
-	private ArrayList<String> images = new ArrayList<String>();
-
-	Charset charset;
-
-	public static Epub createEpub(String author, String title) throws Exception {
-		Epub s = new Epub(author, title);
-		return s;
-	}
-
-	/**
-	 * @param author
-	 * @param title
-	 * @throws UnsupportedEncodingException
-	 */
-	public Epub(String author, String title) throws UnsupportedEncodingException {
-		super();
-		setFileAuthor(author);
-		setFileTitle(title);
-		setOrigAuthor(author);
-		setOrigTitle(title);
-		setDelimitedAuthor(author);
-
-		authorDirFile = createDirectory(filterBadChars(this.getOrigAuthor()), OUTPUT_ROOT_DIRECTORY);
-		titleDirFile = createDirectory(filterBadChars(this.getOrigTitle()), authorDirFile.getPath());
-		epubDir = new File(titleDirFile, EPUB_DIRECTORY);    
+	public Epub(String ficPath) {
+		ficPathStr = ficPath;
+		ficPathFile = new File(ficPathStr);
+		parentDirFile = ficPathFile.getParentFile();
+		epubDir = parentDirFile.getPath() + File.separator
+				+ EFProperties.getPropertyValue(EFProperties.EPUB_SUBDIRECTORY_ROOT_KEY) + File.separator;
 		initialize();
-		epubDir.mkdir();
-		
-		
 	}
-
-	/*
-	 * public Epub(String ficPath) { ficPathStr = ficPath; ficPathFile = new
-	 * File(ficPathStr); parentDirFile = ficPathFile.getParentFile(); epubDir =
-	 * parentDirFile.getPath() + File.separator +
-	 * EFProperties.getPropertyValue(EFProperties.EPUB_SUBDIRECTORY_ROOT_KEY) +
-	 * File.separator; initialize(); }
-	 */
 
 	private void initialize() {
-		if (epubDir.exists()) {
-			File[] oldFiles = epubDir.listFiles();
+		File subdir = new File(epubDir);
+		if (subdir.exists()) {
+			File[] oldFiles = subdir.listFiles();
 			for (File f : oldFiles) {
 				if (f.isDirectory()) {
 					File[] meta = f.listFiles();
@@ -152,31 +85,27 @@ public class Epub extends EpubFiles implements GFConstants {
 				}
 				f.delete();
 			}
-			epubDir.delete();
+			subdir.delete();
 		}
 
-		File[] oldFiles = titleDirFile.listFiles();
-		if (null != oldFiles) {
-			for (File f : oldFiles) {
-				String name = f.getName();
-				if (name.endsWith(EPUB_EXT) || name.endsWith("xml")) {
-					f.delete();
-				}
+		File[] oldFiles = parentDirFile.listFiles();
+		for (File f : oldFiles) {
+			String name = f.getName();
+			if (name.endsWith(EPUB_EXT) || name.endsWith("xml")) {
+				f.delete();
 			}
 		}
+
 	}
 
-	/*
-
 	public File getParentDirectory() {
-		return authorDirFile;
+		return parentDirFile;
 	}
 
 	public void setParentDirectory(File parentDirectory) {
-		this.authorDirFile = parentDirectory;
+		this.parentDirFile = parentDirectory;
 	}
-*/
-	
+
 	public ArrayList<Chapter> getChapters() {
 		return chapters;
 	}
@@ -190,7 +119,8 @@ public class Epub extends EpubFiles implements GFConstants {
 	}
 
 	public void writeEpub() throws Exception {
-		epubDir.mkdir();
+		File f = new File(epubDir);
+		f.mkdir();
 
 		Mimetype.writeMimetype(epubDir);
 		Container.writeContainer(epubDir);
@@ -199,7 +129,7 @@ public class Epub extends EpubFiles implements GFConstants {
 			c.writeChapter(epubDir);
 		}
 
-		//copyImages();
+		copyImages();
 
 		opf.writePackage(epubDir);
 
@@ -207,7 +137,7 @@ public class Epub extends EpubFiles implements GFConstants {
 	}
 
 	private void zipEpubDir(String targetFilename) throws Exception {
-		epubFile = new File(titleDirFile, targetFilename + EPUB_EXT);
+		epubFile = new File(parentDirFile.getPath() + File.separator + targetFilename + EPUB_EXT);
 
 		ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(epubFile));
 
@@ -219,7 +149,7 @@ public class Epub extends EpubFiles implements GFConstants {
 			zipFile(c.getFilename(), zos);
 		}
 
-		for (String s : images) {
+		for (String s : imagePaths) {
 			Path source = Path.of(s);
 			zipFile(source.getFileName().toString(), zos);
 		}
@@ -271,15 +201,14 @@ public class Epub extends EpubFiles implements GFConstants {
 		ZipEntry ze = new ZipEntry(filename);
 		zos.putNextEntry(ze);
 
-		Path p = Paths.get(epubDir.getPath(), filename);
+		Path p = Paths.get(epubDir, filename);
 		Files.copy(p, zos);
 
 		zos.closeEntry();
 	}
 
-	/*
 	private void copyImages() throws IOException {
-		Path targetDir = epubDir.toPath();
+		Path targetDir = Path.of(epubDir);
 
 		for (String s : imagePaths) {
 			File source = new File(parentDirFile, s);
@@ -289,128 +218,218 @@ public class Epub extends EpubFiles implements GFConstants {
 		}
 
 	}
-	*/
 
 	public void build() throws IOException {
-	//	Document s = loadStory(ficPathStr);
+		Document s = loadStory(ficPathStr);
 
-	//	makeChapters(s, ficPathStr);
-		toc = new Contents(chapters);
+		makeChapters(s, ficPathStr);
+		toc = new Contents(ficPathStr, chapters);
 		chapters.add(0, toc);
 
 		opf = new PackageOPF();
 		getAuthorsAndTitle(opf);
-		opf.setPublisher(getSite());
-		opf.setSubjects(getTags());
-		opf.setLastModified(titleDirFile.lastModified());
-		opf.setImages(getImages());
+		opf.setPublisher(getSite(s));
+		opf.setSubjects(getTags(s));
+		opf.setLastModified(ficPathFile.lastModified());
+		opf.setImages(getImages(s));
 		opf.setChapters(chapters);
 		opf.buildDoc();
 	}
 
-	private String getSite() {
+	private String getSite(Document story) {
 		String site = null;
 
-		int idx = startUrl.indexOf("//");
-		String s = startUrl.substring(idx + 2);
-		idx = s.indexOf('/');
-		site = s.substring(0, idx);
+		Elements head = Selector.select(HEAD_TAG, story);
+		ArrayList<Comment> comments = (ArrayList) head.comments();
+
+		if (comments.size() > 0) {
+			Comment comment = comments.get(0);
+			String s = comment.getData();
+			int idx = s.indexOf("//");
+			s = s.substring(idx + 2);
+			idx = s.indexOf('/');
+			site = s.substring(0, idx);
+		}
 
 		return site;
 	}
 
-	private ArrayList<String> getImages() {
-		return images;
-	}
+	private ArrayList<String> getImages(Document story) {
+		ArrayList<String> allPaths = new ArrayList<String>();
+		imagePaths = new ArrayList<String>();
 
-	public void addImage(String name) {
-		images.add(name);
+		Elements refs = Selector.select(IMG_TAG, story.root());
+		for (Element img : refs) {
+			String path = img.attr(SRC_ATTR);
+			File f = new File(parentDirFile, path);
+			if (f.exists()) {
+				// eliminate duplicates.
+				if (!imagePaths.contains(path)) {
+					imagePaths.add(path);
+				}
+			}
+		}
+
+		return imagePaths;
 	}
 
 	private void getAuthorsAndTitle(PackageOPF opf) {
-			opf.setTitle(origTitle);
+		if (!ficPathFile.isFile()) {
+			return;
+		}
 
-			String[] auts = origAuthor.split(COMMA);
+		String filename = ficPathFile.getName();
+		int i = filename.indexOf('.');
+		filename = filename.substring(0, i); // filename should consist of authors and title.
+
+		String[] strs = filename.split("-");
+
+		switch (strs.length) {
+		case 1: {
+			opf.setTitle(strs[0]);
+			break;
+		}
+		case 2: {
+			opf.setTitle(strs[1]);
+			String[] auts = strs[0].split(COMMA);
 			opf.setAuthors(auts);
+			break;
+		}
+		default: {
+			String[] auts = strs[0].split(COMMA);
+			opf.setAuthors(auts);
+			int j = filename.indexOf("-");
+			String title = filename.substring(j + 1);
+			opf.setTitle(title);
+		}
+		}
+
 	}
 
-	/*
-	 * private ArrayList<String> getTags(Document story) { ArrayList<String>
-	 * subjects = new ArrayList<String>(); String[] tags = null;
-	 * 
-	 * // Elements h3Refs = Selector.select(H3_TAG + ":contains(" + "\"" +"Tags" +
-	 * "\"" + ")", story.root()); Elements h3Refs =
-	 * Selector.select("h3:contains(Tags)", story.root()); if (h3Refs.size() > 0) {
-	 * Element h3Ref = h3Refs.first(); Node n = h3Ref.nextSibling(); if (n
-	 * instanceof TextNode) { TextNode t = (TextNode) n; String text = t.text();
-	 * tags = text.split(COMMA); } }
-	 * 
-	 * if (null != tags) { for (String str : tags) { subjects.add(str.trim()); } }
-	 * 
-	 * return subjects; }
-	 */
+	private ArrayList<String> getTags(Document story) {
+		ArrayList<String> subjects = new ArrayList<String>();
+		String[] tags = null;
 
-	/*
-	 * void makeChapters(Document story, String ficPath) throws
-	 * UnsupportedEncodingException { fixStyles(story);
-	 * 
-	 * Elements aRefs = Selector.select(A_TAG + "[" + NAME_ATTR + "]",
-	 * story.root()); Elements someRefs = new Elements();
-	 * 
-	 * 
-	 * if (null == aRefs || aRefs.size() <= 2) { //Summary plus chapter File f = new
-	 * File(ficPath); String name = f.getName(); int dot = name.lastIndexOf('.');
-	 * name = name.substring(0, dot); Chapter c = new Chapter(name, story);
-	 * chapters.add(c); return; }
-	 * 
-	 * 
-	 * int size = aRefs.size(); for (int i = 0; i < size; i++) { Element e =
-	 * aRefs.get(i); Attributes attrs = e.attributes(); if (attrs.size() == 1) {
-	 * someRefs.add(e); } }
-	 * 
-	 * int someSize = someRefs.size();
-	 * 
-	 * if (size == 0) { // no refs String name = parentDirFile.getName();
-	 * 
-	 * Element head = Selector.select(HEAD_TAG, story.root()).first(); if (null ==
-	 * head) { head = new Element(HEAD_TAG); story.root().appendChild(head); }
-	 * 
-	 * Element titleTag = Selector.select(TITLE_TAG, story.root()).first(); if (null
-	 * == titleTag) { titleTag = new Element(TITLE_TAG); titleTag.text(name);
-	 * head.appendChild(titleTag); } else { titleTag.text(name); }
-	 * 
-	 * Chapter c = new Chapter(name, story); chapters.add(c);
-	 * 
-	 * } else { for (int i = 0; i < someSize; i++) { Element e = someRefs.get(i);
-	 * 
-	 * String name = e.attr(NAME_ATTR); if (name != null && name.contains("&amp;"))
-	 * { name.replace("&amp;", "&"); } Document doc = story.clone(); Element body =
-	 * doc.body(); body.remove(); doc.body();
-	 * 
-	 * int j = i + 1; Element nextRef = null; if (j < someSize) { nextRef =
-	 * someRefs.get(j); }
-	 * 
-	 * // copyElements(story, doc, e, nextRef);
-	 * 
-	 * Element titleTag = Selector.select(TITLE_TAG, doc.root()).first(); if (null
-	 * == titleTag) { Element head = Selector.select(HEAD_TAG, doc.root()).first();
-	 * titleTag = new Element(TITLE_TAG); titleTag.text(name);
-	 * head.appendChild(titleTag); } else { titleTag.text(name); }
-	 * 
-	 * Chapter c = new Chapter(name, doc); chapters.add(c);
-	 * 
-	 * } }
-	 * 
-	 * 
-	 * 
-	 * //fix names for (Chapter c : chapters) { Document d = c.getDoc(); Elements
-	 * refs = Selector.select(A_TAG + "[" + NAME_ATTR + "]", d.root()); Element ref
-	 * = refs.first(); if (null != ref) { ref.remove(); // String name =
-	 * ref.attr(NAME_ATTR); // ref.attr(NAME_ATTR, urlFileName(name)); } }
-	 * 
-	 * return; }
-	 */
-	
+//		Elements h3Refs = Selector.select(H3_TAG + ":contains(" + "\"" +"Tags" + "\"" + ")", story.root());
+		Elements h3Refs = Selector.select("h3:contains(Tags)", story.root());
+		if (h3Refs.size() > 0) {
+			Element h3Ref = h3Refs.first();
+			Node n = h3Ref.nextSibling();
+			if (n instanceof TextNode) {
+				TextNode t = (TextNode) n;
+				String text = t.text();
+				tags = text.split(COMMA);
+			}
+		}
+
+		if (null != tags) {
+			for (String str : tags) {
+				subjects.add(str.trim());
+			}
+		}
+
+		return subjects;
+	}
+
+	void makeChapters(Document story, String ficPath) throws UnsupportedEncodingException {
+		fixStyles(story);
+
+		Elements aRefs = Selector.select(A_TAG + "[" + NAME_ATTR + "]", story.root());
+		Elements someRefs = new Elements();
+
+		/*
+		 * if (null == aRefs || aRefs.size() <= 2) { //Summary plus chapter File f = new
+		 * File(ficPath); String name = f.getName(); int dot = name.lastIndexOf('.');
+		 * name = name.substring(0, dot); Chapter c = new Chapter(name, story);
+		 * chapters.add(c); return; }
+		 */
+
+		int size = aRefs.size();
+		for (int i = 0; i < size; i++) {
+			Element e = aRefs.get(i);
+			Attributes attrs = e.attributes();
+			if (attrs.size() == 1) {
+				someRefs.add(e);
+			}
+		}
+
+		int someSize = someRefs.size();
+		
+		if (size == 0) {
+			// no refs
+			String name = parentDirFile.getName();
+
+			Element head = Selector.select(HEAD_TAG, story.root()).first();
+			if (null == head) {
+				head = new Element(HEAD_TAG);
+				story.root().appendChild(head);
+			}
+
+			Element titleTag = Selector.select(TITLE_TAG, story.root()).first();
+			if (null == titleTag) {
+				titleTag = new Element(TITLE_TAG);
+				titleTag.text(name);
+				head.appendChild(titleTag);
+			} else {
+				titleTag.text(name);
+			}
+
+			Chapter c = new Chapter(name, story);
+			chapters.add(c);
+
+		} else {
+			for (int i = 0; i < someSize; i++) {
+				Element e = someRefs.get(i);
+
+				String name = e.attr(NAME_ATTR);
+				if (name != null && name.contains("&amp;")) {
+					name.replace("&amp;", "&");
+				}
+				Document doc = story.clone();
+				Element body = doc.body();
+				body.remove();
+				doc.body();
+
+				int j = i + 1;
+				Element nextRef = null;
+				if (j < someSize) {
+					nextRef = someRefs.get(j);
+				}
+
+				copyElements(story, doc, e, nextRef);
+
+				Element titleTag = Selector.select(TITLE_TAG, doc.root()).first();
+				if (null == titleTag) {
+					Element head = Selector.select(HEAD_TAG, doc.root()).first();
+					titleTag = new Element(TITLE_TAG);
+					titleTag.text(name);
+					head.appendChild(titleTag);
+				} else {
+					titleTag.text(name);
+				}
+
+				Chapter c = new Chapter(name, doc);
+				chapters.add(c);
+
+			}
+		}
+		
+		
+		//fix names
+		for (Chapter c : chapters) {
+			Document d = c.getDoc();
+			Elements refs = Selector.select(A_TAG + "[" + NAME_ATTR + "]", d.root());
+			Element  ref = refs.first();
+			if (null != ref) {
+				ref.remove();
+			//	String name = ref.attr(NAME_ATTR);
+			//	ref.attr(NAME_ATTR, urlFileName(name));
+			}
+		}
+
+		return;
+	}
+
 	void fixStyles(Document story) {
 
 		/*
@@ -471,7 +490,7 @@ public class Epub extends EpubFiles implements GFConstants {
 			r.removeAttr("noshade");
 			r.removeAttr("width");
 		}
-
+		
 		Elements metas = Selector.select("meta", story.root());
 		for (Element m : metas) {
 			String httpEquiv = m.attr("http-equiv");
@@ -494,6 +513,29 @@ public class Epub extends EpubFiles implements GFConstants {
 
 	}
 
+	private void copyElements(Document story, Document doc, Element ref, Element nextRef) {
+		List<Node> children = story.body().childNodesCopy();
+
+		boolean refFound = false;
+
+		for (Node child : children) {
+			if (null != nextRef && child.hasSameValue(nextRef)) {
+				break;
+			}
+			if (refFound) {
+				doc.body().appendChild(child);
+			} else {
+				if (child.hasSameValue(ref)) {
+					refFound = true;
+					doc.body().appendChild(child);
+				}
+
+			}
+
+		}
+
+	}
+
 	Document loadStory(String ficPathStr) throws IOException {
 		File input = new File(ficPathStr);
 
@@ -509,7 +551,7 @@ public class Epub extends EpubFiles implements GFConstants {
 		private static String VALUE = "application/epub+zip";
 		private static String FILENAME = "mimetype";
 
-		static void writeMimetype(File epubDir) throws IOException {
+		static void writeMimetype(String epubDir) throws IOException {
 			OutputStreamWriter osw = getOSW(epubDir, FILENAME);
 			osw.write(VALUE);
 
@@ -523,11 +565,11 @@ public class Epub extends EpubFiles implements GFConstants {
 		private static String DIR_NAME = "META-INF";// + File.separator;
 		private static String FILENAME = "container.xml";
 
-		static void writeContainer(File epubDir) throws IOException {
-			File f = new File(epubDir, DIR_NAME);
+		static void writeContainer(String epubDir) throws IOException {
+			File f = new File(epubDir + File.separator + DIR_NAME);
 			f.mkdir();
 
-			OutputStreamWriter osw = getOSW(f, FILENAME);
+			OutputStreamWriter osw = getOSW(f.getPath(), FILENAME);
 			osw.write(VALUE);
 
 			osw.close();
@@ -555,9 +597,6 @@ public class Epub extends EpubFiles implements GFConstants {
 				int i = fis.read();
 				fos.write(i);
 			}
-
-			fis.close();
-			fos.close();
 		}
 
 		logger.exiting(this.getClass().getCanonicalName(), "publish()");
@@ -576,85 +615,9 @@ public class Epub extends EpubFiles implements GFConstants {
 				int i = fis.read();
 				fos.write(i);
 			}
-			fis.close();
-			fos.close();
 		}
 
 		logger.exiting(this.getClass().getCanonicalName(), "publish()");
 	}
 
-	public String getFileAuthor() {
-		return fileAuthor;
-	}
-
-	public boolean isOneShot() {
-		return isOneShot;
-	}
-
-	public void setOneShot(boolean isOneShot) {
-		this.isOneShot = isOneShot;
-	}
-
-	public void setFileAuthor(String author) throws UnsupportedEncodingException {
-		this.fileAuthor = urlFileName(author);
-	}
-
-	public String getFileTitle() {
-		return fileTitle;
-	}
-
-	public void setFileTitle(String title) throws UnsupportedEncodingException {
-		this.fileTitle = urlFileName(title);
-	}
-
-	public String getOrigAuthor() {
-		return origAuthor;
-	}
-
-	public void setOrigAuthor(String origAuthor) {
-		this.origAuthor = origAuthor;
-	}
-
-	public String getOrigTitle() {
-		return origTitle;
-	}
-
-	public void setOrigTitle(String origTitle) {
-		this.origTitle = origTitle;
-	}
-
-	public File getTitleDir() {
-		return titleDirFile;
-	}
-
-	void setDelimitedAuthor(String author) {
-		delimitedAuthor = author.replace(',', ';');
-	}
-
-	public String getDelimitedAuthor() {
-		return delimitedAuthor;
-	}
-
-	public void setCharset(Charset charset) {
-		this.charset = charset;
-	}
-
-	public Charset getCharset() {
-		return charset;
-	}
-
-	public void addChapter(Chapter c) {
-		fixStyles(c.getDoc());
-		chapters.add(c);
-	}
-
-	public void addImageFailure(String failure) {
-		imageFailures.add(failure);
-	}
-
-
-	public ArrayList<String> getImageFailures() {
-		// TODO Auto-generated method stub
-		return imageFailures;
-	}
 }

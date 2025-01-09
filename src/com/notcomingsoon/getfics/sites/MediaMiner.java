@@ -87,7 +87,7 @@ public class MediaMiner extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
+	protected void extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Document freshDoc = initDocument();
@@ -99,10 +99,9 @@ public class MediaMiner extends Site {
 		addChapterFooter(body);
 		
 		chap.setDoc(freshDoc);
-		loc.addChapter(chap);
+//		loc.addChapter(chap);
 		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return freshDoc;
 	}
 
 	@Override
@@ -123,7 +122,7 @@ public class MediaMiner extends Site {
 		addChapterFooter(body);
 	
 		summary.setDoc(freshDoc);
-		loc.addChapter(summary);
+	//	loc.addChapter(summary);
 				
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return summary;

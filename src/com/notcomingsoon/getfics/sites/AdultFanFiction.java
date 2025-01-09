@@ -60,7 +60,7 @@ public class AdultFanFiction extends Site {
 		siteCharset = AFF_CHARSET;
 	}
 
-	protected Document extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
+	protected void extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
 		Document freshDoc = initDocument();
@@ -78,10 +78,9 @@ public class AdultFanFiction extends Site {
 		addChapterFooter(body);
 		
 		chap.setDoc(freshDoc);
-		loc.addChapter(chap);
+	//S	loc.addChapter(chap);
 
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return freshDoc;
 	}
 
 	
