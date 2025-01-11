@@ -37,7 +37,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.stream.FileCacheImageInputStream;
 
 import org.brotli.dec.BrotliInputStream;
@@ -90,7 +89,7 @@ public abstract class Site {
 
 	static final String PIC = "image"; //$NON-NLS-1$
 
-	private static final String JPEG = "jpg"; //$NON-NLS-1$
+//	private static final String JPEG = "jpg"; //$NON-NLS-1$
 
 	private static final String PERIOD = "."; //$NON-NLS-1$
 
@@ -234,8 +233,8 @@ public abstract class Site {
 	static InputStream decompress(HttpResponse<InputStream> response) throws IOException {
 		String encoding = response.headers().firstValue("Content-Encoding").orElse(""); //$NON-NLS-1$ //$NON-NLS-2$
 		InputStream is = null;
-		System.out.println("Encoding:\t" + encoding);
-		System.out.println(response.headers());
+	//	System.out.println("Encoding:\t" + encoding);
+	//	System.out.println(response.headers());
 		if (encoding.equals("gzip")) { //$NON-NLS-1$
 			is = new GZIPInputStream(response.body());
 		} else if (encoding.equals("br")) { //$NON-NLS-1$
@@ -372,7 +371,7 @@ public abstract class Site {
 
 			int seconds = 0;
 			while (ri.isAlive()) {
-				if (seconds >= 60) {
+				if (seconds >= 60000) {
 					logger.info("Attempting interrupt. seconds = " + seconds); //$NON-NLS-1$
 					try {
 						ri.interrupt();
@@ -387,7 +386,7 @@ public abstract class Site {
 				} else {
 					wait1();
 					seconds++;
-					logger.info("seconds = " + seconds); //$NON-NLS-1$
+			//		logger.info("seconds = " + seconds); //$NON-NLS-1$
 				}
 			}
 		}
@@ -601,6 +600,7 @@ public abstract class Site {
 		Element image;
 		Epub loc;
 		int i;
+		
 
 		ReadImage(Element image, Epub loc, int i) {
 			this.image = image;
@@ -611,20 +611,27 @@ public abstract class Site {
 		@Override
 		public void run() {
 			String src = image.attr(GFConstants.SRC_ATTR);
+			String origSrc = src;
 			if (!(src.contains(GFConstants.HTTP) || src.contains(GFConstants.HTTPS))) {
 				src = GFConstants.HTTP + siteName + SLASH + src;
 			}
 			int lastPeriod = src.lastIndexOf(PERIOD);
+			int lastSlash = src.lastIndexOf('/');
 			String type = src.substring(lastPeriod + 1);
-			Iterator<ImageReader> ri = ImageIO.getImageReadersBySuffix(type);
-			if (!ri.hasNext()) {
-				type = JPEG;
-			}
+			String imgName = src.substring(lastSlash + 1, lastPeriod);
+
 			logger.info("href = " + src); //$NON-NLS-1$
 			logger.info("type = " + type); //$NON-NLS-1$
-
+			logger.info("name = " + imgName); //$NON-NLS-1$
+			
+			String existingFileName = wasPicDownloaded(imgName, type);
+			if (null != existingFileName) {
+				image.attr(GFConstants.SRC_ATTR, existingFileName);
+				loc.addImage(existingFileName);
+				return;
+			}
+			
 			HttpRequest.Builder builder = getRequestBuilder(src);
-
 			HttpRequest request = builder.build();
 
 			try {
@@ -632,40 +639,82 @@ public abstract class Site {
 				logger.info("Status code:\t" + response.statusCode());
 				HttpHeaders headers = response.headers();
 				Optional<String> ct = headers.firstValue("Content-Type");
-				boolean isHtml = false;
+				boolean isImage = false;
 				if (ct.isPresent()) {
 					String contentType = ct.get();
-					if (contentType.contains("html")) {
-						isHtml = true;
+					logger.info("contentType:\t" + contentType);
+					if (contentType.contains("image")) {
+						isImage = true;
+						int slash = contentType.lastIndexOf('/');
+						type = contentType.substring(slash+1);
 					}
 				}
 
-				InputStream is = decompress(response);
 				// Did we get a picture or a page?
-				if (response.statusCode() == 200 && isHtml) {
+				if (response.statusCode() == 200 && !isImage) {
 					// gotta a web page so try again
 					Document doc = parse(src, response);
-					
+					src = findImage(doc, imgName);
+					if (origSrc.equals(src)) {
+						Exception e = new Exception("Second address same as starting address!!!");
+						e.fillInStackTrace();
+						throw e; //$NON-NLS-1$																			
+					}
+					logger.info("href = " + src); //$NON-NLS-1$
+					if (null == src) {
+						Exception e = new Exception("No image in second document!!!");
+						e.fillInStackTrace();
+						throw e; //$NON-NLS-1$													
+					}
+					logger.info("Src2:\t" + src);
+					HttpRequest.Builder builder2 = getRequestBuilder(src);
+					HttpRequest request2 = builder2.build();
+					HttpResponse<InputStream> response2 = client.send(request2, BodyHandlers.ofInputStream());
+					logger.info("Status code2:\t" + response2.statusCode());
+					HttpHeaders headers2 = response2.headers();
+					Optional<String> ct2 = headers2.firstValue("Content-Type");
+					isImage = false;
+					if (ct2.isPresent()) {
+						String contentType = ct2.get();
+						logger.info("contentType2:\t" + contentType);
+						if (contentType.contains("image")) {
+							isImage = true;
+							int slash = contentType.lastIndexOf('/');
+							type = contentType.substring(slash+1);
+						} else {
+							Exception e = new Exception("Picture didn't download!!!");
+							e.fillInStackTrace();
+							throw e; //$NON-NLS-1$													
+						}
+					}
+					response = response2;
 				}
+				logger.info("href = " + src); //$NON-NLS-1$
+				logger.info("type = " + type); //$NON-NLS-1$
+				logger.info("name = " + imgName); //$NON-NLS-1$
+
+				InputStream is = decompress(response);
 				logger.info("is available?\t" + is.available());
 				FileCacheImageInputStream iis = new FileCacheImageInputStream(is, loc.getEpubDir());
 				logger.info("iis length?\t" + iis.length());
 				BufferedImage pic = ImageIO.read(iis);
 				if (null == pic) {
-					throw new Exception("Picture didn't download!!!"); //$NON-NLS-1$
+					Exception e = new Exception("Picture didn't download!!!");
+					e.fillInStackTrace();
+					throw e; //$NON-NLS-1$													
 				} else {
 					try {
-						System.out.println("1. Make File");
-						File outputFile = new File(loc.getEpubDir(), PIC + i + PERIOD + type);
+						logger.info("1. Make File");
+						File outputFile = new File(loc.getEpubDir(), imgName + PERIOD + type);
 						outputFile.createNewFile();
-						System.out.println("2. Change HTML "+ image.toString());
+						logger.info("2. Change HTML "+ image.toString());
 						image.attr(GFConstants.SRC_ATTR, outputFile.getName());
 						logger.info("outputFile = " + outputFile); //$NON-NLS-1$
 						ImageIO.write(pic, type, outputFile);
 						loc.addImage(outputFile.getName());
 					} catch (Exception e) {
 						e.printStackTrace();
-						image.remove();
+				//		image.remove();
 					}
 				}
 			} catch (Exception e) {
@@ -676,6 +725,54 @@ public abstract class Site {
 				image.attr(GFConstants.SRC_ATTR, name);
 				loc.addImageFailure(pathname + "\t" + e); //$NON-NLS-1$
 			}
+		}
+
+		private String findImage(Document doc, String imgName) {
+			String src = null;
+			Elements els = doc.getElementsByTag(GFConstants.IMG_TAG);
+			if (els.size() == 1) {
+				Element img = els.get(1);
+				String href = img.attr(GFConstants.SRC_ATTR);
+				if (null != href) {
+					src = href;
+				}
+			} else {
+				for (Element img : els) {
+					String href = img.attr(GFConstants.SRC_ATTR);
+					if (null != href && href.contains(imgName)) {
+						src = href;
+						break;
+					}
+				}
+			}
+			return src;
+		}
+
+		/**
+		 * Image name and type may be changed.
+		 * @param imgName
+		 * @param imgType - jpg, gif, etc
+		 * @return null if file does not exist
+		 */
+		private String wasPicDownloaded(String imgName, String imgType) {
+			String fileName = null;
+
+			File epubDir = loc.getEpubDir();
+			if (epubDir.exists()) {
+				File[] oldFiles = epubDir.listFiles();
+				for (File f : oldFiles) {
+					boolean isImageType = EpubFiles.isImageFile(f);
+					if (isImageType) {
+						String name = f.getName();
+						if (name.contains(imgName)) {
+							fileName = name;
+							break;
+						}
+					}
+				}
+			}
+
+			return fileName;
 		}
 	}
 

@@ -22,26 +22,57 @@ import com.notcomingsoon.getfics.GFConstants;
 
 public abstract class EpubFiles {
 	
-	final static String BAD_CHARS = "ç~*.\"\'/\\[]$@?():;!|=,\r\n“”’#";
+	final static String BAD_CHARS = "ÇáþÚéçó~*.\"\'/\\[]$@?():;!|=,\r\n“”’#";
+	final static String AMP = "&";
 	
 	static String urlFileName(String name) throws UnsupportedEncodingException {
 		
-		String s = filterBadChars(name);
+		String s = filterBadChars(name, true);
 		
 		String urlName = URLEncoder.encode(s, GFConstants.UTF_8_CHARSET);
 		return urlName;
 	}
 
-	static String filterBadChars(String name) {
+	static String filterBadChars(String name ) {
+		return filterBadChars(name, false);
+	}
+
+	static String filterBadChars(String name, boolean noAmp) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < name.length(); i++) {
 			String c = "" + name.charAt(i);
 			if (BAD_CHARS.contains(c)) {
 				continue;
 			}
+			if (noAmp && AMP.equals(c)) {
+				continue;
+			}
 			sb.append(c);
 		}
 		return sb.toString();
+	}
+	
+	private static String[] IMAGE_TYPES = new String[] {"png", "jpg", "jpeg", "gif"};
+
+
+	static public boolean isImageFile(File f) {
+		boolean isImage = false;
+		
+		String name = f.getName();
+		if (null != name) {
+			int period = name.lastIndexOf('.');
+			if (period > 0) {
+				String type = name.substring(period + 1);
+				for (int i = 0; i < IMAGE_TYPES.length; i++) {
+					if (IMAGE_TYPES[i].equalsIgnoreCase(type)) {
+						isImage = true;
+						break;
+					}
+				}
+			}
+		}
+		
+		return isImage;
 	}
 	
 	static public Document setOutputType(Document doc) {

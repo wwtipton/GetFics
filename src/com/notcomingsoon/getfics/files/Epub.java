@@ -132,18 +132,16 @@ public class Epub extends EpubFiles implements GFConstants {
 		
 	}
 
-	/*
-	 * public Epub(String ficPath) { ficPathStr = ficPath; ficPathFile = new
-	 * File(ficPathStr); parentDirFile = ficPathFile.getParentFile(); epubDir =
-	 * parentDirFile.getPath() + File.separator +
-	 * EFProperties.getPropertyValue(EFProperties.EPUB_SUBDIRECTORY_ROOT_KEY) +
-	 * File.separator; initialize(); }
-	 */
-
 	private void initialize() {
 		if (epubDir.exists()) {
+			boolean canDelete = true;
 			File[] oldFiles = epubDir.listFiles();
 			for (File f : oldFiles) {
+				//Getting images is hard so keep them.
+				if (isImageFile(f)) {
+					canDelete = false;
+					continue;
+				}
 				if (f.isDirectory()) {
 					File[] meta = f.listFiles();
 					for (File m : meta) {
@@ -152,7 +150,9 @@ public class Epub extends EpubFiles implements GFConstants {
 				}
 				f.delete();
 			}
-			epubDir.delete();
+			if (canDelete) {
+				epubDir.delete();
+			}
 		}
 
 		File[] oldFiles = titleDirFile.listFiles();
@@ -166,17 +166,6 @@ public class Epub extends EpubFiles implements GFConstants {
 		}
 	}
 
-	/*
-
-	public File getParentDirectory() {
-		return authorDirFile;
-	}
-
-	public void setParentDirectory(File parentDirectory) {
-		this.authorDirFile = parentDirectory;
-	}
-*/
-	
 	public ArrayList<Chapter> getChapters() {
 		return chapters;
 	}
@@ -277,24 +266,7 @@ public class Epub extends EpubFiles implements GFConstants {
 		zos.closeEntry();
 	}
 
-	/*
-	private void copyImages() throws IOException {
-		Path targetDir = epubDir.toPath();
-
-		for (String s : imagePaths) {
-			File source = new File(parentDirFile, s);
-			Path sourcePath = source.toPath();
-			Path targetFile = targetDir.resolve(sourcePath.getFileName());
-			Files.copy(sourcePath, targetFile, StandardCopyOption.COPY_ATTRIBUTES);
-		}
-
-	}
-	*/
-
 	public void build() throws IOException {
-	//	Document s = loadStory(ficPathStr);
-
-	//	makeChapters(s, ficPathStr);
 		toc = new Contents(chapters);
 		chapters.add(0, toc);
 
@@ -334,90 +306,8 @@ public class Epub extends EpubFiles implements GFConstants {
 			opf.setAuthors(auts);
 	}
 
-	/*
-	 * private ArrayList<String> getTags(Document story) { ArrayList<String>
-	 * subjects = new ArrayList<String>(); String[] tags = null;
-	 * 
-	 * // Elements h3Refs = Selector.select(H3_TAG + ":contains(" + "\"" +"Tags" +
-	 * "\"" + ")", story.root()); Elements h3Refs =
-	 * Selector.select("h3:contains(Tags)", story.root()); if (h3Refs.size() > 0) {
-	 * Element h3Ref = h3Refs.first(); Node n = h3Ref.nextSibling(); if (n
-	 * instanceof TextNode) { TextNode t = (TextNode) n; String text = t.text();
-	 * tags = text.split(COMMA); } }
-	 * 
-	 * if (null != tags) { for (String str : tags) { subjects.add(str.trim()); } }
-	 * 
-	 * return subjects; }
-	 */
-
-	/*
-	 * void makeChapters(Document story, String ficPath) throws
-	 * UnsupportedEncodingException { fixStyles(story);
-	 * 
-	 * Elements aRefs = Selector.select(A_TAG + "[" + NAME_ATTR + "]",
-	 * story.root()); Elements someRefs = new Elements();
-	 * 
-	 * 
-	 * if (null == aRefs || aRefs.size() <= 2) { //Summary plus chapter File f = new
-	 * File(ficPath); String name = f.getName(); int dot = name.lastIndexOf('.');
-	 * name = name.substring(0, dot); Chapter c = new Chapter(name, story);
-	 * chapters.add(c); return; }
-	 * 
-	 * 
-	 * int size = aRefs.size(); for (int i = 0; i < size; i++) { Element e =
-	 * aRefs.get(i); Attributes attrs = e.attributes(); if (attrs.size() == 1) {
-	 * someRefs.add(e); } }
-	 * 
-	 * int someSize = someRefs.size();
-	 * 
-	 * if (size == 0) { // no refs String name = parentDirFile.getName();
-	 * 
-	 * Element head = Selector.select(HEAD_TAG, story.root()).first(); if (null ==
-	 * head) { head = new Element(HEAD_TAG); story.root().appendChild(head); }
-	 * 
-	 * Element titleTag = Selector.select(TITLE_TAG, story.root()).first(); if (null
-	 * == titleTag) { titleTag = new Element(TITLE_TAG); titleTag.text(name);
-	 * head.appendChild(titleTag); } else { titleTag.text(name); }
-	 * 
-	 * Chapter c = new Chapter(name, story); chapters.add(c);
-	 * 
-	 * } else { for (int i = 0; i < someSize; i++) { Element e = someRefs.get(i);
-	 * 
-	 * String name = e.attr(NAME_ATTR); if (name != null && name.contains("&amp;"))
-	 * { name.replace("&amp;", "&"); } Document doc = story.clone(); Element body =
-	 * doc.body(); body.remove(); doc.body();
-	 * 
-	 * int j = i + 1; Element nextRef = null; if (j < someSize) { nextRef =
-	 * someRefs.get(j); }
-	 * 
-	 * // copyElements(story, doc, e, nextRef);
-	 * 
-	 * Element titleTag = Selector.select(TITLE_TAG, doc.root()).first(); if (null
-	 * == titleTag) { Element head = Selector.select(HEAD_TAG, doc.root()).first();
-	 * titleTag = new Element(TITLE_TAG); titleTag.text(name);
-	 * head.appendChild(titleTag); } else { titleTag.text(name); }
-	 * 
-	 * Chapter c = new Chapter(name, doc); chapters.add(c);
-	 * 
-	 * } }
-	 * 
-	 * 
-	 * 
-	 * //fix names for (Chapter c : chapters) { Document d = c.getDoc(); Elements
-	 * refs = Selector.select(A_TAG + "[" + NAME_ATTR + "]", d.root()); Element ref
-	 * = refs.first(); if (null != ref) { ref.remove(); // String name =
-	 * ref.attr(NAME_ATTR); // ref.attr(NAME_ATTR, urlFileName(name)); } }
-	 * 
-	 * return; }
-	 */
-	
 	void fixStyles(Document story) {
 
-		/*
-		 * Elements styles = Selector.select("[style]", story.root()); for (Element
-		 * s:styles) { String value = s.attr("style"); if (value.contains(": ")) {
-		 * String newValue = value.replace(": ", ":"); s.attr("style", newValue); } }
-		 */
 		Elements empties = Selector.select("[*]", story.root());
 		for (Element empty : empties) {
 			List<Attribute> attrs = empty.attributes().asList();
@@ -441,6 +331,11 @@ public class Epub extends EpubFiles implements GFConstants {
 		for (Element c : centers) {
 			c.tagName("div");
 			c.attr("style", "text-align:center");
+		}
+
+		Elements strikes = Selector.select("strike", story.root());
+		for (Element s : strikes) {
+			s.tagName("del");
 		}
 
 		Elements imgs = Selector.select("img", story.root());
@@ -520,7 +415,7 @@ public class Epub extends EpubFiles implements GFConstants {
 
 	static class Container {
 		private static String VALUE = "<?xml version=\"1.0\"?><container version=\"1.0\" xmlns=\"urn:oasis:names:tc:opendocument:xmlns:container\"><rootfiles><rootfile full-path=\"package.opf\" media-type=\"application/oebps-package+xml\" /></rootfiles></container>";
-		private static String DIR_NAME = "META-INF";// + File.separator;
+		private static String DIR_NAME = "META-INF";
 		private static String FILENAME = "container.xml";
 
 		static void writeContainer(File epubDir) throws IOException {
@@ -537,7 +432,6 @@ public class Epub extends EpubFiles implements GFConstants {
 
 	public int validate() throws IOException, InterruptedException {
 		String[] args = new String[] { epubFile.toString(), "-e", "--out" };
-//		Checker.main(args);
 		EpubChecker checker = new EpubChecker();
 		return checker.run(args);
 	}
@@ -654,7 +548,6 @@ public class Epub extends EpubFiles implements GFConstants {
 
 
 	public ArrayList<String> getImageFailures() {
-		// TODO Auto-generated method stub
 		return imageFailures;
 	}
 }

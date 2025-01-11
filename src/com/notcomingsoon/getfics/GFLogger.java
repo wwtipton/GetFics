@@ -36,7 +36,8 @@ public class GFLogger extends java.util.logging.Logger {
 				f.createNewFile();
 				
 				fh = new FileHandler(logFile);
-				fh.setLevel(Level.ALL);
+//				fh.setLevel(Level.ALL);
+				fh.setLevel(Level.INFO);
 				fh.setFormatter(new SimpleFormatter());
 				logger.addHandler(fh);
 				logger.setLevel(Level.ALL);
