@@ -7,9 +7,8 @@
 			<attribute name="add-exports" value="java.base/sun.security.ssl=ALL-UNNAMED:java.base/jdk.internal.access=ALL-UNNAMED:jdk.jconsole/sun.tools.jconsole=ALL-UNNAMED:java.base/sun.security.util=ALL-UNNAMED:java.base/sun.net.util=ALL-UNNAMED:java.base/sun.security.action=ALL-UNNAMED:java.base/sun.security.provider.certpath=ALL-UNNAMED:java.base/sun.security.internal.spec=ALL-UNNAMED:java.base/sun.security.validator=ALL-UNNAMED:java.base/sun.security.x509=ALL-UNNAMED:java.base/jdk.internal.event=ALL-UNNAMED"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1.jar" sourcepath="C:/JavaLibs/jsoup/jsoup-1.13.1-sources.jar"/>
-	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1-javadoc.jar"/>
-	<classpathentry kind="lib" path="C:/JavaLibs/jsoup/jsoup-1.13.1-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Brotli"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Jsoup"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/epubcheck"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

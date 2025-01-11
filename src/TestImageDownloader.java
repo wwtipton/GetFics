@@ -18,7 +18,7 @@ public class TestImageDownloader
           //  URL url =new URL("https://homepages.cae.wisc.edu/~ece533/images/sails.png");
         //   URL url =new URL("https://ic.pics.livejournal.com/teddyradiator/28273561/70960/70960_original.png");
             // read the url
-           URL url =new URL("https://i.ibb.co/3k5G8nB/sadfasf.jpg");
+           URL url =new URL("https://i.imgur.com/BDENSz9.jpg");
        	HttpURLConnection conn = (HttpURLConnection) url.openConnection();
     	conn.setReadTimeout(5000);
 
