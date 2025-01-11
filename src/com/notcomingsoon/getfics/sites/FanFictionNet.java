@@ -4,6 +4,7 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -14,8 +15,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.GFConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 
 /**
  * @author Winifred Tipton
@@ -24,7 +25,7 @@ import com.notcomingsoon.getfics.HTMLConstants;
 public class FanFictionNet extends Site {
 	
 	private static final String A2A_KIT_A2A_DEFAULT_STYLE = "a2a_kit a2a_default_style";
-	private static final Charset FFN_CHARSET = HTMLConstants.UTF_8;
+	private static final Charset FFN_CHARSET = GFConstants.UTF_8;
 	private static final int AUTHOR_ANCHOR = 0;
 	private static final int CHAPTER_SELECT = 1;
 	private static final String STORYTEXT = "storytext";
@@ -58,7 +59,7 @@ public class FanFictionNet extends Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#getChapterList(org.jsoup.nodes.Document)
 	 */
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
@@ -69,10 +70,10 @@ public class FanFictionNet extends Site {
 			
 			String urlSuffix = null;
 			String urlPrefix = null;
-			int slashIndex = startUrl.lastIndexOf(HTMLConstants.URL_DIVIDER);
+			int slashIndex = startUrl.lastIndexOf(GFConstants.URL_DIVIDER);
 			urlSuffix = startUrl.substring(slashIndex);
 	
-			slashIndex = startUrl.lastIndexOf(HTMLConstants.URL_DIVIDER, slashIndex-1);
+			slashIndex = startUrl.lastIndexOf(GFConstants.URL_DIVIDER, slashIndex-1);
 			urlPrefix = startUrl.substring(0, slashIndex+1);
 			logger.info("urlPrefix = " + urlPrefix); 
 			logger.info("urlSuffix = " + urlSuffix); 
@@ -81,7 +82,7 @@ public class FanFictionNet extends Site {
 			while (lIter.hasNext()){
 				Element option = lIter.next();
 				String title = option.text().trim();
-				String cUrl = option.attr(HTMLConstants.VALUE_ATTR);
+				String cUrl = option.attr(GFConstants.VALUE_ATTR);
 				cUrl = urlPrefix + cUrl + urlSuffix;
 				Chapter c = new Chapter(cUrl, title);
 				list.add(c);
@@ -102,7 +103,7 @@ public class FanFictionNet extends Site {
 		Elements selects = doc.getElementsByAttributeValue("title","chapter navigation");
 		if (!selects.isEmpty()){
 			Element select = selects.get(CHAPTER_SELECT);
-			options = select.getElementsByTag(HTMLConstants.OPTION_TAG);
+			options = select.getElementsByTag(GFConstants.OPTION_TAG);
 		}
 		return options;
 	}
@@ -115,7 +116,7 @@ public class FanFictionNet extends Site {
 		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
 		Element div = doc.getElementById("profile_top");
-		Elements as = div.getElementsByTag(HTMLConstants.A_TAG);
+		Elements as = div.getElementsByTag(GFConstants.A_TAG);
 		
 		String author = as.get(AUTHOR_ANCHOR).text();
 		
@@ -130,7 +131,7 @@ public class FanFictionNet extends Site {
 	protected String getTitle(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
-		Elements bs = doc.getElementsByTag(HTMLConstants.B_TAG);
+		Elements bs = doc.getElementsByTag(GFConstants.B_TAG);
 		String title = bs.get(5).text();
 		logger.info("title = " + title);
 		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
@@ -141,16 +142,17 @@ public class FanFictionNet extends Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#extractChapter(org.jsoup.nodes.Document, org.jsoup.nodes.Document, com.notcomingsoon.getfics.Chapter)
 	 */
 	@Override
-	protected Document extractChapter(Document story, Document chapter,
-			Chapter title) {
+	protected void extractChapter(Document page,
+			Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
 		
-		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.ID_ATTR, STORYTEXT);
+		Elements divs = page.getElementsByAttributeValue(GFConstants.ID_ATTR, STORYTEXT);
 		Element div = divs.get(CHAPTER_BODY);
-		div.removeAttr(HTMLConstants.ID_ATTR);
-		Elements subDivs = div.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, A2A_KIT_A2A_DEFAULT_STYLE);
+		div.removeAttr(GFConstants.ID_ATTR);
+		Elements subDivs = div.getElementsByAttributeValue(GFConstants.CLASS_ATTR, A2A_KIT_A2A_DEFAULT_STYLE);
 		if (subDivs.size() > 0){
 			Element subDiv = subDivs.first();
 			subDiv.remove();
@@ -160,26 +162,34 @@ public class FanFictionNet extends Site {
 		
 		addChapterFooter(body);
 		
+		
+		chap.setDoc(freshDoc);
+//		loc.addChapter(chap);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
 	}
 
 	@Override
-	protected Chapter extractSummary(Document story, Document chapter) {
+	protected Chapter extractSummary(Document page) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
-		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
-		Element body = addChapterHeader(story, title);
+		Document summary = initDocument();
+
+		Chapter newCh = new Chapter(SUMMARY_STRING);
+		Element body = addChapterHeader(summary, newCh);
 		
-		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, "xcontrast_txt");
+		Elements divs = page.getElementsByAttributeValue(GFConstants.CLASS_ATTR, "xcontrast_txt");
 		Element div = divs.get(SUMMARY);
 		
 		body.appendChild(div);
 		
 		addChapterFooter(body);
 		
+		newCh.setDoc(summary);
+	//	loc.addChapter(newCh);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
-		return title;
+		return newCh;
 	}
 
 	/* (non-Javadoc)

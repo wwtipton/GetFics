@@ -5,6 +5,7 @@ package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpRequest;
@@ -21,9 +22,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFConstants;
 import com.notcomingsoon.getfics.GFProperties;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 
 /**
  * @author Winifred Tipton
@@ -31,16 +32,16 @@ import com.notcomingsoon.getfics.HTMLConstants;
  */
 public class HuntingHorcruxes extends Site {
 
-	private static final Charset HH_CHARSET = HTMLConstants.ISO_8859_1;
+	private static final Charset HH_CHARSET = GFConstants.ISO_8859_1;
 
-	private static final int PRINT_BUTTON = 0;
+	//private static final int PRINT_BUTTON = 0;
 	private static final int CHAPTER_BODY = 0;
 	
 	private static final String CLASS = "class";
 	private static final String CONTENT = "content";
-	private static final String PAGETITLE = "pagetitle";
+	//private static final String PAGETITLE = "pagetitle";
 	private static final String ID = "id"; 
-	private static final String BY = " by "; 
+	//private static final String BY = " by "; 
 
 	private static final String PEN_NAME_KEY = "penname";
 	
@@ -91,7 +92,7 @@ public class HuntingHorcruxes extends Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#getChapterList(org.jsoup.nodes.Document)
 	 */
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
@@ -104,7 +105,7 @@ public class HuntingHorcruxes extends Site {
 		while (lIter.hasNext()){
 			Element option = lIter.next();
 			String title = option.text().trim();
-			String cUrl = option.attr(HTMLConstants.HREF_ATTR);
+			String cUrl = option.attr(GFConstants.HREF_ATTR);
 			cUrl = baseUrl.concat(cUrl);
 			Chapter c = new Chapter(cUrl, title);
 			list.add(c);
@@ -121,7 +122,7 @@ public class HuntingHorcruxes extends Site {
 	protected String getAuthor(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
-		Elements es = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEW_USER);
+		Elements es = doc.getElementsByAttributeValueStarting(GFConstants.HREF_ATTR, VIEW_USER);
 		Element a = es.first();
 		String author = a.text();
 		
@@ -137,7 +138,7 @@ public class HuntingHorcruxes extends Site {
 	protected String getTitle(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
-		Elements es = doc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEW_STORY);
+		Elements es = doc.getElementsByAttributeValueStarting(GFConstants.HREF_ATTR, VIEW_STORY);
 		Element s = es.first();
 		String title = s.text();
 
@@ -150,29 +151,33 @@ public class HuntingHorcruxes extends Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#extractChapter(org.jsoup.nodes.Document, org.jsoup.nodes.Document, com.notcomingsoon.getfics.Chapter)
 	 */
 	@Override
-	protected Document extractChapter(Document story, Document chapter,
-			Chapter title) {
+	protected void extractChapter(Document page,
+			Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
 
-		Elements tables = chapter.getElementsByAttributeValue(ID, CONTENT);
+		Elements tables = page.getElementsByAttributeValue(ID, CONTENT);
 		Element table = tables.first();
-		Elements tds = table.getElementsByTag(HTMLConstants.TD_TAG);
+		Elements tds = table.getElementsByTag(GFConstants.TD_TAG);
 		Element td = tds.get(CHAPTER_BODY);
 		
 		body.appendChild(td);
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(freshDoc);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
 	}
 
 	@Override
-	protected Chapter extractSummary(Document story, Document chapter)  {
+	protected Chapter extractSummary(Document page) throws UnsupportedEncodingException  {
 		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
+		Document freshDoc = initDocument();
+
 		Document toc = null;
 		String summary = null;
 		try{
@@ -184,16 +189,19 @@ public class HuntingHorcruxes extends Site {
 			// purposefully left blank
 		}
 		
-		Chapter title = null;
+		Chapter newCh = null;
 		if (null != summary ){
-			title = new Chapter(this.startUrl, SUMMARY_STRING);
-			Element body = addChapterHeader(story, title);
+			newCh = new Chapter(this.startUrl, SUMMARY_STRING);
+			Element body = addChapterHeader(freshDoc, newCh);
 			body.appendText(summary);
 			addChapterFooter(body);
 		}
 		
+		newCh.setDoc(freshDoc);
+	//	loc.addChapter(newCh);
+
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
-		return title;
+		return newCh;
 	}
 
 	/**
@@ -227,7 +235,7 @@ public class HuntingHorcruxes extends Site {
 		Document toc = null;
 		try {
 			toc = getTOCPage();
-			options = toc.getElementsByAttributeValueStarting(HTMLConstants.HREF_ATTR, VIEW_STORY);
+			options = toc.getElementsByAttributeValueStarting(GFConstants.HREF_ATTR, VIEW_STORY);
 			if (!options.isEmpty()){
 				options.remove(0); // print button
 				options.remove(0); //header

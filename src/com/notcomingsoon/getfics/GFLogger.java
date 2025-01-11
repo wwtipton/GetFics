@@ -22,7 +22,7 @@ public class GFLogger extends java.util.logging.Logger {
 		if (logger == null){
 			logger = (Logger) getLogger("GetFics");
 			
-			String logDir = GFProperties.getPropertyValue(GFProperties.OUTPUT_DIRECTORY_KEY) ;
+			String logDir = GFProperties.getPropertyValue(GFProperties.OUTPUT_ROOT_DIRECTORY_KEY) ;
 			String logFile 
 				= logDir
 				+ File.separator 
@@ -36,7 +36,8 @@ public class GFLogger extends java.util.logging.Logger {
 				f.createNewFile();
 				
 				fh = new FileHandler(logFile);
-				fh.setLevel(Level.ALL);
+//				fh.setLevel(Level.ALL);
+				fh.setLevel(Level.INFO);
 				fh.setFormatter(new SimpleFormatter());
 				logger.addHandler(fh);
 				logger.setLevel(Level.ALL);

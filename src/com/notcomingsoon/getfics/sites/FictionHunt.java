@@ -3,6 +3,7 @@
  */
 package com.notcomingsoon.getfics.sites;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -11,8 +12,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.GFConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 
 /**
  * @author Winifred Tipton
@@ -20,7 +21,7 @@ import com.notcomingsoon.getfics.HTMLConstants;
  */
 public class FictionHunt extends Site {
 	
-	private static final Charset FFN_CHARSET = HTMLConstants.UTF_8;
+	private static final Charset FFN_CHARSET = GFConstants.UTF_8;
 	private static final int AUTHOR_ANCHOR = 0;
 	private static final int CHAPTER_SELECT = 1;
 	private static final String URL_DIVIDER = "/";
@@ -40,7 +41,7 @@ public class FictionHunt extends Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#getChapterList(org.jsoup.nodes.Document)
 	 */
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
@@ -53,7 +54,7 @@ public class FictionHunt extends Site {
 			while (lIter.hasNext()){
 				Element option = lIter.next();
 				String title = option.text().trim();
-				String cUrl = option.attr(HTMLConstants.HREF_ATTR);
+				String cUrl = option.attr(GFConstants.HREF_ATTR);
 //				cUrl = urlPrefix + cUrl + urlSuffix;
 				Chapter c = new Chapter(cUrl, title);
 				list.add(c);
@@ -74,8 +75,8 @@ public class FictionHunt extends Site {
 		Elements divs = doc.getElementsByClass("pager");
 		if (!divs.isEmpty()){
 			Element div = divs.get(CHAPTER_SELECT);
-			Elements as = div.getElementsByTag(HTMLConstants.A_TAG);
-			String lastChapterURL = as.get(as.size() - 2).attr(HTMLConstants.HREF_ATTR);
+			Elements as = div.getElementsByTag(GFConstants.A_TAG);
+			String lastChapterURL = as.get(as.size() - 2).attr(GFConstants.HREF_ATTR);
 			int chStart = lastChapterURL.lastIndexOf(URL_DIVIDER) + 1;
 			int lastChapter = Integer.valueOf(lastChapterURL.substring(chStart));
 			
@@ -84,7 +85,7 @@ public class FictionHunt extends Site {
 			for (int i = 1; i <= lastChapter ; i++ ){
 				Element a = as.first().clone();
 				String chapterURL = lastChapterURL.substring(0, chStart) + i;
-				a.attr(HTMLConstants.HREF_ATTR, chapterURL);
+				a.attr(GFConstants.HREF_ATTR, chapterURL);
 				a.text("" + i);
 				options.add(a);
 			}
@@ -100,7 +101,7 @@ public class FictionHunt extends Site {
 		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
 		Element div = doc.getElementsByClass("details").first();
-		Elements as = div.getElementsByTag(HTMLConstants.A_TAG);
+		Elements as = div.getElementsByTag(GFConstants.A_TAG);
 		
 		String author = as.get(AUTHOR_ANCHOR).text();
 		
@@ -126,21 +127,23 @@ public class FictionHunt extends Site {
 	 * @see com.notcomingsoon.getfics.sites.Site#extractChapter(org.jsoup.nodes.Document, org.jsoup.nodes.Document, com.notcomingsoon.getfics.Chapter)
 	 */
 	@Override
-	protected Document extractChapter(Document story, Document chapter,
-			Chapter title) {
+	protected void extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
 		
-		Elements divs = chapter.getElementsByAttributeValue("class", "text ");
+		Elements divs = page.getElementsByAttributeValue("class", "text ");
 		Element div = divs.get(CHAPTER_BODY);
 		
 		body.appendChild(div);
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(freshDoc);
+	//	loc.addChapter(chap);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
 	}
 
 	/* (non-Javadoc)

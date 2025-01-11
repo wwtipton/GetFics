@@ -1,5 +1,6 @@
 package com.notcomingsoon.getfics.sites;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +11,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.GFConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 
 public class MediaMiner extends Site {
 
@@ -21,7 +22,7 @@ public class MediaMiner extends Site {
 	private static final int AUTHOR_ANCHOR = 0;
 	private static final String POST_TITLE = "post-title";
 	private static final char ANGLE_BRACKET = '\u276f';
-	private static final Charset MM_CHARSET = HTMLConstants.UTF_8;
+	private static final Charset MM_CHARSET = GFConstants.UTF_8;
 	private static final int MULTI_CHAPTER = 2; 
 	private static final int STORY_FORM = 0;
 	private static final String SUMMARY_CLASS = "post-meta clearfix ";
@@ -33,19 +34,19 @@ public class MediaMiner extends Site {
 	}
 
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
 		Elements options = getChapterOptions(doc);
 		
-		int chIndex = startUrl.lastIndexOf(HTMLConstants.SEPARATOR) + 1;
+		int chIndex = startUrl.lastIndexOf(GFConstants.SEPARATOR) + 1;
 		String startChapter = startUrl.substring(chIndex);
 		ListIterator<Element> lIter = options.listIterator();
 		while (lIter.hasNext()){
 			Element option = lIter.next();
 			String title = option.text().trim();
-			String cUrl = option.attr(HTMLConstants.VALUE_ATTR);
+			String cUrl = option.attr(GFConstants.VALUE_ATTR);
 			cUrl = startUrl.replace(startChapter, cUrl);
 			Chapter c = new Chapter(cUrl, title);
 			list.add(c);
@@ -59,7 +60,7 @@ public class MediaMiner extends Site {
 	protected String getAuthor(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getAuthor(Document doc)");
 		
-		Elements as = doc.getElementsByAttributeValueContaining(HTMLConstants.HREF_ATTR, USER_INFO);
+		Elements as = doc.getElementsByAttributeValueContaining(GFConstants.HREF_ATTR, USER_INFO);
 		
 		String author = as.get(AUTHOR_ANCHOR).text();
 
@@ -86,28 +87,32 @@ public class MediaMiner extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document story, Document chapter, Chapter title) {
+	protected void extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
-		Element body = addChapterHeader(story, title);
-		Element div = chapter.getElementById("fanfic-text");
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
+		Element div = page.getElementById("fanfic-text");
 		
 		body.appendChild(div);
 		
 		addChapterFooter(body);
 		
+		chap.setDoc(freshDoc);
+//		loc.addChapter(chap);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
 	}
 
 	@Override
-	protected Chapter extractSummary(Document story, Document chapter) {
+	protected Chapter extractSummary(Document page) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
-		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+		Chapter summary = new Chapter(this.startUrl, SUMMARY_STRING);
+		Element body = addChapterHeader(freshDoc, summary);
 		
-		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, SUMMARY_CLASS);
+		Elements divs = page.getElementsByAttributeValue(GFConstants.CLASS_ATTR, SUMMARY_CLASS);
 		Element div = divs.first();
 		List<TextNode> textNodes = div.textNodes();
 		String t = textNodes.get(SUMMARY_TEXT_NODE).text();
@@ -115,9 +120,12 @@ public class MediaMiner extends Site {
 		body.appendText(t);
 		
 		addChapterFooter(body);
-		
+	
+		summary.setDoc(freshDoc);
+	//	loc.addChapter(summary);
+				
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
-		return title;
+		return summary;
 	}
 
 	@Override
@@ -146,10 +154,10 @@ public class MediaMiner extends Site {
 	 */
 	private Elements getChapterOptions(Document doc) {
 		Elements options = new Elements();
-		Elements forms = doc.getElementsByAttributeValue(HTMLConstants.NAME_ATTR, VIEW_CHAPTER);
+		Elements forms = doc.getElementsByAttributeValue(GFConstants.NAME_ATTR, VIEW_CHAPTER);
 		if (!forms.isEmpty()){
 			Element form = forms.get(STORY_FORM);
-			options = form.getElementsByTag(HTMLConstants.OPTION_TAG);
+			options = form.getElementsByTag(GFConstants.OPTION_TAG);
 		}
 		return options;
 	}

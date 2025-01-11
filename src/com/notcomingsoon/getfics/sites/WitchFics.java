@@ -1,6 +1,7 @@
 package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -10,8 +11,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.GFConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 
 /**
  * Note that this is via the Wayback Machine so everything is nested inside WBM stuff.
@@ -60,7 +61,7 @@ public class WitchFics extends Site {
 		iframeUrl = iframe.attr(SRC);
 		
 		doc = getPage(iframeUrl);
-		Elements frames = doc.getElementsByTag(HTMLConstants.FRAME_TAG);
+		Elements frames = doc.getElementsByTag(GFConstants.FRAME_TAG);
 		introUrl = WAYBACK_MACHINE_URL + frames.get(0).attr(SRC);
 		startUrl = introUrl;
 		navUrl = WAYBACK_MACHINE_URL + frames.get(1).attr(SRC);
@@ -85,7 +86,7 @@ public class WitchFics extends Site {
 		if (options != null){
 			
 			String urlPrefix = null;
-			int slashIndex = startUrl.lastIndexOf(HTMLConstants.URL_DIVIDER);
+			int slashIndex = startUrl.lastIndexOf(GFConstants.URL_DIVIDER);
 			urlPrefix = startUrl.substring(0, slashIndex+1);
 			logger.info("urlPrefix = " + urlPrefix); 
 	
@@ -93,7 +94,7 @@ public class WitchFics extends Site {
 			while (lIter.hasNext()){
 				Element option = lIter.next();
 				String title = option.text().trim();
-				String cUrl = option.attr(HTMLConstants.HREF_ATTR);
+				String cUrl = option.attr(GFConstants.HREF_ATTR);
 				cUrl = urlPrefix + cUrl;
 				Chapter c = new Chapter(cUrl, title);
 				list.add(c);
@@ -111,9 +112,9 @@ public class WitchFics extends Site {
 	protected Elements getChapterOptions(Document doc) {
 		Elements options = null;
 		
-		Elements divs = doc.getElementsByTag(HTMLConstants.DIV_TAG);
+		Elements divs = doc.getElementsByTag(GFConstants.DIV_TAG);
 		Element div = divs.first();
-		options = div.getElementsByTag(HTMLConstants.A_TAG);
+		options = div.getElementsByTag(GFConstants.A_TAG);
 		return options;
 	}
 
@@ -135,7 +136,7 @@ public class WitchFics extends Site {
 	protected String getTitle(Document doc) {
 		logger.entering(this.getClass().getSimpleName(), "getTitle(Document doc)");
 		
-		Elements fonts = doc.getElementsByTag(HTMLConstants.FONT_TAG);
+		Elements fonts = doc.getElementsByTag(GFConstants.FONT_TAG);
 		String title = fonts.get(0).text();
 		logger.info("title = " + title);
 		logger.exiting(this.getClass().getSimpleName(), "getTitle(Document doc)");
@@ -144,19 +145,23 @@ public class WitchFics extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document story, Document chapter, Chapter title) {
+	protected void extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
 	
-		Elements chBodys = chapter.getElementsByTag(HTMLConstants.BODY_TAG);
+		Elements chBodys = page.getElementsByTag(GFConstants.BODY_TAG);
 		Element chBody = chBodys.first();
 
 		body.appendChild(chBody);
 		
 		addChapterFooter(body);
+		
+		chap.setDoc(freshDoc);
+	//	loc.addChapter(chap);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
 
 	}
 
@@ -189,21 +194,26 @@ public class WitchFics extends Site {
 	}
 
 	@Override
-	protected Chapter extractSummary(Document story, Document chapter) {
+	protected Chapter extractSummary(Document page) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
-		Chapter title = new Chapter(this.startUrl, SUMMARY_STRING);
-		Element body = addChapterHeader(story, title);
+		Document summary = initDocument();
+
+		Chapter newCh = new Chapter(this.startUrl, SUMMARY_STRING);
+		Element body = addChapterHeader(summary, newCh);
 		
-		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, "storytext");
+		Elements divs = page.getElementsByAttributeValue(GFConstants.CLASS_ATTR, "storytext");
 		Element div = divs.first();
 		
 		body.appendChild(div);
 		
 		addChapterFooter(body);
 		
+		newCh.setDoc(summary);
+	//	loc.addChapter(newCh);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
-		return title;
+		return newCh;
 	}
 
 	//@Override

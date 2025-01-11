@@ -18,7 +18,7 @@ public class GFAuthenticator extends Authenticator {
 	protected PasswordAuthentication getPasswordAuthentication() {
 		logger.info("Host:\t" + this.getRequestingHost());
 		logger.info("User:\t" + user);
-		logger.info("Password:\t" + password);
+		logger.info("Password:\t" + password.toString());
 		
 		return new PasswordAuthentication(user, password);
 	}

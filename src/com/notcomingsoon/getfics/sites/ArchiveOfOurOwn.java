@@ -2,13 +2,13 @@ package com.notcomingsoon.getfics.sites;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
@@ -16,16 +16,16 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.notcomingsoon.getfics.Chapter;
+import com.notcomingsoon.getfics.GFConstants;
 import com.notcomingsoon.getfics.GFProperties;
-import com.notcomingsoon.getfics.HTMLConstants;
+import com.notcomingsoon.getfics.files.Chapter;
 public class ArchiveOfOurOwn extends Site {
 
 	private static final String REMEMBER_ME_KEY = "user_session[remember_me]";
 
 	private static final String AUTHENTICITY_TOKEN = "authenticity_token";
 
-	private static final Charset AO3_CHARSET = HTMLConstants.UTF_8;
+	private static final Charset AO3_CHARSET = GFConstants.UTF_8;
 	
 	private static final String AUTHOR = "byline heading";
 	
@@ -78,7 +78,7 @@ public class ArchiveOfOurOwn extends Site {
 	}
 
 	@Override
-	protected ArrayList<Chapter> getChapterList(Document doc) {
+	protected ArrayList<Chapter> getChapterList(Document doc) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "getChapterList(Document doc");
 		
 		ArrayList<Chapter> list = new ArrayList<Chapter>();
@@ -96,7 +96,7 @@ public class ArchiveOfOurOwn extends Site {
 			while (lIter.hasNext()){
 				Element option = lIter.next();
 				String title = option.text().trim();
-				String cUrl = option.attr(HTMLConstants.VALUE_ATTR);
+				String cUrl = option.attr(GFConstants.VALUE_ATTR);
 				cUrl = urlPrefix + cUrl + ADULT;
 				Chapter c = new Chapter(cUrl, title);
 				list.add(c);
@@ -113,7 +113,7 @@ public class ArchiveOfOurOwn extends Site {
 		Elements selects = doc.getElementsByAttributeValue("id","selected_id");
 		if (!selects.isEmpty()){
 			Element select = selects.get(CHAPTER_SELECT);
-			options = select.getElementsByTag(HTMLConstants.OPTION_TAG);
+			options = select.getElementsByTag(GFConstants.OPTION_TAG);
 		}
 		return options;
 	}
@@ -143,17 +143,17 @@ public class ArchiveOfOurOwn extends Site {
 	}
 
 	@Override
-	protected Document extractChapter(Document story, Document chapter,
-			Chapter title) {
+	protected void extractChapter(Document page, Chapter chap) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 		
-		Element body = addChapterHeader(story, title);
+		Document freshDoc = initDocument();
+		Element body = addChapterHeader(freshDoc, chap);
 		
-		extractNotes(story, chapter, body);
+		extractNotes(freshDoc, page, body);
 
 		Element chapterText = null;
-		if (isOneShot(chapter)){
-			Elements divs = chapter.getElementsByTag(HTMLConstants.DIV_TAG);
+		if (isOneShot(page)){
+			Elements divs = page.getElementsByTag(GFConstants.DIV_TAG);
 			for (Element div : divs){
 				if (div.hasClass(USERSTUFF)){
 					chapterText = div;
@@ -161,47 +161,56 @@ public class ArchiveOfOurOwn extends Site {
 				}
 			}
 		} else {
-			Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, USERSTUFF_MODULE);
+			Elements divs = page.getElementsByAttributeValue(GFConstants.CLASS_ATTR, USERSTUFF_MODULE);
 			chapterText = divs.first();
-			Elements h3s = chapterText.getElementsByAttributeValue(HTMLConstants.ID_ATTR, WORK);
+			Elements h3s = chapterText.getElementsByAttributeValue(GFConstants.ID_ATTR, WORK);
 			Element h3 = h3s.first();
 			h3.empty();
 		}
 		
 		body.appendChild(chapterText);
 
-		extractAfterNotes(story, chapter, body);
+		extractAfterNotes(freshDoc, page, body);
 
 		addChapterFooter(body);
 		
+		chap.setDoc(freshDoc);
+	//	loc.addChapter(chap);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
-		return story;
 	}
 
 	@Override
-	protected Chapter extractSummary(Document story, Document chapter) {
+	protected Chapter extractSummary(Document page) throws UnsupportedEncodingException {
 		logger.entering(this.getClass().getSimpleName(), "extractSummary");
 		
 		boolean writeChapter = false;
 		
-		Chapter title = null;
+		Chapter newCh = null;
 		Element body = null;
+		Document summary = initDocument();
 		
-		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, SUMMARY_MODULE);
+		Elements divs = page.getElementsByAttributeValue(GFConstants.CLASS_ATTR, SUMMARY_MODULE);
 		Element div = divs.first();
 		if (div != null){
-			Element p = div.getElementsByTag(HTMLConstants.BLOCKQUOTE_TAG).first();
+			Element p = div.getElementsByTag(GFConstants.BLOCKQUOTE_TAG).first();
 			if (p != null){
-				title = new Chapter(this.startUrl, SUMMARY_STRING);
-				body = addChapterHeader(story, title);
+				newCh = new Chapter(this.startUrl, SUMMARY_STRING);
+				body = addChapterHeader(summary, newCh);
 				body.appendChild(p);
 				writeChapter = true;
 			}
 		}
 	
-		List<String> tagList = extractTags(story, chapter);
+		ArrayList<String> tagList = extractTags(page);
 		if (null != tagList) {
-			addTagsHeader(body);
+			loc.setTags(tagList);
+			if (!writeChapter) {
+				newCh = new Chapter(TAGS_STRING);
+				body = addChapterHeader(summary, newCh);
+			} else {
+				addTagsHeader(body);
+			}
 			writeChapter = true;
 			String textTags = tagList.toString();
 			textTags = textTags.substring(1, textTags.length() - 1);
@@ -212,17 +221,20 @@ public class ArchiveOfOurOwn extends Site {
 			addChapterFooter(body);
 		}
 		
+		newCh.setDoc(summary);
+//		loc.addChapter(newCh);
+		
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
-		return title;
+		return newCh;
 	}
 
-	protected List<String> extractTags(Document story, Document chapter) {
-		Elements tags = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, TAG);
+	protected ArrayList<String> extractTags(Document chapter) {
+		Elements tags = chapter.getElementsByAttributeValue(GFConstants.CLASS_ATTR, TAG);
 		
-		List tagList = null;
+		ArrayList<String> tagList = null;
 		
 		if (!tags.isEmpty()) {
-			tagList = tags.eachText();
+			tagList = (ArrayList<String>) tags.eachText();
 		}
 		
 		return tagList;
@@ -302,7 +314,7 @@ public class ArchiveOfOurOwn extends Site {
 	void extractAfterNotes(Document story, Document chapter, Element body) {
 		logger.entering(this.getClass().getSimpleName(), "extractAfterNotes");
 
-		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, END_NOTES_MODULE);
+		Elements divs = chapter.getElementsByAttributeValue(GFConstants.CLASS_ATTR, END_NOTES_MODULE);
 		if (!divs.isEmpty()) {
 			addNotesFooter(body);
 			Element chapterText = divs.first();
@@ -314,14 +326,14 @@ public class ArchiveOfOurOwn extends Site {
 
 	/**
 	 * 
-	 * @param story
-	 * @param chapter
+	 * @param freshDoc
+	 * @param page
 	 * @param body modified by method
 	 */
-	void extractNotes(Document story, Document chapter, Element body) {
+	void extractNotes(Document freshDoc, Document page, Element body) {
 		logger.entering(this.getClass().getSimpleName(), "extractNotes");
 
-		Elements divs = chapter.getElementsByAttributeValue(HTMLConstants.CLASS_ATTR, NOTES_MODULE);
+		Elements divs = page.getElementsByAttributeValue(GFConstants.CLASS_ATTR, NOTES_MODULE);
 		if (!divs.isEmpty()) {
 			Element chapterText = divs.first();
 			body.appendChild(chapterText);
