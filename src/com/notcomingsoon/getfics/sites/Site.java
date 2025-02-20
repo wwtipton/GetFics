@@ -63,7 +63,7 @@ public abstract class Site {
 
 	static final String AFF = "https://adult-fanfiction.org/"; //$NON-NLS-1$
 
-	static final String TPP = "http://www.thepetulantpoetess.com/"; //$NON-NLS-1$
+	static final String TPP = "thepetulantpoetess.com"; //$NON-NLS-1$
 
 	static final String DIGITAL_QUILL = "digital-quill.org"; //$NON-NLS-1$
 
@@ -103,7 +103,7 @@ public abstract class Site {
 		sites.add(DIGITAL_QUILL);
 		// disabled for now sites.add(FFN);
 		sites.add(SYCOPHANTEX);
-		// disabled for now sites.add(TPP);
+		sites.add(TPP);
 		sites.add(TTH);
 		sites.add(THE_MASQUE);
 		sites.add(AO3);
@@ -573,7 +573,7 @@ public abstract class Site {
 
 	static void waitRandom() {
 
-		int ms = 5000 + random.nextInt(10000); // random between 5000 and 15000
+		int ms = 15000 + random.nextInt(60000); // random between 15000 and 75000
 
 		try {
 			Thread.sleep(ms);
@@ -618,7 +618,13 @@ public abstract class Site {
 			int lastPeriod = src.lastIndexOf(PERIOD);
 			int lastSlash = src.lastIndexOf('/');
 			String type = src.substring(lastPeriod + 1);
-			String imgName = src.substring(lastSlash + 1, lastPeriod);
+			
+			String imgName= null;
+			if (lastPeriod > lastSlash) {
+				imgName = src.substring(lastSlash + 1, lastPeriod);
+			} else {
+				imgName = src.substring(lastSlash + 1);				
+			}
 
 			logger.info("href = " + src); //$NON-NLS-1$
 			logger.info("type = " + type); //$NON-NLS-1$
