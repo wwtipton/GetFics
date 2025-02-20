@@ -1,15 +1,15 @@
-input.directory=C:\\CodingProjects\\GetFics
-output.directory=C:\\Kindle
-fic.list=C:\\CodingProjects\\GetFics\\getficslist.txt
+input.directory=E:\\CodingProjects\\GetFics
+output.root.directory=E:\\Kindle
+fic.list=E:\\CodingProjects\\GetFics\\getficslist.txt
 log.file=GetFics.log
-mobigen.path=C:\\kindlegen\\kindlegen.exe
-publish.directory=C:\\Kindle\\_Published
-mobi.extension=.mobi
-google.drive.directory=
+google.drive.directory=G:\My Drive
 mobi.directory=mobi
 rejects.directory=
 device.directory=
-
+publish.directory=E:\\Kindle\\_Boox
+publish.error.directory=E:\\Kindle\\_EpubsErrors
+epub.subdirectory.root=EPUB
+epub.extension=epub
 #
 #  Site
 #
@@ -30,6 +30,12 @@ ao3.pen.name=
 ao3.password=
 
 #
+# SquidgeWorld
+#
+squidge.pen.name=
+squidge.password=
+
+#
 # Hunting Horcruxes
 #
 hunting.horcruxes.pen.name=
@@ -39,6 +45,8 @@ hunting.horcruxes.password=
 # The Petulant Poetess
 #
 tpp.pen.name=
+tpp.user.name = 
+tpp.password=
 
 #
 # Ashwinder Sycophantex
@@ -50,3 +58,4 @@ sycophantex.pen.name=
 #
 tth.pen.name=
 tth.password=
+output.directory=\\Kindle
