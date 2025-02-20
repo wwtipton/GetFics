@@ -57,3 +57,4 @@ reports/pmd-report.txt
 *.log
 *.properties
 JavaAgent
+getfics.properties.empty.bak
