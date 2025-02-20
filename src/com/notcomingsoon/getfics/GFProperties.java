@@ -52,6 +52,8 @@ public class GFProperties extends Properties {
 	
 	// The Petulant Poetess
 	public static final String TPP_PEN_NAME = "tpp.pen.name";
+	public static final String TPP_USER_NAME = "tpp.user.name";
+	public static final String TPP_PASSWORD = "tpp.password";
 	
 	// Ashwinder Sycophantex
 	public static final String SYCOPHANTEX_PEN_NAME = "sycophantex.pen.name";

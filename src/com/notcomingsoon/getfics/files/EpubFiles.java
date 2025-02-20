@@ -22,7 +22,7 @@ import com.notcomingsoon.getfics.GFConstants;
 
 public abstract class EpubFiles {
 	
-	final static String BAD_CHARS = "ÇáþÚéçó~*.\"\'/\\[]$@?():;!|=,\r\n“”’#";
+	final static String BAD_CHARS = "–ÇáþÚéçó~*.\"\'/\\[]$@?():;!|=,\r\n“”’#";
 	final static String AMP = "&";
 	
 	static String urlFileName(String name) throws UnsupportedEncodingException {

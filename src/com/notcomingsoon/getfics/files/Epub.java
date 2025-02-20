@@ -208,6 +208,7 @@ public class Epub extends EpubFiles implements GFConstants {
 			zipFile(c.getFilename(), zos);
 		}
 
+		
 		for (String s : images) {
 			Path source = Path.of(s);
 			zipFile(source.getFileName().toString(), zos);
@@ -296,7 +297,9 @@ public class Epub extends EpubFiles implements GFConstants {
 	}
 
 	public void addImage(String name) {
-		images.add(name);
+		if (!images.contains(name)) {
+			images.add(name);
+		}
 	}
 
 	private void getAuthorsAndTitle(PackageOPF opf) {
