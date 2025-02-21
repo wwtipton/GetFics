@@ -89,8 +89,6 @@ public abstract class Site {
 
 	static final String PIC = "image"; //$NON-NLS-1$
 
-//	private static final String JPEG = "jpg"; //$NON-NLS-1$
-
 	private static final String PERIOD = "."; //$NON-NLS-1$
 
 	static final String SLASH = "/"; //$NON-NLS-1$
@@ -206,8 +204,6 @@ public abstract class Site {
 
 		Document doc = parse(url, response);
 
-		// logger.info(doc.wholeText());
-
 		logger.exiting(this.getClass().getSimpleName(), ".getPage", url); //$NON-NLS-1$
 		return doc;
 	}
@@ -233,8 +229,6 @@ public abstract class Site {
 	static InputStream decompress(HttpResponse<InputStream> response) throws IOException {
 		String encoding = response.headers().firstValue("Content-Encoding").orElse(""); //$NON-NLS-1$ //$NON-NLS-2$
 		InputStream is = null;
-	//	System.out.println("Encoding:\t" + encoding);
-	//	System.out.println(response.headers());
 		if (encoding.equals("gzip")) { //$NON-NLS-1$
 			is = new GZIPInputStream(response.body());
 		} else if (encoding.equals("br")) { //$NON-NLS-1$
@@ -293,9 +287,6 @@ public abstract class Site {
 		loc.setStartUrl(startUrl);
 		loc.setCharset(this.siteCharset);
 
-//		File epubDir = loc.getEpubDir();
-//		Document freshDoc = initDocument();
-
 		if (isOneShot(page)) {
 			loc.setOneShot(true);
 			Chapter oneShot = new Chapter(startUrl, loc.getOrigTitle());
@@ -309,11 +300,15 @@ public abstract class Site {
 			ArrayList<Chapter> chapterList = getChapterList(page);
 			boolean firstChapter = true;
 
-			Iterator<Chapter> cIter = chapterList.iterator();
 			Chapter summary = extractSummary(page);
 			if (null != summary) {
 				loc.addChapter(summary);
 			}
+			
+			//Iterator<Chapter> cIter = chapterList.iterator();
+			ArrayList<Chapter> newChapterList = findNewChapters(chapterList);
+			Iterator<Chapter> cIter = newChapterList.iterator();
+			
 			while (cIter.hasNext()) {
 				Chapter c = cIter.next();
 				Document nextDoc;
@@ -331,20 +326,31 @@ public abstract class Site {
 				extractChapter(nextDoc, c);
 				loc.addChapter(c);
 			}
-		//	Chapter.writeContents(epub, chapterList, page.outputSettings().charset());
 		}
 
 		getImages();
-	//	writeStory(freshDoc, loc);
 
 		logger.exiting(this.getClass().getSimpleName(), "download()"); //$NON-NLS-1$
 		return loc;
 	}
 
+	private ArrayList<Chapter> findNewChapters(ArrayList<Chapter> chapterList) throws UnsupportedEncodingException {
+		for (Chapter c : chapterList) {
+			boolean isExists = loc.doesChapterFileExist(c.getFilename());
+			if (isExists) {
+				c.setDoesChapterExist(isExists);
+				loc.addChapter(c);
+			} else {
+				loc.addNewChapter(c);
+			}
+		}
+		return loc.getNewChapters();
+	}
+
 	private void getImages() throws IOException {
 		logger.entering(this.getClass().getSimpleName(), "getImages(Document story, Story loc)"); //$NON-NLS-1$
 
-		ArrayList<Chapter> chapterList = loc.getChapters();
+		ArrayList<Chapter> chapterList = loc.getNewChapters();
 		
 		Iterator<Chapter> cIter = chapterList.iterator();
 		
@@ -414,29 +420,6 @@ public abstract class Site {
 		return loc.getEpubDir().getName();
 	}
 
-	/*
-	 * private void writeStory(Document story, Story loc) throws Exception {
-	 * logger.entering(this.getClass().getSimpleName(),
-	 * "writeStory(Document doc, File dir)"); //$NON-NLS-1$
-	 * 
-	 * File dir = loc.getOutputDir();
-	 * 
-	 * logger.info("f: " + dir.getParent()); //$NON-NLS-1$
-	 * 
-	 * OutputStreamWriter osw = getOSW(dir.getPath(), loc.toString() +
-	 * GFConstants.HTML_EXTENSION); logger.log(Level.ALL,
-	 * this.getClass().getSimpleName() +
-	 * "gwriteStory(Document story, Story loc) \tcharset:" //$NON-NLS-1$ +
-	 * story.charset().displayName());
-	 * 
-	 * String content = story.html(); osw.write(content); osw.close();
-	 * 
-	 * logger.exiting(this.getClass().getSimpleName(),
-	 * "writeStory(Document doc, File dir)"); //$NON-NLS-1$
-	 * 
-	 * }
-	 */
-
 	/**
 	 * @param body modified by method
 	 */
@@ -464,8 +447,6 @@ public abstract class Site {
 	 */
 	protected Element addChapterHeader(Document freshDoc, Chapter chap) throws UnsupportedEncodingException {
 		Element body = freshDoc.body();
-//		Element a = body.appendElement(GFConstants.A_TAG);
-	//	a.attr(GFConstants.NAME_ATTR, chap.getFilename());
 		Element h2 = body.appendElement(GFConstants.H2_TAG);
 		h2.text(chap.getName());
 		return body;

@@ -27,8 +27,6 @@ public class Main {
 	
 	private Logger logger = GFLogger.getLogger();
 
-//	private String publishDirectory;
-
 	ArrayList<String> failures = new ArrayList<String>();
 	
 	/**
@@ -53,7 +51,6 @@ public class Main {
 	{
 		logger.entering(this.getClass().getCanonicalName(), "doAll()");
 		ficListFileName = GFProperties.getPropertyValue(GFProperties.FIC_LIST_FILE_KEY);
-		//publishDirectory = GFProperties.getPropertyValue(GFProperties.PUBLISH_DIRECTORY_KEY);
 		
 		if (ficListFileName.length() > 0)
 		{

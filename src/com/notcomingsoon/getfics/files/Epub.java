@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.zip.CRC32;
@@ -78,6 +79,18 @@ public class Epub extends EpubFiles implements GFConstants {
 	private boolean isOneShot = false;
 
 	ArrayList<Chapter> chapters = new ArrayList<Chapter>();
+	
+	ArrayList<Chapter> newChapters = new ArrayList<Chapter>();
+	
+	public ArrayList<Chapter> getNewChapters() {
+		return newChapters;
+	}
+
+	public void addNewChapter(Chapter c) {
+		this.newChapters.add(c);
+	}
+
+	HashMap<String, File> existingChapters = new HashMap<String, File>();
 
 	ArrayList<String> tags = null;
 
@@ -132,6 +145,17 @@ public class Epub extends EpubFiles implements GFConstants {
 		
 	}
 
+	public boolean doesChapterFileExist(String filename) {
+		boolean ifExists = false;
+		
+		File f = existingChapters.get(filename);
+		if (null != f) {
+			ifExists = true;
+		}
+		
+		return ifExists;
+	}
+	
 	private void initialize() {
 		if (epubDir.exists()) {
 			boolean canDelete = true;
@@ -141,6 +165,13 @@ public class Epub extends EpubFiles implements GFConstants {
 				if (isImageFile(f)) {
 					canDelete = false;
 					continue;
+				}
+				if (Chapter.isChapterFile(f)) {
+					canDelete = false;
+					if (!Contents.isTOCFile(f) && !Chapter.isSummaryFile(f)) {
+						existingChapters.put(f.getName(), f);
+						continue;
+					}
 				}
 				if (f.isDirectory()) {
 					File[] meta = f.listFiles();
@@ -185,10 +216,10 @@ public class Epub extends EpubFiles implements GFConstants {
 		Container.writeContainer(epubDir);
 
 		for (Chapter c : chapters) {
-			c.writeChapter(epubDir);
+			if (!c.doesChapterExist) {
+				c.writeChapter(epubDir);
+			}
 		}
-
-		//copyImages();
 
 		opf.writePackage(epubDir);
 
@@ -541,7 +572,9 @@ public class Epub extends EpubFiles implements GFConstants {
 	}
 
 	public void addChapter(Chapter c) {
-		fixStyles(c.getDoc());
+		if (!c.doesChapterExist()) {
+			fixStyles(c.getDoc());
+		}
 		chapters.add(c);
 	}
 
