@@ -175,7 +175,6 @@ public class ArchiveOfOurOwn extends Site {
 		addChapterFooter(body);
 		
 		chap.setDoc(freshDoc);
-	//	loc.addChapter(chap);
 		
 		logger.exiting(this.getClass().getSimpleName(), "extractChapter(Document doc)");
 	}
@@ -222,7 +221,6 @@ public class ArchiveOfOurOwn extends Site {
 		}
 		
 		newCh.setDoc(summary);
-//		loc.addChapter(newCh);
 		
 		logger.exiting(this.getClass().getSimpleName(), "extractSummary");
 		return newCh;

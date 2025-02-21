@@ -34,6 +34,20 @@ implements GFConstants
 	
 	boolean orderedList = true;
 
+	static public boolean isTOCFile(File f) {
+		boolean isTOC = false;
+		
+		String name = f.getName();
+		if (null != name) {
+			if (name.startsWith(FILENAME)) {
+				isTOC = true;
+			}
+		}
+		
+		return isTOC;
+	}
+	
+
 	public Contents(ArrayList<Chapter> chapters) throws IOException {
 		super(FILENAME);
 		setChapters(chapters);
